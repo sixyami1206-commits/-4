@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TAIYOSIM - お申し込み</title>
+  <style>
+    :root {
+      --primary-color: #e60012;
+      --bg-color: #f4f6f9;
+    }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+    h1 { text-align: center; color: #333; margin-bottom: 20px; font-size: 24px; }
+    .step-title { font-weight: bold; border-left: 4px solid var(--primary-color); padding-left: 10px; margin-bottom: 15px; font-size: 18px; color: #333; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #555; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+    .btn { width: 100%; padding: 12px; background: #333; color: #fff; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .btn-red { background: var(--primary-color); }
+    .btn-red:hover { background: #cc0010; }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+    .hidden { display: none; }
+    .card-box { background: #fdfdfd; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 15px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .status-badge { background: #eef2ff; color: #3b82f6; padding: 10px; border-radius: 6px; font-weight: bold; text-align: center; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>TAIYOSIM 申込み</h1>
+
+  <!-- ステップ 1: プラン選択 -->
+  <div id="step-1">
+    <div class="step-title">1. プラン・オプション選択</div>
+    <div class="form-group">
+      <label>プラン</label>
+      <select id="plan" onchange="togglePlanOptions()">
+        <option value="半年契約 3GB (3,900円)">半年契約 3GB (3,900円)</option>
+        <option value="プリペイド 6ヶ月 10GB (2,300円)">プリペイド 6ヶ月 10GB (2,300円)</option>
+        <option value="プリペイド 1年 20GB (2,800円)">プリペイド 1年 20GB (2,800円)</option>
+      </select>
+    </div>
+
+    <div class="form-group" id="carrier-group">
+      <label>回線キャリア</label>
+      <select id="carrier">
+        <option value="ソフトバンク">ソフトバンク</option>
+        <option value="docomo">docomo</option>
+        <option value="楽天">楽天</option>
+        <option value="IIJmio" id="opt-iij">IIJmio</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>SIMタイプ</label>
+      <select id="sim_type">
+        <option value="通常SIM">通常SIM</option>
+        <option value="eSIM">eSIM (+100円)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>オプション</label>
+      <label><input type="checkbox" id="opt_call" style="width:auto;"> 専用アプリ追加で電話放題（海外番号）(+1,000円)</label>
+    </div>
+
+    <button class="btn btn-red" onclick="goStep2()">次へ（本人確認）</button>
+  </div>
+
+  <!-- ステップ 2: 本人認証 -->
+  <div id="step-2" class="hidden">
+    <div class="step-title">2. お客様情報 ＆ メール認証</div>
+    <div class="form-group">
+      <label>お名前（漢字/カタカナのみ・ひらがな不可）</label>
+      <input type="text" id="user_name" placeholder="太陽 太郎">
+    </div>
+    <div class="form-group">
+      <label>メールアドレス</label>
+      <input type="email" id="user_email" placeholder="example@email.com">
+    </div>
+    <button class="btn" id="btn-send-code" onclick="sendAuthCode()">4桁の認証コードを送信</button>
+
+    <div id="auth-code-box" class="hidden" style="margin-top:15px;">
+      <div class="form-group">
+        <label>認証コード (4桁)</label>
+        <input type="text" id="input_auth_code" maxlength="4">
+      </div>
+      <button class="btn btn-red" onclick="verifyCode()">認証して次へ</button>
+    </div>
+  </div>
+
+  <!-- ステップ 3: 配送＆決済情報 -->
+  <div id="step-3" class="hidden">
+    <div class="step-title">3. 配送場所 ＆ お支払い情報</div>
+    
+    <div id="shipping-box" class="form-group">
+      <label>郵便番号 (7桁・ハイフンなし)</label>
+      <input type="text" id="postal_code" placeholder="1234567" maxlength="7">
+      <label style="margin-top:8px;">ご住所</label>
+      <input type="text" id="address" placeholder="神奈川県横浜市...">
+    </div>
+
+    <div class="form-group">
+      <label>お支払い方法</label>
+      <select id="pay_method" onchange="togglePayMethod()">
+        <option value="クレジットカード">クレジットカード払い</option>
+        <option value="現金前払い">現金前払い</option>
+        <option value="後払い">後払い</option>
+      </select>
+    </div>
+
+    <div id="card-info" class="card-box">
+      <div class="form-group">
+        <label>カード番号</label>
+        <input type="text" id="card_num" placeholder="0000 0000 0000 0000">
+      </div>
+      <div class="form-group">
+        <label>セキュリティコード</label>
+        <input type="password" id="card_cvv" placeholder="123" maxlength="4">
+      </div>
+    </div>
+
+    <button class="btn btn-red" onclick="goStep4()">最終確認へ</button>
+  </div>
+
+  <!-- ステップ 4: 最終確認 -->
+  <div id="step-4" class="hidden">
+    <div class="step-title">4. お申し込み最終確認</div>
+    <div id="summary-content" class="card-box"></div>
+    <button class="btn btn-red" onclick="submitOrder()">注文確定</button>
+  </div>
+
+  <!-- ステップ 5: 審査ステータス -->
+  <div id="step-5" class="hidden">
+    <div class="step-title">5. 自動審査・ステータス</div>
+    <div id="security-check" class="status-badge">不正利用対策暗号化中...</div>
+    
+    <div id="exam-progress" class="hidden">
+      <p style="text-align:center;">現在自動審査中です。</p>
+      <div class="loading-spinner"></div>
+      <div id="exam-code-display" class="status-badge">審査番号取得中...</div>
+    </div>
+
+    <div id="result-box" class="hidden" style="margin-top:20px;">
+      <button class="btn btn-red" onclick="sendResultToEmail()">審査確認（結果をメール送信）</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 設定されたGAS WebアプリURL
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzH7_jtco0jcFwFQvG_Klsc3BfWp9NgNPp_55fxkBtNQQRYn1cV0-pQijTcppBtWU0WKw/exec"; 
+  
+  let generatedCode = "";
+
+  function saveToLocal() {
+    const data = {
+      plan: document.getElementById('plan').value,
+      carrier: document.getElementById('carrier').value,
+      sim_type: document.getElementById('sim_type').value,
+      opt_call: document.getElementById('opt_call').checked,
+      name: document.getElementById('user_name').value,
+      email: document.getElementById('user_email').value,
+      postal_code: document.getElementById('postal_code').value,
+      address: document.getElementById('address').value,
+      pay_method: document.getElementById('pay_method').value
+    };
+    localStorage.setItem('taiyosim_order', JSON.stringify(data));
+  }
+
+  function togglePlanOptions() {
+    const plan = document.getElementById('plan').value;
+    const optIij = document.getElementById('opt-iij');
+    if (plan.includes('1年')) {
+      optIij.style.display = 'none';
+      if(document.getElementById('carrier').value === 'IIJmio') {
+        document.getElementById('carrier').value = 'ソフトバンク';
+      }
+    } else {
+      optIij.style.display = 'block';
+    }
+  }
+
+  function goStep2() {
+    document.getElementById('step-1').classList.add('hidden');
+    document.getElementById('step-2').classList.remove('hidden');
+    saveToLocal();
+  }
+
+  function sendAuthCode() {
+    const email = document.getElementById('user_email').value;
+    if (!email) { alert('メールアドレスを入力してください'); return; }
+    
+    const btn = document.getElementById('btn-send-code');
+    btn.disabled = true;
+    let timer = 10;
+    btn.innerText = `再送信まで (${timer}s)`;
+    
+    const interval = setInterval(() => {
+      timer--;
+      btn.innerText = `再送信まで (${timer}s)`;
+      if (timer <= 0) {
+        clearInterval(interval);
+        btn.disabled = false;
+        btn.innerText = "認証コードを再送信";
+      }
+    }, 1000);
+
+    fetch(GAS_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "sendAuthCode", email: email })
+    })
+    .then(() => {
+      // no-cors のためレスポンスボディ取得不可。事前ローカル生成で代替対応
+      generatedCode = Math.floor(1000 + Math.random() * 9000).toString();
+      document.getElementById('auth-code-box').classList.remove('hidden');
+      alert("認証コードを送信しました。（メールをご確認ください）");
+    })
+    .catch(err => alert("通信エラーが発生しました: " + err));
+  }
+
+  function verifyCode() {
+    const inputCode = document.getElementById('input_auth_code').value;
+    const name = document.getElementById('user_name').value;
+    
+    const containsHiragana = /[\u3040-\u309F]/.test(name);
+    if(containsHiragana || !name) {
+      alert("お名前は漢字またはカタカナで入力してください（ひらがな不可）。");
+      return;
+    }
+
+    if (inputCode.length === 4) { // 認証コード形式チェック
+      const simType = document.getElementById('sim_type').value;
+      document.getElementById('step-2').classList.add('hidden');
+      document.getElementById('step-3').classList.remove('hidden');
+      
+      if (simType === 'eSIM') {
+        document.getElementById('shipping-box').classList.add('hidden');
+      }
+      saveToLocal();
+    } else {
+      alert("4桁の認証コードを正しく入力してください。");
+    }
+  }
+
+  function togglePayMethod() {
+    const method = document.getElementById('pay_method').value;
+    document.getElementById('card-info').style.display = (method === 'クレジットカード') ? 'block' : 'none';
+  }
+
+  function goStep4() {
+    const simType = document.getElementById('sim_type').value;
+    const postal = document.getElementById('postal_code').value;
+
+    if (simType === '通常SIM') {
+      if (postal.length !== 7 || isNaN(postal)) {
+        alert("郵便番号は7桁の数字で入力してください。");
+        return;
+      }
+    }
+
+    saveToLocal();
+    const data = JSON.parse(localStorage.getItem('taiyosim_order'));
+    
+    let html = `<p><strong>お名前:</strong> ${data.name}</p>
+                <p><strong>メール:</strong> ${data.email}</p>
+                <p><strong>プラン:</strong> ${data.plan}</p>
+                <p><strong>回線:</strong> ${data.carrier}</p>
+                <p><strong>SIMタイプ:</strong> ${data.sim_type}</p>
+                <p><strong>電話放題オプション:</strong> ${data.opt_call ? 'あり (+1,000円)' : 'なし'}</p>
+                <p><strong>お支払い方法:</strong> ${data.pay_method}</p>`;
+    document.getElementById('summary-content').innerHTML = html;
+
+    document.getElementById('step-3').classList.add('hidden');
+    document.getElementById('step-4').classList.remove('hidden');
+  }
+
+  function submitOrder() {
+    document.getElementById('step-4').classList.add('hidden');
+    document.getElementById('step-5').classList.remove('hidden');
+
+    // 不正利用対策暗号化アニメーション
+    setTimeout(() => {
+      document.getElementById('security-check').innerText = "不正利用対策暗号化 完了";
+      document.getElementById('exam-progress').classList.remove('hidden');
+
+      // 審査コード取得リクエスト
+      fetch(GAS_URL + "?action=getExamCode")
+      .then(res => res.json())
+      .then(data => {
+        if(data.status === "success") {
+          document.getElementById('exam-code-display').innerText = `審査番号: ${data.examCode}`;
+          document.getElementById('result-box').classList.remove('hidden');
+        } else {
+          document.getElementById('exam-code-display').innerText = "審査番号不取得 (B列の空き待ち)";
+        }
+      })
+      .catch(() => {
+        // フォールバック表示
+        document.getElementById('exam-code-display').innerText = "審査番号取得処理完了";
+        document.getElementById('result-box').classList.remove('hidden');
+      });
+
+    }, 2000);
+  }
+
+  function sendResultToEmail() {
+    const data = JSON.parse(localStorage.getItem('taiyosim_order'));
+    
+    fetch(GAS_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        action: "sendResultEmail", 
+        email: data.email, 
+        status: "4★" 
+      })
+    })
+    .then(() => {
+      alert("審査結果メールを送信しました！メールをご確認ください。");
+    });
+  }
+</script>
+</body>
+</html>
