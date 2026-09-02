@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Search Research</title>
+  <title>Free AI Chat</title>
   <style>
     :root {
       --bg-color: #0f172a;
       --card-bg: #1e293b;
       --accent-color: #38bdf8;
-      --accent-premium: #f59e0b;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --border-color: #334155;
@@ -19,7 +18,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     body {
@@ -27,32 +26,33 @@
       color: var(--text-main);
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
+      height: 100vh;
       align-items: center;
-      padding: 20px;
+      padding: 15px;
     }
 
-    .container {
+    .chat-container {
       width: 100%;
-      max-width: 800px;
+      max-width: 600px;
+      height: 100%;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
     }
 
-    /* ヘッダー */
     header {
+      padding: 15px 20px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 20px;
-      background: var(--card-bg);
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
     }
 
-    .logo {
-      font-size: 1.2rem;
+    .title {
       font-weight: bold;
       color: var(--accent-color);
       display: flex;
@@ -60,92 +60,22 @@
       gap: 8px;
     }
 
-    .badge {
-      font-size: 0.75rem;
-      padding: 3px 8px;
-      border-radius: 20px;
-      background: #334155;
-      color: var(--text-muted);
-    }
-
-    .badge.premium {
-      background: var(--accent-premium);
-      color: #000;
-      font-weight: bold;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    button {
-      background: var(--border-color);
-      color: var(--text-main);
-      border: none;
-      padding: 8px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: all 0.2s;
-    }
-
-    button:hover {
-      background: #475569;
-    }
-
-    /* モード選択タブ */
-    .mode-selector {
-      display: flex;
-      gap: 10px;
-      background: var(--card-bg);
-      padding: 6px;
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-    }
-
-    .mode-tab {
-      flex: 1;
-      padding: 10px;
-      text-align: center;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      transition: all 0.2s;
-    }
-
-    .mode-tab.active {
-      background: var(--accent-color);
-      color: #0f172a;
-    }
-
-    .mode-tab.premium-tab.active {
-      background: var(--accent-premium);
-      color: #000;
-    }
-
-    /* チャット・結果表示エリア */
     .chat-area {
-      background: var(--card-bg);
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      min-height: 380px;
+      flex: 1;
       padding: 20px;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 15px;
-      overflow-y: auto;
-      max-height: 500px;
+      gap: 12px;
     }
 
     .message {
       padding: 12px 16px;
-      border-radius: 10px;
-      max-width: 85%;
-      line-height: 1.6;
+      border-radius: 12px;
+      max-width: 80%;
+      line-height: 1.5;
       font-size: 0.95rem;
+      word-break: break-word;
     }
 
     .message.user {
@@ -160,57 +90,22 @@
       color: var(--text-main);
     }
 
-    .message.system-error {
-      align-self: center;
-      background: #450a0a;
-      color: #fca5a5;
-      border: 1px solid #ef4444;
-      text-align: center;
-      width: 100%;
-      border-radius: 8px;
-    }
-
-    /* スタイリッシュローディングバー */
-    .loading-container {
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      background: #0f172a;
-      padding: 15px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-    }
-
-    .loading-header {
-      display: flex;
-      justify-content: space-between;
+    .loading {
+      align-self: flex-start;
+      color: var(--text-muted);
       font-size: 0.85rem;
-      color: var(--accent-color);
-      font-weight: bold;
+      font-style: italic;
     }
 
-    .progress-bar-bg {
-      width: 100%;
-      height: 8px;
-      background: #334155;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #38bdf8, #818cf8);
-      transition: width 0.1s linear;
-    }
-
-    /* 入力エリア */
     .input-area {
+      padding: 15px;
+      background: #0f172a;
+      border-top: 1px solid var(--border-color);
       display: flex;
       gap: 10px;
     }
 
-    input[type="text"], input[type="password"] {
+    input[type="text"] {
       flex: 1;
       background: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -221,505 +116,110 @@
       outline: none;
     }
 
-    input[type="text"]:focus, input[type="password"]:focus {
+    input[type="text"]:focus {
       border-color: var(--accent-color);
     }
 
-    .send-btn {
+    button {
       background: var(--accent-color);
       color: #0f172a;
+      border: none;
       font-weight: bold;
-      padding: 0 24px;
+      padding: 0 20px;
       border-radius: 8px;
+      cursor: pointer;
     }
 
-    .send-btn:disabled {
+    button:disabled {
       background: #475569;
       cursor: not-allowed;
-    }
-
-    /* モーダル */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.75);
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-    }
-
-    .modal-content {
-      background: var(--card-bg);
-      padding: 25px;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 480px;
-      border: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .modal-content h3 {
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 10px;
-      color: var(--accent-color);
-    }
-
-    .modal-field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .modal-field label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .stat-box {
-      background: #0f172a;
-      padding: 12px;
-      border-radius: 6px;
-      font-family: monospace;
-      font-size: 0.85rem;
-      line-height: 1.7;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <!-- ヘッダー -->
+<div class="chat-container">
   <header>
-    <div class="logo">
-      🔍 AI検索リサーチ
-      <span id="userBadge" class="badge">FREE</span>
-    </div>
-    <div class="header-actions">
-      <button onclick="openModal('apiKeyModal')">⚙️ APIキー設定</button>
-      <button onclick="openModal('statusModal')">📊 ステータス</button>
-      <button onclick="openModal('premiumModal')">👑 プレミアム</button>
-    </div>
+    <div class="title">💬 AIパートナー (キー不要)</div>
   </header>
 
-  <!-- モード選択 -->
-  <div class="mode-selector">
-    <div id="tabSearch" class="mode-tab active" onclick="switchMode('search')">🌐 AI検索リサーチ</div>
-    <div id="tabChat" class="mode-tab premium-tab" onclick="switchMode('chat')">💬 会話モード 🔒</div>
-  </div>
-
-  <!-- チャット・ログ表示エリア -->
   <div class="chat-area" id="chatArea">
     <div class="message ai">
-      こんにちは！AI検索リサーチへようこそ。<br>
-      ※初回利用時は右上の「⚙️ APIキー設定」からご自身の API キーを入力してください。
+      ヤッホー！何でも話しかけてね！✨
     </div>
   </div>
 
-  <!-- スタイリッシュローディング表示 -->
-  <div class="loading-container" id="loadingContainer">
-    <div class="loading-header">
-      <span id="loadingStep">読み込み中...</span>
-      <span id="loadingPercent">0%</span>
-    </div>
-    <div class="progress-bar-bg">
-      <div class="progress-bar-fill" id="progressBarFill"></div>
-    </div>
-  </div>
-
-  <!-- 入力フォーム -->
   <div class="input-area">
-    <input type="text" id="userInput" placeholder="検索キーワードまたはメッセージを入力..." onkeypress="handleKeyPress(event)">
-    <button class="send-btn" id="sendBtn" onclick="handleSend()">実行</button>
-  </div>
-</div>
-
-<!-- APIキー設定モーダル -->
-<div class="modal" id="apiKeyModal">
-  <div class="modal-content">
-    <h3>⚙️ APIキー設定</h3>
-    <p style="font-size: 0.8rem; color: var(--text-muted);">
-      キーはお使いのブラウザ内（LocalStorage）にのみ保持され、外部に送信・公開されることはありません。
-    </p>
-    <div class="modal-field">
-      <label>Gemini API キー</label>
-      <input type="password" id="inputGeminiKey" placeholder="AQ... または AIzaSy...">
-    </div>
-    <div class="modal-field">
-      <label>Tavily API キー</label>
-      <input type="password" id="inputTavilyKey" placeholder="tvly-dev-... または tvly-...">
-    </div>
-    <button style="background: var(--accent-color); color:#0f172a; font-weight:bold;" onclick="saveApiKeys()">保存する</button>
-    <button onclick="closeModal('apiKeyModal')">閉じる</button>
-  </div>
-</div>
-
-<!-- プレミアム有効化モーダル -->
-<div class="modal" id="premiumModal">
-  <div class="modal-content">
-    <h3>👑 プレミアム認証</h3>
-    <p style="font-size: 0.85rem; color: var(--text-muted);">
-      管理者に発行された指定コードを入力すると、プレミアム機能が24時間利用可能になります。
-    </p>
-    <div class="modal-field">
-      <label>プレミアムコード</label>
-      <input type="password" id="premiumCodeInput" placeholder="4桁のコードを入力">
-    </div>
-    <button style="background: var(--accent-premium); color:#000; font-weight:bold;" onclick="unlockPremium()">認証する</button>
-    <button onclick="closeModal('premiumModal')">閉じる</button>
-  </div>
-</div>
-
-<!-- ステータスモーダル -->
-<div class="modal" id="statusModal">
-  <div class="modal-content">
-    <h3>📊 使用状況＆メモリ情報</h3>
-    <div class="stat-box" id="statusContent">
-      読み込み中...
-    </div>
-    <button onclick="closeModal('statusModal')">閉じる</button>
+    <input type="text" id="userInput" placeholder="メッセージを入力..." onkeypress="handleKeyPress(event)">
+    <button id="sendBtn" onclick="handleSend()">送信</button>
   </div>
 </div>
 
 <script>
-  // ==========================================
-  // APIキー管理（LocalStorage保存）
-  // ==========================================
-  let GEMINI_API_KEY = localStorage.getItem('user_gemini_key') || "";
-  let TAVILY_API_KEY = localStorage.getItem('user_tavily_key') || "";
-
-  function saveApiKeys() {
-    const gKey = document.getElementById('inputGeminiKey').value.trim();
-    const tKey = document.getElementById('inputTavilyKey').value.trim();
-
-    if (gKey) {
-      GEMINI_API_KEY = gKey;
-      localStorage.setItem('user_gemini_key', gKey);
-    }
-    if (tKey) {
-      TAVILY_API_KEY = tKey;
-      localStorage.setItem('user_tavily_key', tKey);
-    }
-
-    alert("APIキーを保存しました！");
-    closeModal('apiKeyModal');
-  }
-
-  // ==========================================
-  // ローカルストレージ＆状態管理
-  // ==========================================
-  let appState = JSON.parse(localStorage.getItem('ai_search_state')) || {
-    isPremium: false,
-    premiumUntil: 0,
-    searchLogs: [],
-    chatLogs: [],
-    totalCount2h: 0,
-    resetTime2h: Date.now() + 2 * 60 * 60 * 1000,
-    isLocked: false
-  };
-
-  let currentMode = 'search';
-
-  window.onload = () => {
-    check2HourReset();
-    checkPremiumExpiry();
-    updateUI();
-
-    // 既存キーがあれば入力欄にセット
-    document.getElementById('inputGeminiKey').value = GEMINI_API_KEY;
-    document.getElementById('inputTavilyKey').value = TAVILY_API_KEY;
-
-    // キーが未設定の場合はモーダルを表示
-    if (!GEMINI_API_KEY) {
-      openModal('apiKeyModal');
-    }
-  };
-
-  function saveState() {
-    localStorage.setItem('ai_search_state', JSON.stringify(appState));
-  }
-
-  function check2HourReset() {
-    const now = Date.now();
-    if (now > appState.resetTime2h) {
-      appState.totalCount2h = 0;
-      appState.isLocked = false;
-      appState.resetTime2h = now + 2 * 60 * 60 * 1000;
-      saveState();
-    }
-  }
-
-  function checkPremiumExpiry() {
-    if (appState.isPremium && Date.now() > appState.premiumUntil) {
-      appState.isPremium = false;
-      saveState();
-      alert("プレミアムの24時間有効期限が切れました。");
-    }
-  }
-
-  function updateUI() {
-    const badge = document.getElementById('userBadge');
-    const tabChat = document.getElementById('tabChat');
-
-    if (appState.isPremium) {
-      badge.textContent = "PREMIUM";
-      badge.classList.add('premium');
-      tabChat.textContent = "💬 会話モード 🔥";
-    } else {
-      badge.textContent = "FREE";
-      badge.classList.remove('premium');
-      tabChat.textContent = "💬 会話モード 🔒";
-    }
-  }
-
-  function switchMode(mode) {
-    if (mode === 'chat' && !appState.isPremium) {
-      alert("会話モードはプレミアム限定機能です。右上の「プレミアム」からコード（5533）を入力してください。");
-      return;
-    }
-    currentMode = mode;
-    document.getElementById('tabSearch').classList.toggle('active', mode === 'search');
-    document.getElementById('tabChat').classList.toggle('active', mode === 'chat');
-  }
-
-  function openModal(id) {
-    if (id === 'statusModal') {
-      renderStatus();
-    }
-    document.getElementById(id).style.display = 'flex';
-  }
-
-  function closeModal(id) {
-    document.getElementById(id).style.display = 'none';
-  }
-
-  function unlockPremium() {
-    const inputCode = document.getElementById('premiumCodeInput').value.trim();
-    if (inputCode === "5533") {
-      appState.isPremium = true;
-      appState.premiumUntil = Date.now() + 24 * 60 * 60 * 1000;
-      saveState();
-      updateUI();
-      alert("🎉 プレミアムモードが24時間有効化されました！");
-      closeModal('premiumModal');
-      document.getElementById('premiumCodeInput').value = '';
-    } else {
-      alert("プレミアムコードが正しくありません。");
-    }
-  }
-
-  function renderStatus() {
-    check2HourReset();
-    let memoryText = "非対応";
-    if (performance && performance.memory) {
-      const usedMB = (performance.memory.usedJSHeapSize / (1024 * 1024)).toFixed(2);
-      const totalMB = (performance.memory.jsHeapSizeLimit / (1024 * 1024)).toFixed(2);
-      memoryText = `${usedMB} MB / ${totalMB} MB`;
-    }
-
-    const nextReset = Math.max(0, Math.ceil((appState.resetTime2h - Date.now()) / 1000 / 60));
-
-    document.getElementById('statusContent').innerHTML = `
-      【Geminiキー】: ${GEMINI_API_KEY ? '✅ 設定済み' : '❌ 未設定'}<br>
-      【Tavilyキー】: ${TAVILY_API_KEY ? '✅ 設定済み' : '❌ 未設定'}<br>
-      【メモリ使用量】: ${memoryText}<br>
-      【2時間内使用数】: ${appState.totalCount2h} / 100通<br>
-      【リセットまで】: 約 ${nextReset} 分<br>
-      【ロック状態】: ${appState.isLocked ? "🔒 ロック中" : "🔓 正常"}<br>
-      【ステータス】: ${appState.isPremium ? "⭐ PREMIUM" : "FREE"}
-    `;
-  }
-
-  function handleKeyPress(e) {
-    if (e.key === 'Enter') handleSend();
-  }
+  // APIキー不要で使える公開フリーモデル（Hugging Face Inference API）
+  const API_URL = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-Coder-32B-Instruct";
 
   async function handleSend() {
-    if (!GEMINI_API_KEY) {
-      alert("Gemini APIキーが設定されていません。右上の「⚙️ APIキー設定」から設定してください。");
-      openModal('apiKeyModal');
-      return;
-    }
-
     const inputEl = document.getElementById('userInput');
-    const query = inputEl.value.trim();
-    if (!query) return;
+    const sendBtn = document.getElementById('sendBtn');
+    const text = inputEl.value.trim();
 
-    check2HourReset();
-    checkPremiumExpiry();
+    if (!text) return;
 
-    if (appState.isLocked || appState.totalCount2h >= 100) {
-      appState.isLocked = true;
-      saveState();
-      appendMessage("system-error", "🔒 2時間の利用上限（100通）に達したためロック中です。時間が経つと自動解除されます。");
-      return;
-    }
-
-    const now = Date.now();
-    if (!appState.isPremium) {
-      if (currentMode === 'search') {
-        appState.searchLogs = appState.searchLogs.filter(t => now - t < 15000);
-        if (appState.searchLogs.length >= 2) {
-          const oldest = appState.searchLogs[0];
-          const waitSec = Math.ceil((15000 - (now - oldest)) / 1000);
-          appendMessage("system-error", `AI検索リサーチの無料使用制限を超えました。<br>あと <b>${waitSec}</b> 秒程お待ちください。<br>混雑しています。😏`);
-          return;
-        }
-        appState.searchLogs.push(now);
-      }
-    } else {
-      if (currentMode === 'chat') {
-        appState.chatLogs = appState.chatLogs.filter(t => now - t < 60000);
-        if (appState.chatLogs.length >= 3) {
-          const oldest = appState.chatLogs[0];
-          const waitSec = Math.ceil((60000 - (now - oldest)) / 1000);
-          appendMessage("system-error", `プレミアム通信制限中です。あと <b>${waitSec}</b> 秒お待ちください。`);
-          return;
-        }
-        appState.chatLogs.push(now);
-      }
-    }
-
-    appendMessage("user", query);
+    // ユーザーメッセージを表示
+    appendMessage("user", text);
     inputEl.value = '';
-    document.getElementById('sendBtn').disabled = true;
+    sendBtn.disabled = true;
 
-    appState.totalCount2h++;
-    saveState();
-
-    const duration = appState.isPremium ? 3000 : 6000;
+    // ローディング表示
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'loading';
+    loadingDiv.id = 'loadingIndicator';
+    loadingDiv.textContent = 'AIが考え中...💭';
+    document.getElementById('chatArea').appendChild(loadingDiv);
 
     try {
-      const [apiResult] = await Promise.all([
-        fetchAIResponse(query),
-        runLoadingAnimation(duration)
-      ]);
+      // APIキーなしでモデルに送信
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          inputs: `<|im_start|>system\nあなたは明るく親しみやすいAI友達です。日本語でフレンドリーに返答してください。<|im_end|>\n<|im_start|>user\n${text}<|im_end|>\n<|im_start|>assistant\n`,
+          parameters: { max_new_tokens: 300, return_full_text: false }
+        })
+      });
 
-      appendMessage("ai", apiResult);
-    } catch (err) {
-      appendMessage("system-error", `⚠️ 通信エラーが発生しました:<br>${err.message}`);
-    } finally {
-      document.getElementById('sendBtn').disabled = false;
-    }
-  }
+      const data = await response.json();
+      document.getElementById('loadingIndicator').remove();
 
-  function runLoadingAnimation(totalMs) {
-    return new Promise(resolve => {
-      const container = document.getElementById('loadingContainer');
-      const fill = document.getElementById('progressBarFill');
-      const stepTxt = document.getElementById('loadingStep');
-      const percentTxt = document.getElementById('loadingPercent');
-
-      container.style.display = 'flex';
-      const startTime = Date.now();
-
-      const interval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(100, Math.floor((elapsed / totalMs) * 100));
-
-        fill.style.width = `${progress}%`;
-        percentTxt.textContent = `${progress}%`;
-
-        if (progress < 30) {
-          stepTxt.textContent = "🔍 読み込み中...";
-        } else if (progress < 70) {
-          stepTxt.textContent = "🧠 思考中...";
-        } else {
-          stepTxt.textContent = "✍️ 回答文生成...";
-        }
-
-        if (progress >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            container.style.display = 'none';
-            resolve();
-          }, 200);
-        }
-      }, 50);
-    });
-  }
-
-  async function fetchAIResponse(query) {
-    let contextText = "";
-
-    if (currentMode === 'search') {
-      if (!TAVILY_API_KEY) {
-        throw new Error("検索モードを利用するには Tavily APIキー の設定が必要です。");
-      }
-
-      // tvly-dev- キー（MCP）と 通常の tvly- キーの両方に対応
-      let tavilyRes;
-      if (TAVILY_API_KEY.startsWith("tvly-dev-")) {
-        const mcpUrl = `https://mcp.tavily.com/mcp/?tavilyApiKey=${encodeURIComponent(TAVILY_API_KEY)}`;
-        tavilyRes = await fetch(mcpUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: "2.0", id: 1, method: "tools/call",
-            params: { name: "tavily_search", arguments: { query: query, search_depth: "basic", max_results: 3 } }
-          })
-        });
+      if (data && data[0] && data[0].generated_text) {
+        let reply = data[0].generated_text.replace("<|im_end|>", "").trim();
+        appendMessage("ai", reply);
       } else {
-        tavilyRes = await fetch('https://api.tavily.com/search', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TAVILY_API_KEY}` },
-          body: JSON.stringify({ query: query, search_depth: "basic", max_results: 3 })
-        });
+        appendMessage("ai", "ごめんね、うまく言葉が出てこなかった！もう一回送ってみて！");
       }
 
-      if (!tavilyRes.ok) {
-        throw new Error(`Tavily APIエラー (ステータス: ${tavilyRes.status})`);
-      }
-
-      const tavilyData = await tavilyRes.json();
-      if (tavilyData.results) {
-        contextText = "【検索結果】\n" + tavilyData.results.map(r => `・${r.title}: ${r.content}`).join("\n") + "\n\n上記情報を元に回答してください。";
-      } else if (tavilyData.result && tavilyData.result.content) {
-        const textContent = tavilyData.result.content.map(c => c.text || "").join("\n");
-        contextText = "【検索結果】\n" + textContent + "\n\n上記情報を元に回答してください。";
-      }
+    } catch (err) {
+      document.getElementById('loadingIndicator')?.remove();
+      appendMessage("ai", "通信エラーが起きちゃったかも。少し待って試してみてね。");
+    } finally {
+      sendBtn.disabled = false;
     }
-
-    const prompt = contextText ? `${contextText}\n\n質問: ${query}` : query;
-
-    // Gemini API 呼び出し（AQ.キーヘッダー方式 / 通常キー双方対応）
-    const isAQKey = GEMINI_API_KEY.startsWith("AQ.");
-    const url = isAQKey 
-      ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`
-      : `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-    const headers = { 'Content-Type': 'application/json' };
-    if (isAQKey) {
-      headers['X-goog-api-key'] = GEMINI_API_KEY;
-    }
-
-    const geminiRes = await fetch(url, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
-      })
-    });
-
-    if (!geminiRes.ok) {
-      const errData = await geminiRes.json().catch(() => ({}));
-      throw new Error(`Gemini APIエラー (ステータス: ${geminiRes.status}) - ${errData.error?.message || 'キー認証エラー'}`);
-    }
-
-    const geminiData = await geminiRes.json();
-    return geminiData.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
   }
 
   function appendMessage(type, text) {
     const chatArea = document.getElementById('chatArea');
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${type}`;
-    msgDiv.innerHTML = text;
+    msgDiv.textContent = text;
     chatArea.appendChild(msgDiv);
     chatArea.scrollTop = chatArea.scrollHeight;
   }
+
+  function handleKeyPress(e) {
+    if (e.key === 'Enter') handleSend();
+  }
 </script>
+
 </body>
 </html>
