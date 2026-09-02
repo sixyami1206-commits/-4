@@ -367,15 +367,6 @@
   const GEMINI_API_KEY = "AQ.Ab8RN6ImEPHFdaL5SuA2qbtqswvhOgDWx7Ra43gBEktHETPIdg"; // 👈 ここにGemini APIキーを記述
   const TAVILY_API_KEY = "Https://mcp.tavily.com/mcp/?tavilyApiKey=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"; // 👈 ここにTavily APIキーを記述
 
-  // 「5533」のSHA-256ハッシュ値（コード上に「5533」を直接書かずに隠蔽）
-  const PREMIUM_HASH = "8ff0de0057ff282362b9a73e51241f8796841261314ff94e09f58a7be7c39063";
-
-  // SHA-256計算関数
-  async function sha256(str) {
-    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
   // ==========================================
   // ローカルストレージ＆状態管理
   // ==========================================
@@ -436,7 +427,7 @@
 
   function switchMode(mode) {
     if (mode === 'chat' && !appState.isPremium) {
-      alert("会話モードはプレミアム限定機能です。右上の「プレミアム解除」からコードを入力してください。");
+      alert("会話モードはプレミアム限定機能です。右上の「プレミアム解除」からコード（5533）を入力してください。");
       return;
     }
     currentMode = mode;
@@ -455,12 +446,9 @@
     document.getElementById(id).style.display = 'none';
   }
 
-  async function unlockPremium() {
+  function unlockPremium() {
     const inputCode = document.getElementById('premiumCodeInput').value.trim();
-    if (!inputCode) return;
-
-    const hashedInput = await sha256(inputCode);
-    if (hashedInput === PREMIUM_HASH) {
+    if (inputCode === "5533") {
       appState.isPremium = true;
       appState.premiumUntil = Date.now() + 24 * 60 * 60 * 1000;
       saveState();
@@ -519,7 +507,7 @@
         if (appState.searchLogs.length >= 2) {
           const oldest = appState.searchLogs[0];
           const waitSec = Math.ceil((15000 - (now - oldest)) / 1000);
-          appendMessage("system-error", `AI検索リサーチの無料使用制限を超えました。<br>もしくは、混雑しています。<br>あと <b>${waitSec}</b> 秒程お待ちください。<br>混雑しています。😏`);
+          appendMessage("system-error", `AI検索リサーチの無料使用制限を超えました。<br>あと <b>${waitSec}</b> 秒程お待ちください。<br>混雑しています。😏`);
           return;
         }
         appState.searchLogs.push(now);
@@ -537,8 +525,8 @@
       }
     }
 
-    if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY" || (currentMode === 'search' && TAVILY_API_KEY === "YOUR_TAVILY_API_KEY")) {
-      appendMessage("system-error", "⚠️ 管理者用設定エラー: HTMLコード内の GEMINI_API_KEY または TAVILY_API_KEY が設定されていません。");
+    if (GEMINI_API_KEY.includes("YOUR_") || (currentMode === 'search' && TAVILY_API_KEY.includes("YOUR_"))) {
+      appendMessage("system-error", "⚠️ 管理者用設定エラー: HTMLコード内の GEMINI_API_KEY または TAVILY_API_KEY が書き換えられていません。");
       return;
     }
 
@@ -549,7 +537,7 @@
     appState.totalCount2h++;
     saveState();
 
-    const duration = appState.isPremium ? 5000 : 8000;
+    const duration = appState.isPremium ? 3000 : 6000;
 
     try {
       const [apiResult] = await Promise.all([
@@ -559,7 +547,7 @@
 
       appendMessage("ai", apiResult);
     } catch (err) {
-      appendMessage("system-error", "AI検索リサーチの無料使用制限を超えました。<br>もしくは、混雑しています。<br>混雑しています。😏");
+      appendMessage("system-error", `⚠️ 通信エラーが発生しました:<br>${err.message}`);
     } finally {
       document.getElementById('sendBtn').disabled = false;
     }
@@ -615,7 +603,9 @@
           max_results: 3
         })
       });
-      if (!tavilyRes.ok) throw new Error("Tavily Error");
+      if (!tavilyRes.ok) {
+        throw new Error(`Tavily APIエラー (ステータス: ${tavilyRes.status}) - APIキーが正しくない可能性があります`);
+      }
       const tavilyData = await tavilyRes.json();
       contextText = "【検索結果】\n" + tavilyData.results.map(r => `・${r.title}: ${r.content}`).join("\n") + "\n\n上記情報を元に回答してください。";
     }
@@ -629,7 +619,11 @@
       })
     });
 
-    if (!geminiRes.ok) throw new Error("Gemini Error");
+    if (!geminiRes.ok) {
+      const errData = await geminiRes.json().catch(() => ({}));
+      throw new Error(`Gemini APIエラー (ステータス: ${geminiRes.status}) - ${errData.error?.message || 'キーが無効です'}`);
+    }
+
     const geminiData = await geminiRes.json();
     return geminiData.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
   }
