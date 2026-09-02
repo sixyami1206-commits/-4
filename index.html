@@ -364,8 +364,8 @@
   // ==========================================
   // 【管理者設定エリア】
   // ==========================================
-  const GEMINI_API_KEY = "AQ.Ab8RN6ImEPHFdaL5SuA2qbtqswvhOgDWx7Ra43gBEktHETPIdg"; // 👈 ここにGemini APIキーを記述
-  const TAVILY_API_KEY = "Https://mcp.tavily.com/mcp/?tavilyApiKey=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"; // 👈 ここにTavily APIキーを記述
+  const GEMINI_API_KEY = "AQ.Ab8RN6K5rmSLgMjX6CdXiDn2TgFEKiAGl9UvPMD43i61N--2Og";
+  const TAVILY_API_KEY = "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";
 
   // ==========================================
   // ローカルストレージ＆状態管理
@@ -525,11 +525,6 @@
       }
     }
 
-    if (GEMINI_API_KEY.includes("YOUR_") || (currentMode === 'search' && TAVILY_API_KEY.includes("YOUR_"))) {
-      appendMessage("system-error", "⚠️ 管理者用設定エラー: HTMLコード内の GEMINI_API_KEY または TAVILY_API_KEY が書き換えられていません。");
-      return;
-    }
-
     appendMessage("user", query);
     inputEl.value = '';
     document.getElementById('sendBtn').disabled = true;
@@ -593,27 +588,53 @@
     let contextText = "";
 
     if (currentMode === 'search') {
-      const tavilyRes = await fetch('https://api.tavily.com/search', {
+      // Tavily MCPプロトコル（tvly-dev-キー専用エンドポイント）呼び出し
+      const mcpUrl = `https://mcp.tavily.com/mcp/?tavilyApiKey=${encodeURIComponent(TAVILY_API_KEY)}`;
+      
+      const mcpRequestBody = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "tools/call",
+        params: {
+          name: "tavily_search",
+          arguments: {
+            query: query,
+            search_depth: "basic",
+            max_results: 3
+          }
+        }
+      };
+
+      const tavilyRes = await fetch(mcpUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          api_key: TAVILY_API_KEY,
-          query: query,
-          search_depth: "basic",
-          max_results: 3
-        })
+        body: JSON.stringify(mcpRequestBody)
       });
+
       if (!tavilyRes.ok) {
-        throw new Error(`Tavily APIエラー (ステータス: ${tavilyRes.status}) - APIキーが正しくない可能性があります`);
+        const errJson = await tavilyRes.json().catch(() => ({}));
+        throw new Error(`Tavily MCP エラー (ステータス: ${tavilyRes.status})`);
       }
+
       const tavilyData = await tavilyRes.json();
-      contextText = "【検索結果】\n" + tavilyData.results.map(r => `・${r.title}: ${r.content}`).join("\n") + "\n\n上記情報を元に回答してください。";
+      
+      if (tavilyData.result && tavilyData.result.content) {
+        const textContent = tavilyData.result.content.map(c => c.text || "").join("\n");
+        contextText = "【検索結果】\n" + textContent + "\n\n上記情報を元に回答してください。";
+      } else if (tavilyData.error) {
+        throw new Error(`Tavily MCPエラー: ${tavilyData.error.message}`);
+      }
     }
 
     const prompt = contextText ? `${contextText}\n\n質問: ${query}` : query;
-    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+
+    // Gemini API（AQ.キー対応 X-goog-api-key ヘッダー認証）
+    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-goog-api-key': GEMINI_API_KEY
+      },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }]
       })
@@ -621,7 +642,7 @@
 
     if (!geminiRes.ok) {
       const errData = await geminiRes.json().catch(() => ({}));
-      throw new Error(`Gemini APIエラー (ステータス: ${geminiRes.status}) - ${errData.error?.message || 'キーが無効です'}`);
+      throw new Error(`Gemini APIエラー (ステータス: ${geminiRes.status}) - ${errData.error?.message || 'キー認証エラー'}`);
     }
 
     const geminiData = await geminiRes.json();
