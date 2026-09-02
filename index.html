@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Local AI Chat</title>
+  <title>ローカルChatGPT-FREE</title>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -14,23 +14,67 @@
       --border-color: #334155;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
 
     body {
       background-color: var(--bg-color);
       color: var(--text-main);
       display: flex;
-      flex-direction: column;
-      height: 100vh;
+      justify-content: center;
       align-items: center;
+      height: 100vh;
       padding: 15px;
     }
 
+    /* インストール画面 */
+    .install-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .install-card {
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      width: 100%;
+      max-width: 450px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 12px;
+      background: #334155;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      transition: width 0.2s ease;
+    }
+
+    .install-info {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      word-break: break-all;
+    }
+
+    /* チャット画面 */
     .chat-container {
       width: 100%;
       max-width: 600px;
@@ -47,24 +91,10 @@
       padding: 15px 20px;
       background: #0f172a;
       border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .title {
       font-weight: bold;
       color: var(--accent-color);
-    }
-
-    .status-text {
-      font-size: 0.8rem;
-      color: var(--accent-color);
-      max-width: 250px;
-      text-align: right;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      display: flex;
+      justify-content: space-between;
     }
 
     .chat-area {
@@ -85,17 +115,8 @@
       word-break: break-word;
     }
 
-    .message.user {
-      align-self: flex-end;
-      background: #0284c7;
-      color: white;
-    }
-
-    .message.ai {
-      align-self: flex-start;
-      background: #334155;
-      color: var(--text-main);
-    }
+    .message.user { align-self: flex-end; background: #0284c7; color: white; }
+    .message.ai { align-self: flex-start; background: #334155; color: var(--text-main); }
 
     .input-area {
       padding: 15px;
@@ -106,120 +127,110 @@
     }
 
     input[type="text"] {
-      flex: 1;
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 12px 16px;
-      color: white;
-      font-size: 1rem;
-      outline: none;
+      flex: 1; background: var(--card-bg); border: 1px solid var(--border-color);
+      border-radius: 8px; padding: 12px 16px; color: white; outline: none;
     }
 
     button {
-      background: var(--accent-color);
-      color: #0f172a;
-      border: none;
-      font-weight: bold;
-      padding: 0 20px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      background: #475569;
-      cursor: not-allowed;
+      background: var(--accent-color); color: #0f172a; border: none;
+      font-weight: bold; padding: 0 20px; border-radius: 8px; cursor: pointer;
     }
   </style>
 </head>
 <body>
 
+<!-- インストール画面 -->
+<div class="install-modal" id="installModal">
+  <div class="install-card">
+    <h2>🤖 ローカルChatGPT-FREE</h2>
+    <p class="install-info" id="statusLabel" style="font-weight: bold; color: var(--accent-color);">初期化中...</p>
+    
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+
+    <div class="install-info" id="detailLabel">AIモデルデータをブラウザにセットアップ中...</div>
+  </div>
+</div>
+
+<!-- メインチャット画面 -->
 <div class="chat-container">
   <header>
-    <div class="title">🤖 本格ローカルAI</div>
-    <div class="status-text" id="statusText">初期化中...</div>
+    <span>🤖 ローカルChatGPT-FREE</span>
+    <span id="deviceMode" style="font-size: 0.75rem; color: var(--text-muted);"></span>
   </header>
-
   <div class="chat-area" id="chatArea">
-    <div class="message ai" id="initMessage">
-      初回のみAIモデルデータ（約1.5GB）をブラウザにダウンロードします。<br>
-      準備完了までそのまま数分お待ちください...📦
-    </div>
+    <div class="message ai">準備完了！何でも話しかけてね！✨</div>
   </div>
-
   <div class="input-area">
-    <input type="text" id="userInput" placeholder="AIの準備完了までお待ちください..." disabled onkeypress="handleKeyPress(event)">
-    <button id="sendBtn" disabled onclick="handleSend()">送信</button>
+    <input type="text" id="userInput" placeholder="メッセージを入力..." onkeypress="handleKeyPress(event)">
+    <button onclick="handleSend()">送信</button>
   </div>
 </div>
 
 <script type="module">
   import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
-  // 日本語の会話精度が非常に高い「Qwen2.5-1.5B」モデルを採用
-  const selectedModel = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
-  let engine;
+  // スマホ判定（画面幅またはユーザーエージェント）
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+  
+  // スマホなら軽量版(0.5B: 約400MB)、PCなら高精度版(1.5B: 約1.5GB)
+  const selectedModel = isMobile 
+    ? "Qwen2.5-0.5B-Instruct-q4f16_1-MLC" 
+    : "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
 
-  const statusText = document.getElementById("statusText");
-  const userInput = document.getElementById("userInput");
-  const sendBtn = document.getElementById("sendBtn");
-  const initMessage = document.getElementById("initMessage");
+  document.getElementById("deviceMode").textContent = isMobile ? "📱 スマホ軽量モード" : "💻 PC高精度モード";
+
+  let engine;
+  const installModal = document.getElementById("installModal");
+  const statusLabel = document.getElementById("statusLabel");
+  const detailLabel = document.getElementById("detailLabel");
+  const progressFill = document.getElementById("progressFill");
 
   let messages = [
-    { role: "system", content: "あなたはとても親切で頭の良いAIアシスタントです。自然で正しい日本語で会話してください。" }
+    { role: "system", content: "あなたは親切なAIアシスタントです。日本語で答えてください。" }
   ];
 
   window.addEventListener("DOMContentLoaded", async () => {
     try {
       engine = await webllm.CreateMLCEngine(selectedModel, {
         initProgressCallback: (report) => {
-          statusText.textContent = report.text;
+          const progress = Math.floor(report.progress * 100);
+          progressFill.style.width = `${progress}%`;
+          statusLabel.textContent = `インストール中... ${progress}%`;
+          detailLabel.textContent = report.text;
         }
       });
 
-      statusText.textContent = "🟢 準備完了";
-      initMessage.textContent = "読み込み完了！ちゃんと会話できるようになりました！何でも聞いてね✨";
-      userInput.placeholder = "メッセージを入力...";
-      userInput.disabled = false;
-      sendBtn.disabled = false;
+      // 完了したらモーダルを非表示
+      installModal.style.display = "none";
     } catch (err) {
-      statusText.textContent = "❌ エラー";
-      initMessage.textContent = "お使いのブラウザ（または端末のメモリ）が不足しているか、WebGPUに対応していない可能性があります。Chrome等の最新版でお試しください。";
+      statusLabel.textContent = "❌ エラーが発生しました";
+      detailLabel.textContent = "お使いのスマホのブラウザがWebGPU非対応か、メモリ不足の可能性があります。Chrome等の最新版でお試しください。";
     }
   });
 
   window.handleSend = async function() {
+    const userInput = document.getElementById("userInput");
     const text = userInput.value.trim();
     if (!text || !engine) return;
 
     appendMessage("user", text);
     messages.push({ role: "user", content: text });
     userInput.value = "";
-    userInput.disabled = true;
-    sendBtn.disabled = true;
 
     const aiMsgDiv = appendMessage("ai", "思考中...");
 
     try {
-      const chunks = await engine.chat.completions.create({
-        messages,
-        stream: true
-      });
-
+      const chunks = await engine.chat.completions.create({ messages, stream: true });
       let replyText = "";
       for await (const chunk of chunks) {
-        const content = chunk.choices[0]?.delta?.content || "";
-        replyText += content;
+        replyText += chunk.choices[0]?.delta?.content || "";
         aiMsgDiv.textContent = replyText;
       }
-
       messages.push({ role: "assistant", content: replyText });
     } catch (e) {
       aiMsgDiv.textContent = "エラーが発生しました。";
-    } finally {
-      userInput.disabled = false;
-      sendBtn.disabled = false;
-      userInput.focus();
     }
   };
 
