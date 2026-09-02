@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Local WebAI Chat</title>
+  <title>Smart Local AI Chat</title>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -60,6 +60,11 @@
     .status-text {
       font-size: 0.8rem;
       color: var(--accent-color);
+      max-width: 250px;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .chat-area {
@@ -131,28 +136,28 @@
 
 <div class="chat-container">
   <header>
-    <div class="title">💬 ローカルAIチャット</div>
-    <div class="status-text" id="statusText">準備中...</div>
+    <div class="title">🤖 本格ローカルAI</div>
+    <div class="status-text" id="statusText">初期化中...</div>
   </header>
 
   <div class="chat-area" id="chatArea">
     <div class="message ai" id="initMessage">
-      初回読み込み時にブラウザ内でAIを準備します。少々お待ちください...✨
+      初回のみAIモデルデータ（約1.5GB）をブラウザにダウンロードします。<br>
+      準備完了までそのまま数分お待ちください...📦
     </div>
   </div>
 
   <div class="input-area">
-    <input type="text" id="userInput" placeholder="AIの準備完了までお待ちください" disabled onkeypress="handleKeyPress(event)">
+    <input type="text" id="userInput" placeholder="AIの準備完了までお待ちください..." disabled onkeypress="handleKeyPress(event)">
     <button id="sendBtn" disabled onclick="handleSend()">送信</button>
   </div>
 </div>
 
-<!-- WebLLM ライブラリの読み込み -->
 <script type="module">
   import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
-  // 超軽量・高速なAIモデル（SmolLM2）を指定
-  const selectedModel = "SmolLM2-360M-Instruct-q4f16_1-MLC";
+  // 日本語の会話精度が非常に高い「Qwen2.5-1.5B」モデルを採用
+  const selectedModel = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
   let engine;
 
   const statusText = document.getElementById("statusText");
@@ -161,26 +166,25 @@
   const initMessage = document.getElementById("initMessage");
 
   let messages = [
-    { role: "system", content: "あなたはフレンドリーで親切なAIアシスタントです。日本語で答えてください。" }
+    { role: "system", content: "あなたはとても親切で頭の良いAIアシスタントです。自然で正しい日本語で会話してください。" }
   ];
 
   window.addEventListener("DOMContentLoaded", async () => {
     try {
-      // ブラウザ上でAIエンジンを初期化
       engine = await webllm.CreateMLCEngine(selectedModel, {
         initProgressCallback: (report) => {
           statusText.textContent = report.text;
         }
       });
 
-      statusText.textContent = "🟢 AI準備完了";
-      initMessage.textContent = "準備完了！何でも話しかけてね！✨";
+      statusText.textContent = "🟢 準備完了";
+      initMessage.textContent = "読み込み完了！ちゃんと会話できるようになりました！何でも聞いてね✨";
       userInput.placeholder = "メッセージを入力...";
       userInput.disabled = false;
       sendBtn.disabled = false;
     } catch (err) {
-      statusText.textContent = "❌ 初期化失敗";
-      initMessage.textContent = "お使いのブラウザ（または端末）がWebGPUに対応していない可能性があります。ChromeやEdgeの最新版でお試しください。";
+      statusText.textContent = "❌ エラー";
+      initMessage.textContent = "お使いのブラウザ（または端末のメモリ）が不足しているか、WebGPUに対応していない可能性があります。Chrome等の最新版でお試しください。";
     }
   });
 
@@ -194,7 +198,6 @@
     userInput.disabled = true;
     sendBtn.disabled = true;
 
-    // AIからの応答を生成
     const aiMsgDiv = appendMessage("ai", "思考中...");
 
     try {
