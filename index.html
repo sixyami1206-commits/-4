@@ -3,454 +3,644 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TAIYOSIM 公式サイト | 格安SIM・eSIM</title>
+  <title>AI Search Research</title>
   <style>
     :root {
-      --mineo-green: #70b428;
-      --mineo-dark-green: #59931e;
-      --navy-main: #1d2e3d;
-      --bg-gray: #f2f4f7;
-      --text-dark: #333333;
-      --border-gray: #e0e6ed;
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --accent-color: #38bdf8;
+      --accent-premium: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
     }
 
-    * { box-sizing: border-box; font-family: "Hiragino Kaku Gothic ProN", "メイリオ", sans-serif; margin: 0; padding: 0; }
-    body { background-color: var(--bg-gray); color: var(--text-dark); padding-bottom: 50px; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
 
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ヘッダー */
     header {
-      background-color: #ffffff;
-      border-bottom: 3px solid var(--mineo-green);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 15px 20px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .logo {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--accent-color);
       display: flex;
       align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: #334155;
+      color: var(--text-muted);
+    }
+
+    .badge.premium {
+      background: var(--accent-premium);
+      color: #000;
+      font-weight: bold;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      background: var(--border-color);
+      color: var(--text-main);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: #475569;
+    }
+
+    /* モード選択タブ */
+    .mode-selector {
+      display: flex;
+      gap: 10px;
+      background: var(--card-bg);
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    .mode-tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .mode-tab.active {
+      background: var(--accent-color);
+      color: #0f172a;
+    }
+
+    .mode-tab.premium-tab.active {
+      background: var(--accent-premium);
+      color: #000;
+    }
+
+    /* チャット・結果表示エリア */
+    .chat-area {
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      min-height: 380px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      overflow-y: auto;
+      max-height: 500px;
+    }
+
+    .message {
+      padding: 12px 16px;
+      border-radius: 10px;
+      max-width: 85%;
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: #0284c7;
+      color: white;
+    }
+
+    .message.ai {
+      align-self: flex-start;
+      background: #334155;
+      color: var(--text-main);
+    }
+
+    .message.system-error {
+      align-self: center;
+      background: #450a0a;
+      color: #fca5a5;
+      border: 1px solid #ef4444;
+      text-align: center;
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    /* スタイリッシュローディングバー */
+    .loading-container {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      background: #0f172a;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .loading-header {
+      display: flex;
       justify-content: space-between;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      font-size: 0.85rem;
+      color: var(--accent-color);
+      font-weight: bold;
     }
-    .brand-logo { font-size: 26px; font-weight: 900; color: var(--navy-main); letter-spacing: -1px; }
-    .brand-logo span { color: var(--mineo-green); }
-    .header-badge { background: var(--mineo-green); color: #fff; font-size: 12px; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
 
-    .main-container { max-width: 680px; margin: 25px auto; padding: 0 15px; }
-
-    .step-nav { display: flex; background: #fff; border-radius: 8px; padding: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .step-item { flex: 1; text-align: center; font-size: 11px; color: #aaa; font-weight: bold; }
-    .step-item.active { color: var(--mineo-green); }
-    .step-number { width: 22px; height: 22px; border-radius: 50%; background: #eee; color: #777; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 4px; font-size: 12px; }
-    .step-item.active .step-number { background: var(--mineo-green); color: #fff; }
-
-    .card { background: #ffffff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
-    .card-header { font-size: 18px; font-weight: bold; color: var(--navy-main); padding-bottom: 12px; border-bottom: 2px solid var(--border-gray); margin-bottom: 20px; display: flex; align-items: center; }
-    .card-header::before { content: ""; display: inline-block; width: 6px; height: 18px; background: var(--mineo-green); margin-right: 10px; border-radius: 3px; }
-
-    .form-group { margin-bottom: 20px; }
-    label { display: block; font-weight: bold; font-size: 14px; margin-bottom: 8px; color: #444; }
-    .required-tag { background: #e60012; color: #fff; font-size: 10px; padding: 2px 5px; border-radius: 3px; margin-left: 6px; }
-
-    input[type="text"], input[type="email"], input[type="password"], select {
-      width: 100%; padding: 12px 14px; border: 1px solid var(--border-gray); border-radius: 6px; font-size: 15px; background: #fdfdfd;
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #334155;
+      border-radius: 4px;
+      overflow: hidden;
     }
-    input:focus, select:focus { outline: none; border-color: var(--mineo-green); background: #fff; box-shadow: 0 0 0 3px rgba(112, 180, 40, 0.15); }
 
-    .btn-action {
-      display: block; width: 100%; background: var(--mineo-green); color: #ffffff; text-align: center; font-size: 18px; font-weight: bold; padding: 16px; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(112, 180, 40, 0.3); transition: background 0.2s;
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      transition: width 0.1s linear;
     }
-    .btn-action:hover { background: var(--mineo-dark-green); }
-    .btn-action:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
-    .btn-secondary { background: #6c757d; box-shadow: none; font-size: 14px; padding: 10px; margin-top: 8px; }
-    .btn-red { background: #e60012; box-shadow: 0 4px 10px rgba(230, 0, 18, 0.3); }
-    .btn-red:hover { background: #cc0010; }
 
-    .hidden { display: none !important; }
+    /* 入力エリア */
+    .input-area {
+      display: flex;
+      gap: 10px;
+    }
 
-    .info-box { background: #eef7e8; border: 1px solid #c2e2a3; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; color: #2e590e; }
+    input[type="text"], input[type="password"] {
+      flex: 1;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: white;
+      font-size: 1rem;
+      outline: none;
+    }
 
-    .spinner-box { text-align: center; padding: 30px 0; }
-    .loader { border: 5px solid #f3f3f3; border-top: 5px solid var(--mineo-green); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    input[type="text"]:focus, input[type="password"]:focus {
+      border-color: var(--accent-color);
+    }
 
-    .status-card { background: #f8fafc; border: 2px solid var(--mineo-green); border-radius: 10px; padding: 20px; text-align: center; margin-top: 15px; }
-    .status-title { font-size: 14px; color: #666; }
-    .status-value { font-size: 22px; font-weight: bold; color: var(--mineo-green); margin: 8px 0; }
-    .status-desc { font-size: 13px; color: #555; line-height: 1.6; text-align: left; background: #fff; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-top: 10px; }
+    .send-btn {
+      background: var(--accent-color);
+      color: #0f172a;
+      font-weight: bold;
+      padding: 0 24px;
+      border-radius: 8px;
+    }
+
+    .send-btn:disabled {
+      background: #475569;
+      cursor: not-allowed;
+    }
+
+    /* モーダル */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.75);
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 480px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .modal-content h3 {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+      color: var(--accent-color);
+    }
+
+    .modal-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .modal-field label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .stat-box {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="brand-logo">TAIYO<span>SIM</span></div>
-  <div class="header-badge">お申し込みWeb手続き</div>
-</header>
+<div class="container">
+  <!-- ヘッダー -->
+  <header>
+    <div class="logo">
+      🔍 AI検索リサーチ
+      <span id="userBadge" class="badge">FREE</span>
+    </div>
+    <div class="header-actions">
+      <button onclick="openModal('statusModal')">📊 ステータス</button>
+      <button onclick="openModal('premiumModal')">👑 プレミアム解除</button>
+    </div>
+  </header>
 
-<div class="main-container">
-
-  <div class="step-nav">
-    <div class="step-item active" id="snav-1"><div class="step-number">1</div><br>プラン</div>
-    <div class="step-item" id="snav-2"><div class="step-number">2</div><br>認証</div>
-    <div class="step-item" id="snav-3"><div class="step-number">3</div><br>情報入力</div>
-    <div class="step-item" id="snav-4"><div class="step-number">4</div><br>確認</div>
-    <div class="step-item" id="snav-5"><div class="step-number">5</div><br>審査</div>
+  <!-- モード選択 -->
+  <div class="mode-selector">
+    <div id="tabSearch" class="mode-tab active" onclick="switchMode('search')">🌐 AI検索リサーチ</div>
+    <div id="tabChat" class="mode-tab premium-tab" onclick="switchMode('chat')">💬 会話モード 🔒</div>
   </div>
 
-  <!-- ステップ 1: プラン選択 -->
-  <div id="step-1" class="card">
-    <div class="card-header">お申し込みプランの選択</div>
-
-    <div class="form-group">
-      <label>ご契約プラン<span class="required-tag">必須</span></label>
-      <select id="plan" onchange="togglePlanOptions()">
-        <option value="半年契約 3GB (3,900円)">半年契約 3GB (3,900円)</option>
-        <option value="プリペイド 6ヶ月 10GB (2,300円)">プリペイド 6ヶ月 10GB (2,300円)</option>
-        <option value="プリペイド 1年 20GB (2,800円)">プリペイド 1年 20GB (2,800円)</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>回線キャリア<span class="required-tag">必須</span></label>
-      <select id="carrier">
-        <option value="ソフトバンク">ソフトバンク</option>
-        <option value="docomo">docomo</option>
-        <option value="楽天">楽天</option>
-        <option value="IIJmio" id="opt-iij">IIJmio</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>SIMタイプ<span class="required-tag">必須</span></label>
-      <select id="sim_type">
-        <option value="通常SIM">通常SIM</option>
-        <option value="eSIM">eSIM (+100円)</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>オプション選択</label>
-      <div style="background:#f9f9f9; padding:12px; border-radius:6px; border:1px solid #eee;">
-        <label style="font-weight:normal; cursor:pointer;">
-          <input type="checkbox" id="opt_call" style="width:auto; margin-right:8px;">
-          専用アプリ追加で電話放題（海外番号） (+1,000円)
-        </label>
-      </div>
-    </div>
-
-    <button class="btn-action" onclick="goStep(2)">次へ進む</button>
-  </div>
-
-  <!-- ステップ 2: 本人認証 -->
-  <div id="step-2" class="card hidden">
-    <div class="card-header">お客様情報 ＆ メール認証</div>
-
-    <div class="form-group">
-      <label>お名前（全角漢字・カタカナ）<span class="required-tag">必須</span></label>
-      <input type="text" id="user_name" placeholder="例：太陽 太郎">
-    </div>
-
-    <div class="form-group">
-      <label>メールアドレス<span class="required-tag">必須</span></label>
-      <input type="email" id="user_email" placeholder="例：example@taiyosim.jp">
-    </div>
-
-    <button class="btn-action btn-secondary" id="btn-send-code" onclick="sendAuthCode()">4桁の認証コードを送信する</button>
-
-    <div id="auth-code-box" class="hidden" style="margin-top:20px;">
-      <div class="info-box">
-        ご指定のメールアドレスに4桁の認証コードを送信しました。メールをご確認の上、入力してください。
-      </div>
-
-      <div class="form-group">
-        <label>認証コード (4桁)</label>
-        <input type="text" id="input_auth_code" placeholder="4桁のコードを入力" maxlength="4">
-      </div>
-
-      <button class="btn-action" onclick="verifyCode()">認証して次へ進む</button>
+  <!-- チャット・ログ表示エリア -->
+  <div class="chat-area" id="chatArea">
+    <div class="message ai">
+      こんにちは！AI検索リサーチへようこそ。知りたいキーワードを入力して検索してください。
     </div>
   </div>
 
-  <!-- ステップ 3: 配送＆決済情報 -->
-  <div id="step-3" class="card hidden">
-    <div class="card-header">配送先・お支払い情報</div>
-
-    <div id="shipping-box" class="form-group">
-      <label>郵便番号 (7桁・ハイフンなし)<span class="required-tag">必須</span></label>
-      <input type="text" id="postal_code" placeholder="1234567" maxlength="7">
-
-      <label style="margin-top:12px;">ご住所<span class="required-tag">必須</span></label>
-      <input type="text" id="address" placeholder="例：神奈川県横浜市磯子区...">
+  <!-- スタイリッシュローディング表示 -->
+  <div class="loading-container" id="loadingContainer">
+    <div class="loading-header">
+      <span id="loadingStep">読み込み中...</span>
+      <span id="loadingPercent">0%</span>
     </div>
-
-    <div class="form-group">
-      <label>お支払い方法<span class="required-tag">必須</span></label>
-      <select id="pay_method" onchange="togglePayMethod()">
-        <option value="クレジットカード">クレジットカード払い</option>
-        <option value="現金前払い">現金前払い</option>
-        <option value="後払い">後払い</option>
-      </select>
-    </div>
-
-    <div id="card-info" style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
-      <div class="form-group">
-        <label>クレジットカード番号</label>
-        <input type="text" id="card_num" placeholder="4534 0000 0000 0000">
-      </div>
-      <div class="form-group" style="margin-bottom:0;">
-        <label>セキュリティコード (CVV)</label>
-        <input type="password" id="card_cvv" placeholder="123" maxlength="4" style="width:120px;">
-      </div>
-    </div>
-
-    <button class="btn-action" onclick="goStep4()">最終確認へ進む</button>
-  </div>
-
-  <!-- ステップ 4: 最終確認 -->
-  <div id="step-4" class="card hidden">
-    <div class="card-header">お申し込み内容の最終確認</div>
-
-    <div id="summary-content" style="font-size:14px; line-height:1.8; margin-bottom:20px;"></div>
-
-    <button class="btn-action btn-red" onclick="submitOrder()">注文を確定する</button>
-  </div>
-
-  <!-- ステップ 5: 自動審査中・完了 -->
-  <div id="step-5" class="card hidden">
-    <div class="card-header">自動審査状況</div>
-
-    <div id="security-check" class="info-box" style="text-align:center;">
-      🔒 不正利用対策暗号化通信を実行中...
-    </div>
-
-    <div id="exam-progress" class="spinner-box hidden">
-      <div class="loader"></div>
-      <p style="font-weight:bold; font-size:16px;">現在自動審査を実行中です... 🌀</p>
-      <p style="font-size:13px; color:#666; margin-top:5px;">残り時間: <span id="countdown">10</span> 秒</p>
-    </div>
-
-    <div id="result-box" class="hidden">
-      <div class="status-card">
-        <div class="status-title">審査結果・受付完了</div>
-        <div class="status-value" id="res-exam-code">審査番号: 取得中...</div>
-        
-        <div class="status-desc" id="res-status-desc">
-          <!-- スプレッドシート連動結果 -->
-        </div>
-      </div>
-
-      <button class="btn-action" style="margin-top:20px;" onclick="sendResultToEmail()">審査確認（結果をメール送信）</button>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressBarFill"></div>
     </div>
   </div>
 
+  <!-- 入力フォーム -->
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="検索キーワードまたはメッセージを入力..." onkeypress="handleKeyPress(event)">
+    <button class="send-btn" id="sendBtn" onclick="handleSend()">実行</button>
+  </div>
+</div>
+
+<!-- プレミアム有効化モーダル -->
+<div class="modal" id="premiumModal">
+  <div class="modal-content">
+    <h3>👑 プレミアム認証</h3>
+    <p style="font-size: 0.85rem; color: var(--text-muted);">
+      管理者に発行された指定コードを入力すると、プレミアム機能が24時間利用可能になります。
+    </p>
+    <div class="modal-field">
+      <label>プレミアムコード</label>
+      <input type="password" id="premiumCodeInput" placeholder="4桁のコードを入力">
+    </div>
+    <button style="background: var(--accent-premium); color:#000; font-weight:bold;" onclick="unlockPremium()">認証する</button>
+    <button onclick="closeModal('premiumModal')">閉じる</button>
+  </div>
+</div>
+
+<!-- ステータスモーダル -->
+<div class="modal" id="statusModal">
+  <div class="modal-content">
+    <h3>📊 使用状況＆メモリ情報</h3>
+    <div class="stat-box" id="statusContent">
+      読み込み中...
+    </div>
+    <button onclick="closeModal('statusModal')">閉じる</button>
+  </div>
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzH7_jtco0jcFwFQvG_Klsc3BfWp9NgNPp_55fxkBtNQQRYn1cV0-pQijTcppBtWU0WKw/exec"; 
+  // ==========================================
+  // 【管理者設定エリア】
+  // ==========================================
+  const GEMINI_API_KEY = "AQ.Ab8RN6ImEPHFdaL5SuA2qbtqswvhOgDWx7Ra43gBEktHETPIdg"; // 👈 ここにGemini APIキーを記述
+  const TAVILY_API_KEY = "Https://mcp.tavily.com/mcp/?tavilyApiKey=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"; // 👈 ここにTavily APIキーを記述
 
-  function updateNav(step) {
-    for (let i = 1; i <= 5; i++) {
-      const navItem = document.getElementById(`snav-${i}`);
-      if (i <= step) {
-        navItem.classList.add('active');
-      } else {
-        navItem.classList.remove('active');
-      }
+  // 「5533」のSHA-256ハッシュ値（コード上に「5533」を直接書かずに隠蔽）
+  const PREMIUM_HASH = "8ff0de0057ff282362b9a73e51241f8796841261314ff94e09f58a7be7c39063";
+
+  // SHA-256計算関数
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // ==========================================
+  // ローカルストレージ＆状態管理
+  // ==========================================
+  let appState = JSON.parse(localStorage.getItem('ai_search_state')) || {
+    isPremium: false,
+    premiumUntil: 0,
+    searchLogs: [],
+    chatLogs: [],
+    totalCount2h: 0,
+    resetTime2h: Date.now() + 2 * 60 * 60 * 1000,
+    isLocked: false
+  };
+
+  let currentMode = 'search';
+
+  window.onload = () => {
+    check2HourReset();
+    checkPremiumExpiry();
+    updateUI();
+  };
+
+  function saveState() {
+    localStorage.setItem('ai_search_state', JSON.stringify(appState));
+  }
+
+  function check2HourReset() {
+    const now = Date.now();
+    if (now > appState.resetTime2h) {
+      appState.totalCount2h = 0;
+      appState.isLocked = false;
+      appState.resetTime2h = now + 2 * 60 * 60 * 1000;
+      saveState();
     }
   }
 
-  function goStep(step) {
-    document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
-    document.getElementById(`step-${step}`).classList.remove('hidden');
-    updateNav(step);
-    saveToLocal();
+  function checkPremiumExpiry() {
+    if (appState.isPremium && Date.now() > appState.premiumUntil) {
+      appState.isPremium = false;
+      saveState();
+      alert("プレミアムの24時間有効期限が切れました。");
+    }
   }
 
-  function togglePlanOptions() {
-    const plan = document.getElementById('plan').value;
-    const optIij = document.getElementById('opt-iij');
-    if (plan.includes('1年')) {
-      optIij.style.display = 'none';
-      if(document.getElementById('carrier').value === 'IIJmio') {
-        document.getElementById('carrier').value = 'ソフトバンク';
-      }
+  function updateUI() {
+    const badge = document.getElementById('userBadge');
+    const tabChat = document.getElementById('tabChat');
+
+    if (appState.isPremium) {
+      badge.textContent = "PREMIUM";
+      badge.classList.add('premium');
+      tabChat.textContent = "💬 会話モード 🔥";
     } else {
-      optIij.style.display = 'block';
+      badge.textContent = "FREE";
+      badge.classList.remove('premium');
+      tabChat.textContent = "💬 会話モード 🔒";
     }
   }
 
-  function saveToLocal() {
-    const data = {
-      plan: document.getElementById('plan').value,
-      carrier: document.getElementById('carrier').value,
-      sim_type: document.getElementById('sim_type').value,
-      opt_call: document.getElementById('opt_call').checked,
-      name: document.getElementById('user_name').value,
-      email: document.getElementById('user_email').value,
-      postal_code: document.getElementById('postal_code').value,
-      address: document.getElementById('address').value,
-      pay_method: document.getElementById('pay_method').value
-    };
-    localStorage.setItem('taiyosim_order', JSON.stringify(data));
+  function switchMode(mode) {
+    if (mode === 'chat' && !appState.isPremium) {
+      alert("会話モードはプレミアム限定機能です。右上の「プレミアム解除」からコードを入力してください。");
+      return;
+    }
+    currentMode = mode;
+    document.getElementById('tabSearch').classList.toggle('active', mode === 'search');
+    document.getElementById('tabChat').classList.toggle('active', mode === 'chat');
   }
 
-  function sendAuthCode() {
-    const email = document.getElementById('user_email').value;
-    if (!email) { alert('メールアドレスを入力してください'); return; }
-
-    const btn = document.getElementById('btn-send-code');
-    btn.disabled = true;
-    let timer = 10;
-
-    const interval = setInterval(() => {
-      timer--;
-      btn.innerText = `再送信まで (${timer}秒)`;
-      if (timer <= 0) {
-        clearInterval(interval);
-        btn.disabled = false;
-        btn.innerText = "認証コードを再送信";
-      }
-    }, 1000);
-
-    // GASへ認証コード送信リクエスト
-    fetch(GAS_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "sendAuthCode", email: email })
-    })
-    .then(() => {
-      document.getElementById('auth-code-box').classList.remove('hidden');
-      alert("メールアドレスに認証コードを送信しました。");
-    })
-    .catch(() => {
-      document.getElementById('auth-code-box').classList.remove('hidden');
-      alert("認証コードを送信しました。メールをご確認ください。");
-    });
+  function openModal(id) {
+    if (id === 'statusModal') {
+      renderStatus();
+    }
+    document.getElementById(id).style.display = 'flex';
   }
 
-  function verifyCode() {
-    const inputCode = document.getElementById('input_auth_code').value;
-    const name = document.getElementById('user_name').value;
-    
-    // 自動審査①: ひらがな排除チェック
-    const containsHiragana = /[\u3040-\u309F]/.test(name);
-    if(containsHiragana || !name) {
-      alert("お名前にはひらがなを入力できません。漢字またはカタカナで入力してください。");
+  function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+
+  async function unlockPremium() {
+    const inputCode = document.getElementById('premiumCodeInput').value.trim();
+    if (!inputCode) return;
+
+    const hashedInput = await sha256(inputCode);
+    if (hashedInput === PREMIUM_HASH) {
+      appState.isPremium = true;
+      appState.premiumUntil = Date.now() + 24 * 60 * 60 * 1000;
+      saveState();
+      updateUI();
+      alert("🎉 プレミアムモードが24時間有効化されました！");
+      closeModal('premiumModal');
+      document.getElementById('premiumCodeInput').value = '';
+    } else {
+      alert("プレミアムコードが正しくありません。");
+    }
+  }
+
+  function renderStatus() {
+    check2HourReset();
+    let memoryText = "非対応";
+    if (performance && performance.memory) {
+      const usedMB = (performance.memory.usedJSHeapSize / (1024 * 1024)).toFixed(2);
+      const totalMB = (performance.memory.jsHeapSizeLimit / (1024 * 1024)).toFixed(2);
+      memoryText = `${usedMB} MB / ${totalMB} MB`;
+    }
+
+    const nextReset = Math.max(0, Math.ceil((appState.resetTime2h - Date.now()) / 1000 / 60));
+
+    document.getElementById('statusContent').innerHTML = `
+      【メモリ使用量】: ${memoryText}<br>
+      【2時間内使用数】: ${appState.totalCount2h} / 100通<br>
+      【リセットまで】: 約 ${nextReset} 分<br>
+      【ロック状態】: ${appState.isLocked ? "🔒 ロック中" : "🔓 正常"}<br>
+      【ステータス】: ${appState.isPremium ? "⭐ PREMIUM (24時間有効)" : "FREE"}
+    `;
+  }
+
+  function handleKeyPress(e) {
+    if (e.key === 'Enter') handleSend();
+  }
+
+  async function handleSend() {
+    const inputEl = document.getElementById('userInput');
+    const query = inputEl.value.trim();
+    if (!query) return;
+
+    check2HourReset();
+    checkPremiumExpiry();
+
+    if (appState.isLocked || appState.totalCount2h >= 100) {
+      appState.isLocked = true;
+      saveState();
+      appendMessage("system-error", "🔒 2時間の利用上限（100通）に達したためロック中です。時間が経つと自動解除されます。");
       return;
     }
 
-    if (inputCode.length === 4) {
-      const simType = document.getElementById('sim_type').value;
-      if (simType === 'eSIM') {
-        document.getElementById('shipping-box').classList.add('hidden');
-      } else {
-        document.getElementById('shipping-box').classList.remove('hidden');
-      }
-      goStep(3);
-    } else {
-      alert("4桁の認証コードを入力してください。");
-    }
-  }
-
-  function togglePayMethod() {
-    const method = document.getElementById('pay_method').value;
-    document.getElementById('card-info').style.display = (method === 'クレジットカード') ? 'block' : 'none';
-  }
-
-  function goStep4() {
-    const simType = document.getElementById('sim_type').value;
-    const postal = document.getElementById('postal_code').value;
-
-    // 自動審査①: 郵便番号7桁チェック
-    if (simType === '通常SIM') {
-      if (postal.length !== 7 || isNaN(postal)) {
-        alert("郵便番号は7桁の数字で入力してください。");
-        return;
-      }
-    }
-
-    saveToLocal();
-    const data = JSON.parse(localStorage.getItem('taiyosim_order'));
-    
-    let html = `
-      <p><strong>■ お名前：</strong> ${data.name}</p>
-      <p><strong>■ メールアドレス：</strong> ${data.email}</p>
-      <p><strong>■ 選択プラン：</strong> ${data.plan}</p>
-      <p><strong>■ 利用回線：</strong> ${data.carrier}</p>
-      <p><strong>■ SIM種別：</strong> ${data.sim_type}</p>
-      <p><strong>■ 電話放題：</strong> ${data.opt_call ? 'あり (+1,000円)' : 'なし'}</p>
-      <p><strong>■ 配送先郵便番号：</strong> ${data.sim_type === '通常SIM' ? data.postal_code : '（eSIMのため不要）'}</p>
-      <p><strong>■ お支払い方法：</strong> ${data.pay_method}</p>
-    `;
-    document.getElementById('summary-content').innerHTML = html;
-    goStep(4);
-  }
-
-  function submitOrder() {
-    goStep(5);
-
-    // 不正利用対策暗号化中
-    setTimeout(() => {
-      document.getElementById('security-check').innerText = "不正利用対策暗号化中が完了しました。";
-      document.getElementById('exam-progress').classList.remove('hidden');
-
-      let timeLeft = 10;
-      const countdownElem = document.getElementById('countdown');
-
-      // 10秒間の自動審査処理
-      const timer = setInterval(() => {
-        timeLeft--;
-        countdownElem.innerText = timeLeft;
-
-        if (timeLeft <= 0) {
-          clearInterval(timer);
-          document.getElementById('exam-progress').classList.add('hidden');
-
-          // GASへスプレッドシートのA欄（コード）取得＆B欄空きチェックリクエスト
-          fetch(GAS_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "getExamCode" })
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.status === "success") {
-              showExamResult(data.examCode);
-            } else {
-              document.getElementById('result-box').classList.remove('hidden');
-              document.getElementById('res-exam-code').innerText = "審査番号不取得";
-              document.getElementById('res-status-desc').innerText = "現在空きコードが存在しません。空き次第即反映となります。";
-            }
-          })
-          .catch(() => {
-            document.getElementById('result-box').classList.remove('hidden');
-            document.getElementById('res-exam-code').innerText = "審査番号不取得";
-            document.getElementById('res-status-desc').innerText = "スプレッドシートの空きコード確認に失敗しました。";
-          });
+    const now = Date.now();
+    if (!appState.isPremium) {
+      if (currentMode === 'search') {
+        appState.searchLogs = appState.searchLogs.filter(t => now - t < 15000);
+        if (appState.searchLogs.length >= 2) {
+          const oldest = appState.searchLogs[0];
+          const waitSec = Math.ceil((15000 - (now - oldest)) / 1000);
+          appendMessage("system-error", `AI検索リサーチの無料使用制限を超えました。<br>もしくは、混雑しています。<br>あと <b>${waitSec}</b> 秒程お待ちください。<br>混雑しています。😏`);
+          return;
         }
-      }, 1000);
-
-    }, 1500);
-  }
-
-  function showExamResult(examCode) {
-    const data = JSON.parse(localStorage.getItem('taiyosim_order'));
-    document.getElementById('result-box').classList.remove('hidden');
-    document.getElementById('res-exam-code').innerText = `審査番号: ${examCode}`;
-
-    const simType = data.sim_type;
-    let message = "";
-
-    if (simType === 'eSIM') {
-      message = "<strong>【4★ 審査完了】</strong><br>お客様のお申込に誠に感謝致します。<br>無事審査通過致しましたので、eSIMのお客様は2日以内にメールに送信致します。";
+        appState.searchLogs.push(now);
+      }
     } else {
-      message = "<strong>【4★ 審査完了】</strong><br>お客様のお申込に誠に感謝致します。<br>無事審査通過致しましたので、SIMカードの方は5日以内の郵送と致します。";
+      if (currentMode === 'chat') {
+        appState.chatLogs = appState.chatLogs.filter(t => now - t < 60000);
+        if (appState.chatLogs.length >= 3) {
+          const oldest = appState.chatLogs[0];
+          const waitSec = Math.ceil((60000 - (now - oldest)) / 1000);
+          appendMessage("system-error", `プレミアム通信制限中です。あと <b>${waitSec}</b> 秒お待ちください。`);
+          return;
+        }
+        appState.chatLogs.push(now);
+      }
     }
 
-    document.getElementById('res-status-desc').innerHTML = message;
+    if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY" || (currentMode === 'search' && TAVILY_API_KEY === "YOUR_TAVILY_API_KEY")) {
+      appendMessage("system-error", "⚠️ 管理者用設定エラー: HTMLコード内の GEMINI_API_KEY または TAVILY_API_KEY が設定されていません。");
+      return;
+    }
+
+    appendMessage("user", query);
+    inputEl.value = '';
+    document.getElementById('sendBtn').disabled = true;
+
+    appState.totalCount2h++;
+    saveState();
+
+    const duration = appState.isPremium ? 5000 : 8000;
+
+    try {
+      const [apiResult] = await Promise.all([
+        fetchAIResponse(query),
+        runLoadingAnimation(duration)
+      ]);
+
+      appendMessage("ai", apiResult);
+    } catch (err) {
+      appendMessage("system-error", "AI検索リサーチの無料使用制限を超えました。<br>もしくは、混雑しています。<br>混雑しています。😏");
+    } finally {
+      document.getElementById('sendBtn').disabled = false;
+    }
   }
 
-  function sendResultToEmail() {
-    const data = JSON.parse(localStorage.getItem('taiyosim_order'));
-    fetch(GAS_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "sendResultEmail", email: data.email, status: "4★" })
-    })
-    .then(() => {
-      alert("審査確認結果をメールアドレスに送信いたしました！");
+  function runLoadingAnimation(totalMs) {
+    return new Promise(resolve => {
+      const container = document.getElementById('loadingContainer');
+      const fill = document.getElementById('progressBarFill');
+      const stepTxt = document.getElementById('loadingStep');
+      const percentTxt = document.getElementById('loadingPercent');
+
+      container.style.display = 'flex';
+      const startTime = Date.now();
+
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(100, Math.floor((elapsed / totalMs) * 100));
+
+        fill.style.width = `${progress}%`;
+        percentTxt.textContent = `${progress}%`;
+
+        if (progress < 30) {
+          stepTxt.textContent = "🔍 読み込み中...";
+        } else if (progress < 70) {
+          stepTxt.textContent = "🧠 思考中...";
+        } else {
+          stepTxt.textContent = "✍️ 回答文生成...";
+        }
+
+        if (progress >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            container.style.display = 'none';
+            resolve();
+          }, 200);
+        }
+      }, 50);
     });
+  }
+
+  async function fetchAIResponse(query) {
+    let contextText = "";
+
+    if (currentMode === 'search') {
+      const tavilyRes = await fetch('https://api.tavily.com/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key: TAVILY_API_KEY,
+          query: query,
+          search_depth: "basic",
+          max_results: 3
+        })
+      });
+      if (!tavilyRes.ok) throw new Error("Tavily Error");
+      const tavilyData = await tavilyRes.json();
+      contextText = "【検索結果】\n" + tavilyData.results.map(r => `・${r.title}: ${r.content}`).join("\n") + "\n\n上記情報を元に回答してください。";
+    }
+
+    const prompt = contextText ? `${contextText}\n\n質問: ${query}` : query;
+    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
+
+    if (!geminiRes.ok) throw new Error("Gemini Error");
+    const geminiData = await geminiRes.json();
+    return geminiData.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
+  }
+
+  function appendMessage(type, text) {
+    const chatArea = document.getElementById('chatArea');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${type}`;
+    msgDiv.innerHTML = text;
+    chatArea.appendChild(msgDiv);
+    chatArea.scrollTop = chatArea.scrollHeight;
   }
 </script>
 </body>
