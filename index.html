@@ -140,7 +140,7 @@
 
 <div class="chat-container">
   <header>
-    <div class="title">💬 AIパートナー (キー不要)</div>
+    <div class="title">💬 AIパートナー (キー完全不要)</div>
   </header>
 
   <div class="chat-area" id="chatArea">
@@ -156,8 +156,10 @@
 </div>
 
 <script>
-  // APIキー不要で使える公開フリーモデル（Hugging Face Inference API）
-  const API_URL = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-Coder-32B-Instruct";
+  // 会話履歴を保持する配列
+  let messagesHistory = [
+    { role: "system", content: "あなたは明るく親しみやすいAI友達です。日本語でフレンドリーに返答してください。" }
+  ];
 
   async function handleSend() {
     const inputEl = document.getElementById('userInput');
@@ -166,8 +168,9 @@
 
     if (!text) return;
 
-    // ユーザーメッセージを表示
+    // ユーザーメッセージを表示・履歴に追加
     appendMessage("user", text);
+    messagesHistory.push({ role: "user", content: text });
     inputEl.value = '';
     sendBtn.disabled = true;
 
@@ -179,29 +182,29 @@
     document.getElementById('chatArea').appendChild(loadingDiv);
 
     try {
-      // APIキーなしでモデルに送信
-      const response = await fetch(API_URL, {
+      // APIキー不要・CORS完全対応のPollinations AIサービスを使用
+      const response = await fetch("https://text.pollinations.ai/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          inputs: `<|im_start|>system\nあなたは明るく親しみやすいAI友達です。日本語でフレンドリーに返答してください。<|im_end|>\n<|im_start|>user\n${text}<|im_end|>\n<|im_start|>assistant\n`,
-          parameters: { max_new_tokens: 300, return_full_text: false }
+          messages: messagesHistory,
+          model: "openai"
         })
       });
 
-      const data = await response.json();
+      const replyText = await response.text();
       document.getElementById('loadingIndicator').remove();
 
-      if (data && data[0] && data[0].generated_text) {
-        let reply = data[0].generated_text.replace("<|im_end|>", "").trim();
-        appendMessage("ai", reply);
+      if (replyText) {
+        appendMessage("ai", replyText);
+        messagesHistory.push({ role: "assistant", content: replyText });
       } else {
         appendMessage("ai", "ごめんね、うまく言葉が出てこなかった！もう一回送ってみて！");
       }
 
     } catch (err) {
       document.getElementById('loadingIndicator')?.remove();
-      appendMessage("ai", "通信エラーが起きちゃったかも。少し待って試してみてね。");
+      appendMessage("ai", "通信エラーが発生しました。再読込してもう一度試してみてください！");
     } finally {
       sendBtn.disabled = false;
     }
