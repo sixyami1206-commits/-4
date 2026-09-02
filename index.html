@@ -76,16 +76,17 @@
 
     .header-actions {
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
 
     button {
       background: var(--border-color);
       color: var(--text-main);
       border: none;
-      padding: 8px 16px;
+      padding: 8px 14px;
       border-radius: 8px;
       cursor: pointer;
+      font-size: 0.85rem;
       transition: all 0.2s;
     }
 
@@ -297,8 +298,9 @@
       <span id="userBadge" class="badge">FREE</span>
     </div>
     <div class="header-actions">
+      <button onclick="openModal('apiKeyModal')">⚙️ APIキー設定</button>
       <button onclick="openModal('statusModal')">📊 ステータス</button>
-      <button onclick="openModal('premiumModal')">👑 プレミアム解除</button>
+      <button onclick="openModal('premiumModal')">👑 プレミアム</button>
     </div>
   </header>
 
@@ -311,7 +313,8 @@
   <!-- チャット・ログ表示エリア -->
   <div class="chat-area" id="chatArea">
     <div class="message ai">
-      こんにちは！AI検索リサーチへようこそ。知りたいキーワードを入力して検索してください。
+      こんにちは！AI検索リサーチへようこそ。<br>
+      ※初回利用時は右上の「⚙️ APIキー設定」からご自身の API キーを入力してください。
     </div>
   </div>
 
@@ -330,6 +333,26 @@
   <div class="input-area">
     <input type="text" id="userInput" placeholder="検索キーワードまたはメッセージを入力..." onkeypress="handleKeyPress(event)">
     <button class="send-btn" id="sendBtn" onclick="handleSend()">実行</button>
+  </div>
+</div>
+
+<!-- APIキー設定モーダル -->
+<div class="modal" id="apiKeyModal">
+  <div class="modal-content">
+    <h3>⚙️ APIキー設定</h3>
+    <p style="font-size: 0.8rem; color: var(--text-muted);">
+      キーはお使いのブラウザ内（LocalStorage）にのみ保持され、外部に送信・公開されることはありません。
+    </p>
+    <div class="modal-field">
+      <label>Gemini API キー</label>
+      <input type="password" id="inputGeminiKey" placeholder="AQ... または AIzaSy...">
+    </div>
+    <div class="modal-field">
+      <label>Tavily API キー</label>
+      <input type="password" id="inputTavilyKey" placeholder="tvly-dev-... または tvly-...">
+    </div>
+    <button style="background: var(--accent-color); color:#0f172a; font-weight:bold;" onclick="saveApiKeys()">保存する</button>
+    <button onclick="closeModal('apiKeyModal')">閉じる</button>
   </div>
 </div>
 
@@ -362,10 +385,27 @@
 
 <script>
   // ==========================================
-  // 【管理者設定エリア】
+  // APIキー管理（LocalStorage保存）
   // ==========================================
-  const GEMINI_API_KEY = "AQ.Ab8RN6K5rmSLgMjX6CdXiDn2TgFEKiAGl9UvPMD43i61N--2Og";
-  const TAVILY_API_KEY = "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";
+  let GEMINI_API_KEY = localStorage.getItem('user_gemini_key') || "";
+  let TAVILY_API_KEY = localStorage.getItem('user_tavily_key') || "";
+
+  function saveApiKeys() {
+    const gKey = document.getElementById('inputGeminiKey').value.trim();
+    const tKey = document.getElementById('inputTavilyKey').value.trim();
+
+    if (gKey) {
+      GEMINI_API_KEY = gKey;
+      localStorage.setItem('user_gemini_key', gKey);
+    }
+    if (tKey) {
+      TAVILY_API_KEY = tKey;
+      localStorage.setItem('user_tavily_key', tKey);
+    }
+
+    alert("APIキーを保存しました！");
+    closeModal('apiKeyModal');
+  }
 
   // ==========================================
   // ローカルストレージ＆状態管理
@@ -386,6 +426,15 @@
     check2HourReset();
     checkPremiumExpiry();
     updateUI();
+
+    // 既存キーがあれば入力欄にセット
+    document.getElementById('inputGeminiKey').value = GEMINI_API_KEY;
+    document.getElementById('inputTavilyKey').value = TAVILY_API_KEY;
+
+    // キーが未設定の場合はモーダルを表示
+    if (!GEMINI_API_KEY) {
+      openModal('apiKeyModal');
+    }
   };
 
   function saveState() {
@@ -427,7 +476,7 @@
 
   function switchMode(mode) {
     if (mode === 'chat' && !appState.isPremium) {
-      alert("会話モードはプレミアム限定機能です。右上の「プレミアム解除」からコード（5533）を入力してください。");
+      alert("会話モードはプレミアム限定機能です。右上の「プレミアム」からコード（5533）を入力してください。");
       return;
     }
     currentMode = mode;
@@ -473,11 +522,13 @@
     const nextReset = Math.max(0, Math.ceil((appState.resetTime2h - Date.now()) / 1000 / 60));
 
     document.getElementById('statusContent').innerHTML = `
+      【Geminiキー】: ${GEMINI_API_KEY ? '✅ 設定済み' : '❌ 未設定'}<br>
+      【Tavilyキー】: ${TAVILY_API_KEY ? '✅ 設定済み' : '❌ 未設定'}<br>
       【メモリ使用量】: ${memoryText}<br>
       【2時間内使用数】: ${appState.totalCount2h} / 100通<br>
       【リセットまで】: 約 ${nextReset} 分<br>
       【ロック状態】: ${appState.isLocked ? "🔒 ロック中" : "🔓 正常"}<br>
-      【ステータス】: ${appState.isPremium ? "⭐ PREMIUM (24時間有効)" : "FREE"}
+      【ステータス】: ${appState.isPremium ? "⭐ PREMIUM" : "FREE"}
     `;
   }
 
@@ -486,6 +537,12 @@
   }
 
   async function handleSend() {
+    if (!GEMINI_API_KEY) {
+      alert("Gemini APIキーが設定されていません。右上の「⚙️ APIキー設定」から設定してください。");
+      openModal('apiKeyModal');
+      return;
+    }
+
     const inputEl = document.getElementById('userInput');
     const query = inputEl.value.trim();
     if (!query) return;
@@ -588,53 +645,59 @@
     let contextText = "";
 
     if (currentMode === 'search') {
-      // Tavily MCPプロトコル（tvly-dev-キー専用エンドポイント）呼び出し
-      const mcpUrl = `https://mcp.tavily.com/mcp/?tavilyApiKey=${encodeURIComponent(TAVILY_API_KEY)}`;
-      
-      const mcpRequestBody = {
-        jsonrpc: "2.0",
-        id: 1,
-        method: "tools/call",
-        params: {
-          name: "tavily_search",
-          arguments: {
-            query: query,
-            search_depth: "basic",
-            max_results: 3
-          }
-        }
-      };
+      if (!TAVILY_API_KEY) {
+        throw new Error("検索モードを利用するには Tavily APIキー の設定が必要です。");
+      }
 
-      const tavilyRes = await fetch(mcpUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mcpRequestBody)
-      });
+      // tvly-dev- キー（MCP）と 通常の tvly- キーの両方に対応
+      let tavilyRes;
+      if (TAVILY_API_KEY.startsWith("tvly-dev-")) {
+        const mcpUrl = `https://mcp.tavily.com/mcp/?tavilyApiKey=${encodeURIComponent(TAVILY_API_KEY)}`;
+        tavilyRes = await fetch(mcpUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: "2.0", id: 1, method: "tools/call",
+            params: { name: "tavily_search", arguments: { query: query, search_depth: "basic", max_results: 3 } }
+          })
+        });
+      } else {
+        tavilyRes = await fetch('https://api.tavily.com/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TAVILY_API_KEY}` },
+          body: JSON.stringify({ query: query, search_depth: "basic", max_results: 3 })
+        });
+      }
 
       if (!tavilyRes.ok) {
-        const errJson = await tavilyRes.json().catch(() => ({}));
-        throw new Error(`Tavily MCP エラー (ステータス: ${tavilyRes.status})`);
+        throw new Error(`Tavily APIエラー (ステータス: ${tavilyRes.status})`);
       }
 
       const tavilyData = await tavilyRes.json();
-      
-      if (tavilyData.result && tavilyData.result.content) {
+      if (tavilyData.results) {
+        contextText = "【検索結果】\n" + tavilyData.results.map(r => `・${r.title}: ${r.content}`).join("\n") + "\n\n上記情報を元に回答してください。";
+      } else if (tavilyData.result && tavilyData.result.content) {
         const textContent = tavilyData.result.content.map(c => c.text || "").join("\n");
         contextText = "【検索結果】\n" + textContent + "\n\n上記情報を元に回答してください。";
-      } else if (tavilyData.error) {
-        throw new Error(`Tavily MCPエラー: ${tavilyData.error.message}`);
       }
     }
 
     const prompt = contextText ? `${contextText}\n\n質問: ${query}` : query;
 
-    // Gemini API（AQ.キー対応 X-goog-api-key ヘッダー認証）
-    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`, {
+    // Gemini API 呼び出し（AQ.キーヘッダー方式 / 通常キー双方対応）
+    const isAQKey = GEMINI_API_KEY.startsWith("AQ.");
+    const url = isAQKey 
+      ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`
+      : `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (isAQKey) {
+      headers['X-goog-api-key'] = GEMINI_API_KEY;
+    }
+
+    const geminiRes = await fetch(url, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-goog-api-key': GEMINI_API_KEY
-      },
+      headers: headers,
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }]
       })
