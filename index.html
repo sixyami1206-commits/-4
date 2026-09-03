@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gemini Local Web</title>
+  <title>Gemini Local Web - COOL AI</title>
   <style>
     :root {
       --bg-color: #131314;
@@ -36,11 +36,11 @@
     }
 
     header {
-      padding: 12px 16px;
+      padding: 10px 14px;
       border-bottom: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       background: #1e1f20;
     }
 
@@ -51,44 +51,59 @@
     }
 
     .logo {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: bold;
       background: linear-gradient(135deg, #7cacf8, #f87171, #fbbf24);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    .mode-tabs {
+    .model-select-box {
       display: flex;
-      gap: 6px;
-      background: #131314;
-      padding: 4px;
-      border-radius: 12px;
+      gap: 8px;
+      align-items: center;
     }
 
-    .tab-btn {
-      flex: 1;
-      padding: 8px 0;
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-size: 0.8rem;
-      font-weight: 600;
+    select.model-dropdown {
+      background: #131314;
+      color: var(--accent);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
       border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .action-btn {
+      background: #282a2c;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 14px;
+      font-size: 0.75rem;
+      white-space: nowrap;
       cursor: pointer;
     }
 
-    .tab-btn.active {
-      background: #282a2c;
-      color: var(--accent);
+    .action-btn:active {
+      background: var(--accent);
+      color: #000;
     }
 
     .status-info {
       display: flex;
       justify-content: space-between;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--muted);
-      padding: 0 4px;
+      padding: 0 2px;
     }
 
     .chat-box {
@@ -101,12 +116,13 @@
     }
 
     .msg {
-      max-width: 88%;
+      max-width: 90%;
       padding: 12px 16px;
       border-radius: 18px;
       line-height: 1.6;
       font-size: 0.95rem;
       word-break: break-word;
+      white-space: pre-wrap;
     }
 
     .msg.user {
@@ -146,7 +162,7 @@
     }
 
     .input-box {
-      padding: 12px;
+      padding: 10px 12px;
       background: var(--bg-color);
       display: flex;
       gap: 8px;
@@ -158,10 +174,10 @@
       background: #1e1f20;
       border: 1px solid var(--border);
       border-radius: 24px;
-      padding: 14px 20px;
+      padding: 12px 18px;
       color: var(--text);
       outline: none;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
 
     .send-btn {
@@ -169,8 +185,8 @@
       color: #040e15;
       border: none;
       border-radius: 50%;
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       font-weight: bold;
       cursor: pointer;
       display: flex;
@@ -182,8 +198,8 @@
       background: transparent;
       border: 1px solid var(--border);
       color: var(--muted);
-      padding: 6px 12px;
-      border-radius: 16px;
+      padding: 4px 10px;
+      border-radius: 12px;
       font-size: 0.75rem;
       cursor: pointer;
     }
@@ -195,14 +211,25 @@
   <header>
     <div class="header-top">
       <div class="logo">✨ Gemini Local</div>
-      <button class="code-btn" onclick="enterCode()">コード入力</button>
+      <div class="model-select-box">
+        <select class="model-dropdown" id="modelSelect" onchange="onModelChange()">
+          <option value="COOL_AI">⚡ COOL AI (完全無料 / コードが得意)</option>
+          <option value="FLASH">🚀 FLASH (高速応答)</option>
+          <option value="FLASH_PLUS">⚡ FLASH+ (高精度)</option>
+          <option value="PRO_AI">🧠 PRO AI (17秒高度思考)</option>
+          <option value="PRO_PLUS">🌟 PRO+ (15秒最高品質)</option>
+        </select>
+        <button class="code-btn" onclick="enterCode()">コード入力</button>
+      </div>
     </div>
 
-    <div class="mode-tabs">
-      <button class="tab-btn active" id="btn-FLASH" onclick="setMode('FLASH')">FLASH</button>
-      <button class="tab-btn" id="btn-FLASH_PLUS" onclick="setMode('FLASH_PLUS')">FLASH+</button>
-      <button class="tab-btn" id="btn-PRO_AI" onclick="setMode('PRO_AI')">PRO AI</button>
-      <button class="tab-btn" id="btn-PRO_PLUS" onclick="setMode('PRO_PLUS')">PRO+</button>
+    <!-- 機能ショートカットボタン -->
+    <div class="action-buttons">
+      <button class="action-btn" onclick="setAction('画像生成')">🖼️ 画像生成</button>
+      <button class="action-btn" onclick="setAction('コード生成')">💻 コード生成</button>
+      <button class="action-btn" onclick="setAction('雑談')">🗣️ 雑談</button>
+      <button class="action-btn" onclick="setAction('しりとり')">🎈 しりとり</button>
+      <button class="action-btn" onclick="setAction('天気')">☀️ 天気確認</button>
     </div>
 
     <div class="status-info">
@@ -213,18 +240,17 @@
 
   <div class="chat-box" id="chatBox">
     <div class="msg ai">
-      こんにちは！何でも質問してください。コード作成や「〜の画像を描いて」でイラスト生成もできます！✨
+      準備完了！モデルを選んで質問してください。「COOL AI」はコード作成に便利です！✨
     </div>
   </div>
 
   <div class="input-box">
-    <input type="text" id="userInput" placeholder="メッセージまたは「○○の画像を描いて」..." onkeypress="onKey(event)">
+    <input type="text" id="userInput" placeholder="メッセージを入力または上のボタンを選択..." onkeypress="onKey(event)">
     <button class="send-btn" onclick="sendMsg()">➤</button>
   </div>
 </div>
 
 <script>
-  let mode = "FLASH";
   let isPremium = false;
 
   function init() {
@@ -247,12 +273,6 @@
     document.getElementById("usageStatus").textContent = `使用可能: ${max - used}/${max}通`;
   }
 
-  function setMode(m) {
-    mode = m;
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-    document.getElementById(`btn-${m.replace('+', '_PLUS')}`).classList.add("active");
-  }
-
   function enterCode() {
     const c = prompt("プレミアムコードを入力:");
     if (c === "5533") {
@@ -263,10 +283,45 @@
     }
   }
 
+  function setAction(type) {
+    const input = document.getElementById("userInput");
+    if (type === '画像生成') input.value = "サイバーパンクな街並みの画像を描いて";
+    if (type === 'コード生成') input.value = "HTML/JSでボタンを押すとカウントが増えるプログラムコードを作って";
+    if (type === '雑談') input.value = "最近おもしろかったことや雑談をしよう！";
+    if (type === 'しりとり') input.value = "しりとりをしよう！「りんご」からね！";
+    if (type === '天気') input.value = "東京の明日の天気を教えて";
+    input.focus();
+  }
+
+  function onModelChange() {
+    const m = document.getElementById("modelSelect").value;
+    if (m === "COOL_AI") {
+      addMsg("system", "「COOL AI」モードが選択されました。完全無料・コード記述が爆速で実行可能です。");
+    }
+  }
+
+  async function fetchAIResponse(promptText, mode) {
+    // API経由でリアルタイム会話取得
+    const systemPrompt = (mode === "COOL_AI") 
+      ? "あなたは高度なプログラミングと一般的な会話が得意なエンジニアAIです。コードは必ずマークダウンコードブロックで記述してください。"
+      : "あなたは優秀で親切な日本語AIアシスタントです。";
+
+    const url = `https://text.pollinations.ai/${encodeURIComponent(promptText)}?model=openai&system=${encodeURIComponent(systemPrompt)}`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("API Error");
+      return await res.text();
+    } catch (e) {
+      return "一時的に応答が取得できませんでした。時間をおいて再送信してください。";
+    }
+  }
+
   async function sendMsg() {
     const input = document.getElementById("userInput");
     const txt = input.value.trim();
     if (!txt) return;
+
+    const mode = document.getElementById("modelSelect").value;
 
     let used = parseInt(localStorage.getItem("used") || "0");
     const max = isPremium ? 150 : 100;
@@ -277,12 +332,12 @@
       return;
     }
     if (mode === "PRO_PLUS" && !isPremium) {
-      addMsg("system", "PRO+ はプレミアム限定機能です。");
+      addMsg("system", "PRO+ はプレミアム限定機能です。コード「5533」を入力してください。");
       return;
     }
 
     if (used + cost > max) {
-      addMsg("system", "2時間の制限に達しました。しばらくお待ちください。");
+      addMsg("system", "2時間の制限に達しました。時間をおいてご利用ください。");
       return;
     }
 
@@ -295,7 +350,9 @@
 
     const aiDiv = addMsg("ai", "思考中...");
 
-    let delay = 800;
+    // 応答待機時間の設定
+    let delay = 600;
+    if (mode === "FLASH_PLUS") delay = 2500;
     if (mode === "PRO_AI") delay = 17000;
     if (mode === "PRO_PLUS") delay = 15000;
 
@@ -312,23 +369,31 @@
       
       // 画像生成判定
       if (txt.includes("画像") || txt.includes("描いて") || txt.includes("イラスト")) {
-        aiDiv.textContent = "画像を生成しました！";
+        aiDiv.textContent = "要求に基づいて画像を生成しました！";
         const img = document.createElement("img");
-        const promptText = encodeURIComponent(txt.replace(/(画像|描いて|イラスト|の)/g, ""));
-        img.src = `https://image.pollinations.ai/prompt/${promptText}?width=512&height=512&nologo=true`;
+        const cleanPrompt = encodeURIComponent(txt.replace(/(画像|描いて|イラスト|の|作って)/g, ""));
+        img.src = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=512&height=512&nologo=true`;
         img.className = "generated-img";
         aiDiv.appendChild(img);
         return;
       }
 
-      // コード要求判定
-      if (txt.includes("コード") || txt.includes("HTML") || txt.includes("プログラム")) {
-        aiDiv.innerHTML = `ご提示のコード例です：<pre><code>// ${txt} のサンプルプログラム\nfunction example() {\n  console.log("Hello Local AI!");\n}</code></pre>`;
-        return;
+      // 天気確認の注意書き補助
+      let finalPrompt = txt;
+      if (txt.includes("天気")) {
+        finalPrompt += " (注意: リアルタイムの最新気象情報をふまえて親切に回答してください)";
       }
 
-      // 通常会話応答
-      aiDiv.textContent = `【${mode} モード応答】\n「${txt}」についてご案内します。現在の設定でスムーズに処理されました！`;
+      // AIテキスト生成呼び出し
+      const reply = await fetchAIResponse(finalPrompt, mode);
+      
+      // マークダウンコード整形表示
+      if (reply.includes("```")) {
+        const formatted = reply.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+        aiDiv.innerHTML = formatted;
+      } else {
+        aiDiv.textContent = reply;
+      }
     }, delay);
   }
 
