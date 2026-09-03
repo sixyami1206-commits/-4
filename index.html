@@ -3,48 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ローカルChatGPT-FREE</title>
+  <title>Gemini Local Web</title>
   <style>
     :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --accent-color: #38bdf8;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border-color: #334155;
+      --bg-color: #131314;
+      --card-bg: #1e1f20;
+      --user-msg: #2b2c2e;
+      --accent: #a8c7fa;
+      --text: #e3e2e6;
+      --muted: #8e918f;
+      --border: #444746;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Google Sans', sans-serif, system-ui; }
 
     body {
       background-color: var(--bg-color);
-      color: var(--text-main);
+      color: var(--text);
       display: flex;
       justify-content: center;
-      align-items: center;
       height: 100vh;
-      padding: 10px;
+      padding: 0;
     }
 
-    .chat-container {
+    .app-container {
       width: 100%;
-      max-width: 650px;
-      height: 100%;
+      max-width: 800px;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      background: var(--card-bg);
-      border-radius: 16px;
-      border: 1px solid var(--border-color);
-      overflow: hidden;
+      background: var(--bg-color);
     }
 
     header {
-      padding: 12px 15px;
-      background: #0f172a;
-      border-bottom: 1px solid var(--border-color);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
+      background: #1e1f20;
     }
 
     .header-top {
@@ -53,272 +50,301 @@
       align-items: center;
     }
 
-    .title { font-weight: bold; color: var(--accent-color); font-size: 1.1rem; }
-
-    .mode-selector {
-      display: flex;
-      gap: 5px;
-      background: #1e293b;
-      padding: 4px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
+    .logo {
+      font-size: 1.2rem;
+      font-weight: bold;
+      background: linear-gradient(135deg, #7cacf8, #f87171, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
-    .mode-btn {
+    .mode-tabs {
+      display: flex;
+      gap: 6px;
+      background: #131314;
+      padding: 4px;
+      border-radius: 12px;
+    }
+
+    .tab-btn {
       flex: 1;
-      padding: 6px 0;
+      padding: 8px 0;
       background: transparent;
       border: none;
-      color: var(--text-muted);
-      font-size: 0.75rem;
-      font-weight: bold;
-      border-radius: 6px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 8px;
       cursor: pointer;
     }
 
-    .mode-btn.active {
-      background: var(--accent-color);
-      color: #0f172a;
+    .tab-btn.active {
+      background: #282a2c;
+      color: var(--accent);
     }
 
-    .status-bar {
-      font-size: 0.75rem;
-      color: var(--text-muted);
+    .status-info {
       display: flex;
       justify-content: space-between;
-      padding: 0 5px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      padding: 0 4px;
     }
 
-    .chat-area {
+    .chat-box {
       flex: 1;
-      padding: 15px;
+      padding: 16px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 16px;
     }
 
-    .message {
+    .msg {
+      max-width: 88%;
       padding: 12px 16px;
-      border-radius: 12px;
-      max-width: 85%;
-      line-height: 1.5;
+      border-radius: 18px;
+      line-height: 1.6;
       font-size: 0.95rem;
       word-break: break-word;
     }
 
-    .message.user { align-self: flex-end; background: #0284c7; color: white; }
-    .message.ai { align-self: flex-start; background: #334155; color: var(--text-main); }
-    .message.system-msg { align-self: center; background: #ef444422; border: 1px solid #ef4444; color: #fca5a5; font-size: 0.85rem; }
+    .msg.user {
+      align-self: flex-end;
+      background: var(--user-msg);
+      border-bottom-right-radius: 4px;
+    }
 
-    .input-area {
+    .msg.ai {
+      align-self: flex-start;
+      background: transparent;
+      padding-left: 0;
+    }
+
+    .msg.system {
+      align-self: center;
+      background: #3c1e1e;
+      color: #f87171;
+      font-size: 0.8rem;
+    }
+
+    pre {
+      background: #000;
       padding: 12px;
-      background: #0f172a;
-      border-top: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 8px 0;
+      font-family: monospace;
+      color: #38bdf8;
+    }
+
+    .generated-img {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-top: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .input-box {
+      padding: 12px;
+      background: var(--bg-color);
       display: flex;
       gap: 8px;
+      align-items: center;
     }
 
     input[type="text"] {
-      flex: 1; background: var(--card-bg); border: 1px solid var(--border-color);
-      border-radius: 8px; padding: 10px 14px; color: white; outline: none;
+      flex: 1;
+      background: #1e1f20;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 14px 20px;
+      color: var(--text);
+      outline: none;
+      font-size: 0.95rem;
     }
 
-    .code-btn, .send-btn {
-      background: var(--accent-color); color: #0f172a; border: none;
-      font-weight: bold; padding: 0 15px; border-radius: 8px; cursor: pointer;
+    .send-btn {
+      background: var(--accent);
+      color: #040e15;
+      border: none;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .code-btn { background: #475569; color: white; font-size: 0.8rem; }
+    .code-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
-<div class="chat-container">
+<div class="app-container">
   <header>
     <div class="header-top">
-      <div class="title">🤖 ローカルChatGPT-FREE</div>
-      <button class="code-btn" onclick="promptCode()">コード入力</button>
+      <div class="logo">✨ Gemini Local</div>
+      <button class="code-btn" onclick="enterCode()">コード入力</button>
     </div>
 
-    <!-- モード選択 -->
-    <div class="mode-selector">
-      <button class="mode-btn active" id="btn-FLASH" onclick="setMode('FLASH')">FLASH</button>
-      <button class="mode-btn" id="btn-FLASH_PLUS" onclick="setMode('FLASH_PLUS')">FLASH+</button>
-      <button class="mode-btn" id="btn-PRO_AI" onclick="setMode('PRO_AI')">PRO AI</button>
-      <button class="mode-btn" id="btn-PRO_PLUS" onclick="setMode('PRO_PLUS')">PRO+</button>
+    <div class="mode-tabs">
+      <button class="tab-btn active" id="btn-FLASH" onclick="setMode('FLASH')">FLASH</button>
+      <button class="tab-btn" id="btn-FLASH_PLUS" onclick="setMode('FLASH_PLUS')">FLASH+</button>
+      <button class="tab-btn" id="btn-PRO_AI" onclick="setMode('PRO_AI')">PRO AI</button>
+      <button class="tab-btn" id="btn-PRO_PLUS" onclick="setMode('PRO_PLUS')">PRO+</button>
     </div>
 
-    <div class="status-bar">
-      <span id="planLabel">プラン: 無料モード</span>
-      <span id="limitLabel">残通数: 100通 / 2時間</span>
+    <div class="status-info">
+      <span id="planStatus">無料モード</span>
+      <span id="usageStatus">残通数: 100通 / 2時間</span>
     </div>
   </header>
 
-  <div class="chat-area" id="chatArea">
-    <div class="message ai">
-      準備完了！モードを選んでメッセージを入力してください✨
+  <div class="chat-box" id="chatBox">
+    <div class="msg ai">
+      こんにちは！何でも質問してください。コード作成や「〜の画像を描いて」でイラスト生成もできます！✨
     </div>
   </div>
 
-  <div class="input-area">
-    <input type="text" id="userInput" placeholder="メッセージを入力..." onkeypress="handleKeyPress(event)">
-    <button class="send-btn" id="sendBtn" onclick="handleSend()">送信</button>
+  <div class="input-box">
+    <input type="text" id="userInput" placeholder="メッセージまたは「○○の画像を描いて」..." onkeypress="onKey(event)">
+    <button class="send-btn" onclick="sendMsg()">➤</button>
   </div>
 </div>
 
-<script type="module">
-  import * as webllm from "https://esm.run/@mlc-ai/web-llm";
-
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
-  let currentMode = "FLASH";
+<script>
+  let mode = "FLASH";
   let isPremium = false;
-  let proAiUsedCount = 0;
-  let proPlusUsedCount = 0;
-  let engine = null;
 
-  // LocalStorage初期化
-  function initStorage() {
+  function init() {
     const now = Date.now();
-    let resetTime = localStorage.getItem("resetTime");
-    
-    if (!resetTime || now > parseInt(resetTime)) {
-      localStorage.setItem("resetTime", now + 2 * 60 * 60 * 1000); // 2時間後
-      localStorage.setItem("usedCount", "0");
-      localStorage.setItem("proAiCount", "0");
-      localStorage.setItem("proPlusCount", "0");
+    let reset = localStorage.getItem("resetTime");
+    if (!reset || now > parseInt(reset)) {
+      localStorage.setItem("resetTime", now + 2 * 60 * 60 * 1000);
+      localStorage.setItem("used", "0");
+      localStorage.setItem("proAi", "0");
+      localStorage.setItem("proPlus", "0");
     }
-    
     isPremium = localStorage.getItem("isPremium") === "true";
-    updateStatusUI();
+    updateUI();
   }
 
-  function getUsedCount() { return parseInt(localStorage.getItem("usedCount") || "0"); }
-  function setUsedCount(val) { localStorage.setItem("usedCount", val.toString()); }
-
-  function updateStatusUI() {
-    const used = getUsedCount();
+  function updateUI() {
+    const used = parseInt(localStorage.getItem("used") || "0");
     const max = isPremium ? 150 : 100;
-    document.getElementById("planLabel").textContent = isPremium ? "🌟 プレミアム" : "無料モード";
-    document.getElementById("limitLabel").textContent = `使用可能: ${max - used}/${max}通`;
+    document.getElementById("planStatus").textContent = isPremium ? "🌟 プレミアム" : "無料モード";
+    document.getElementById("usageStatus").textContent = `使用可能: ${max - used}/${max}通`;
   }
 
-  window.setMode = function(mode) {
-    currentMode = mode;
-    document.querySelectorAll(".mode-btn").forEach(btn => btn.classList.remove("active"));
-    document.getElementById(`btn-${mode.replace('+', '_PLUS')}`).classList.add("active");
-  };
+  function setMode(m) {
+    mode = m;
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById(`btn-${m.replace('+', '_PLUS')}`).classList.add("active");
+  }
 
-  window.promptCode = function() {
-    const code = prompt("プレミアムコードを入力してください:");
-    if (code === "5533") {
+  function enterCode() {
+    const c = prompt("プレミアムコードを入力:");
+    if (c === "5533") {
       isPremium = true;
       localStorage.setItem("isPremium", "true");
-      alert("プレミアムモードが有効化されました！(2時間150通 / PRO+解禁)");
-      updateStatusUI();
-    } else if (code !== null) {
-      alert("コードが正しくありません。");
+      alert("プレミアムモード解放！(150通/2時間・PRO+制限解除)");
+      updateUI();
     }
-  };
-
-  // WebLLMエンジン起動 (PCの場合のみ裏で2GBモデル読み込み)
-  if (!isMobile) {
-    webllm.CreateMLCEngine("Qwen2.5-1.5B-Instruct-q4f16_1-MLC").then(e => { engine = e; });
   }
 
-  window.handleSend = async function() {
+  async function sendMsg() {
     const input = document.getElementById("userInput");
-    const text = input.value.trim();
-    if (!text) return;
+    const txt = input.value.trim();
+    if (!txt) return;
 
-    let used = getUsedCount();
-    const maxCount = isPremium ? 150 : 100;
+    let used = parseInt(localStorage.getItem("used") || "0");
+    const max = isPremium ? 150 : 100;
+    let cost = (mode === "PRO_AI") ? 3 : 1;
 
-    // 制限チェック
-    let cost = 1;
-    if (currentMode === "PRO_AI") {
-      cost = 3;
-      let pCount = parseInt(localStorage.getItem("proAiCount") || "0");
-      if (!isPremium && pCount >= 10) {
-        appendMessage("system-msg", "無料モードでのPRO AI使用上限（10回）に達しました。");
-        return;
-      }
-      localStorage.setItem("proAiCount", (pCount + 1).toString());
-    } else if (currentMode === "PRO_PLUS") {
-      if (!isPremium) {
-        appendMessage("system-msg", "PRO+ はプレミアム限定機能です。コードを入力してください。");
-        return;
-      }
-      let ppCount = parseInt(localStorage.getItem("proPlusCount") || "0");
-      if (ppCount >= 50) {
-        appendMessage("system-msg", "PRO+ の上限（50回）に達しました。");
-        return;
-      }
-      localStorage.setItem("proPlusCount", (ppCount + 1).toString());
+    if (mode === "PRO_AI" && !isPremium && parseInt(localStorage.getItem("proAi")||"0") >= 10) {
+      addMsg("system", "PRO AI の無料回数上限（10回）に達しました。");
+      return;
     }
-
-    if (used + cost > maxCount) {
-      appendMessage("system-msg", "2時間の送信上限に達しました。時間を置いてお試しください。");
+    if (mode === "PRO_PLUS" && !isPremium) {
+      addMsg("system", "PRO+ はプレミアム限定機能です。");
       return;
     }
 
-    setUsedCount(used + cost);
-    updateStatusUI();
+    if (used + cost > max) {
+      addMsg("system", "2時間の制限に達しました。しばらくお待ちください。");
+      return;
+    }
 
-    appendMessage("user", text);
+    localStorage.setItem("used", (used + cost).toString());
+    if (mode === "PRO_AI") localStorage.setItem("proAi", (parseInt(localStorage.getItem("proAi")||"0")+1).toString());
+    updateUI();
+
+    addMsg("user", txt);
     input.value = "";
 
-    const aiMsg = appendMessage("ai", "思考中...");
+    const aiDiv = addMsg("ai", "思考中...");
 
-    // モードに応じた思考タイマー演出
-    let delay = 1000;
-    if (currentMode === "PRO_AI") delay = 17000;
-    if (currentMode === "PRO_PLUS") delay = 15000;
+    let delay = 800;
+    if (mode === "PRO_AI") delay = 17000;
+    if (mode === "PRO_PLUS") delay = 15000;
 
-    let startTime = Date.now();
+    let start = Date.now();
     let timer = setInterval(() => {
-      let elapsed = Date.now() - startTime;
-      let percent = Math.min(100, Math.floor((elapsed / delay) * 100));
-      if (currentMode === "PRO_AI" || currentMode === "PRO_PLUS") {
-        aiMsg.textContent = `思考中... 回答文生成 ${percent}%`;
+      if (mode === "PRO_AI" || mode === "PRO_PLUS") {
+        let p = Math.min(100, Math.floor(((Date.now() - start) / delay) * 100));
+        aiDiv.textContent = `思考中... 回答文生成 ${p}%`;
       }
     }, 200);
 
     setTimeout(async () => {
       clearInterval(timer);
-      if (engine && !isMobile) {
-        // PC版: 本物ローカルAIで一瞬生成
-        try {
-          const res = await engine.chat.completions.create({
-            messages: [{ role: "user", content: text }]
-          });
-          aiMsg.textContent = res.choices[0].message.content;
-        } catch(e) {
-          aiMsg.textContent = "回答の生成に成功しました。（「" + text + "」に関する回答）";
-        }
-      } else {
-        // スマホ版 / フォールバック: 軽量応答
-        aiMsg.textContent = `【${currentMode} モード回答】\n「${text}」についてお答えします。非常にスムーズに処理が完了しました！`;
+      
+      // 画像生成判定
+      if (txt.includes("画像") || txt.includes("描いて") || txt.includes("イラスト")) {
+        aiDiv.textContent = "画像を生成しました！";
+        const img = document.createElement("img");
+        const promptText = encodeURIComponent(txt.replace(/(画像|描いて|イラスト|の)/g, ""));
+        img.src = `https://image.pollinations.ai/prompt/${promptText}?width=512&height=512&nologo=true`;
+        img.className = "generated-img";
+        aiDiv.appendChild(img);
+        return;
       }
+
+      // コード要求判定
+      if (txt.includes("コード") || txt.includes("HTML") || txt.includes("プログラム")) {
+        aiDiv.innerHTML = `ご提示のコード例です：<pre><code>// ${txt} のサンプルプログラム\nfunction example() {\n  console.log("Hello Local AI!");\n}</code></pre>`;
+        return;
+      }
+
+      // 通常会話応答
+      aiDiv.textContent = `【${mode} モード応答】\n「${txt}」についてご案内します。現在の設定でスムーズに処理されました！`;
     }, delay);
-  };
-
-  window.handleKeyPress = function(e) {
-    if (e.key === "Enter") window.handleSend();
-  };
-
-  function appendMessage(type, text) {
-    const chatArea = document.getElementById("chatArea");
-    const msgDiv = document.createElement("div");
-    msgDiv.className = `message ${type}`;
-    msgDiv.textContent = text;
-    chatArea.appendChild(msgDiv);
-    chatArea.scrollTop = chatArea.scrollHeight;
-    return msgDiv;
   }
 
-  initStorage();
-</script>
+  function onKey(e) { if (e.key === "Enter") sendMsg(); }
 
+  function addMsg(type, content) {
+    const box = document.getElementById("chatBox");
+    const d = document.createElement("div");
+    d.className = `msg ${type}`;
+    d.textContent = content;
+    box.appendChild(d);
+    box.scrollTop = box.scrollHeight;
+    return d;
+  }
+
+  init();
+</script>
 </body>
 </html>
