@@ -2,46 +2,62 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gemini Local Web - COOL AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ULTRA NEXUS AI - World's Most Powerful Local AI</title>
+
+  <!-- External Libraries for UI & Syntax Highlighting -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
   <style>
     :root {
-      --bg-color: #131314;
-      --card-bg: #1e1f20;
-      --user-msg: #2b2c2e;
-      --accent: #a8c7fa;
-      --text: #e3e2e6;
-      --muted: #8e918f;
-      --border: #444746;
+      --bg-main: #0b0f19;
+      --bg-card: #151c2c;
+      --bg-user: #1e293b;
+      --bg-ai: #0f172a;
+      --accent: #38bdf8;
+      --accent-gradient: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --success: #22c55e;
+      --warning: #f59e0b;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Google Sans', sans-serif, system-ui; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
 
     body {
-      background-color: var(--bg-color);
-      color: var(--text);
+      background-color: var(--bg-main);
+      color: var(--text-main);
       display: flex;
       justify-content: center;
       height: 100vh;
-      padding: 0;
+      height: 100dvh;
+      overflow: hidden;
     }
 
     .app-container {
       width: 100%;
-      max-width: 800px;
-      height: 100vh;
+      max-width: 900px;
+      height: 100%;
       display: flex;
       flex-direction: column;
-      background: var(--bg-color);
+      background: var(--bg-main);
+      box-shadow: 0 0 50px rgba(0,0,0,0.8);
     }
 
+    /* HEADER AREA */
     header {
-      padding: 10px 14px;
+      padding: 12px 16px;
+      background: rgba(21, 28, 44, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      background: #1e1f20;
+      gap: 10px;
+      z-index: 10;
     }
 
     .header-top {
@@ -50,158 +66,275 @@
       align-items: center;
     }
 
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-badge {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 10px var(--success);
+    }
+
     .logo {
-      font-size: 1.1rem;
-      font-weight: bold;
-      background: linear-gradient(135deg, #7cacf8, #f87171, #fbbf24);
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: var(--accent-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    .model-select-box {
+    .controls-right {
       display: flex;
       gap: 8px;
       align-items: center;
     }
 
     select.model-dropdown {
-      background: #131314;
+      background: var(--bg-main);
       color: var(--accent);
       border: 1px solid var(--border);
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: 700;
       font-size: 0.85rem;
       outline: none;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding-bottom: 2px;
-    }
-
-    .action-btn {
-      background: #282a2c;
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 6px 10px;
-      border-radius: 14px;
-      font-size: 0.75rem;
-      white-space: nowrap;
       cursor: pointer;
     }
 
-    .action-btn:active {
-      background: var(--accent);
-      color: #000;
+    .btn-small {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    .status-info {
+    .btn-small:active { opacity: 0.7; transform: scale(0.95); }
+
+    /* ACTION SHORTCUTS */
+    .action-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .action-bar::-webkit-scrollbar { display: none; }
+
+    .action-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+
+    .action-chip:hover { border-color: var(--accent); }
+    .action-chip:active { background: var(--border); }
+
+    .status-bar {
       display: flex;
       justify-content: space-between;
-      font-size: 0.7rem;
-      color: var(--muted);
-      padding: 0 2px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
     }
 
-    .chat-box {
+    /* CHAT STREAM AREA */
+    .chat-container {
       flex: 1;
       padding: 16px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 20px;
+      scroll-behavior: smooth;
     }
 
-    .msg {
-      max-width: 90%;
-      padding: 12px 16px;
-      border-radius: 18px;
-      line-height: 1.6;
+    .msg-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 88%;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-wrapper.user { align-self: flex-end; }
+    .msg-wrapper.ai { align-self: flex-start; max-width: 95%; }
+    .msg-wrapper.system { align-self: center; max-width: 100%; }
+
+    .msg-sender {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    .msg-bubble {
+      padding: 14px 18px;
+      border-radius: 20px;
+      line-height: 1.65;
       font-size: 0.95rem;
       word-break: break-word;
-      white-space: pre-wrap;
     }
 
-    .msg.user {
-      align-self: flex-end;
-      background: var(--user-msg);
+    .user .msg-bubble {
+      background: var(--bg-user);
+      border: 1px solid rgba(255,255,255,0.05);
       border-bottom-right-radius: 4px;
     }
 
-    .msg.ai {
-      align-self: flex-start;
-      background: transparent;
-      padding-left: 0;
+    .ai .msg-bubble {
+      background: var(--bg-ai);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
     }
 
-    .msg.system {
-      align-self: center;
-      background: #3c1e1e;
-      color: #f87171;
+    .system .msg-bubble {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid var(--warning);
+      color: #fde68a;
       font-size: 0.8rem;
+      text-align: center;
     }
 
-    pre {
-      background: #000;
-      padding: 12px;
-      border-radius: 8px;
-      overflow-x: auto;
-      margin: 8px 0;
-      font-family: monospace;
-      color: #38bdf8;
-    }
-
-    .generated-img {
-      max-width: 100%;
+    /* MARKDOWN & CODE STYLING */
+    .msg-bubble p { margin-bottom: 0.8em; }
+    .msg-bubble p:last-child { margin-bottom: 0; }
+    .msg-bubble code { background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.88em; color: #f43f5e; }
+    
+    .code-block-wrapper {
+      margin: 12px 0;
       border-radius: 12px;
-      margin-top: 8px;
+      overflow: hidden;
       border: 1px solid var(--border);
     }
-
-    .input-box {
-      padding: 10px 12px;
-      background: var(--bg-color);
+    .code-header {
+      background: #1e293b;
+      padding: 6px 12px;
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .copy-btn {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+    pre code.hljs { padding: 14px; background: #090d16; font-size: 0.85rem; }
+
+    .generated-img {
+      width: 100%;
+      max-width: 450px;
+      border-radius: 16px;
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    /* THINKING PROCESS BAR */
+    .thinking-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--accent);
+      padding: 8px 12px;
+      background: rgba(56, 189, 248, 0.05);
+      border-radius: 10px;
+      border: 1px dashed var(--accent);
+      margin-bottom: 8px;
+    }
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--accent);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* FOOTER INPUT AREA */
+    footer {
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
       gap: 8px;
+    }
+
+    .input-wrapper {
+      display: flex;
+      gap: 10px;
       align-items: center;
     }
 
-    input[type="text"] {
+    textarea.main-input {
       flex: 1;
-      background: #1e1f20;
+      background: var(--bg-main);
       border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 12px 18px;
-      color: var(--text);
+      border-radius: 20px;
+      padding: 12px 16px;
+      color: var(--text-main);
       outline: none;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      resize: none;
+      max-height: 120px;
+      min-height: 48px;
+      line-height: 1.4;
     }
 
-    .send-btn {
-      background: var(--accent);
-      color: #040e15;
-      border: none;
+    textarea.main-input:focus { border-color: var(--accent); }
+
+    .icon-btn {
+      background: var(--bg-main);
+      border: 1px solid var(--border);
+      color: var(--text-main);
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      font-weight: bold;
-      cursor: pointer;
+      width: 44px;
+      height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
     }
 
-    .code-btn {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      cursor: pointer;
+    .icon-btn:active { transform: scale(0.9); }
+    .send-btn { background: var(--accent-gradient); border: none; color: #000; font-weight: bold; }
+    .mic-btn.active { background: #ef4444; color: #fff; animation: pulse 1s infinite; }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
     }
   </style>
 </head>
@@ -210,204 +343,365 @@
 <div class="app-container">
   <header>
     <div class="header-top">
-      <div class="logo">✨ Gemini Local</div>
-      <div class="model-select-box">
+      <div class="logo-container">
+        <div class="logo-badge"></div>
+        <div class="logo">ULTRA NEXUS AI</div>
+      </div>
+      <div class="controls-right">
         <select class="model-dropdown" id="modelSelect" onchange="onModelChange()">
-          <option value="COOL_AI">⚡ COOL AI (完全無料 / コードが得意)</option>
-          <option value="FLASH">🚀 FLASH (高速応答)</option>
-          <option value="FLASH_PLUS">⚡ FLASH+ (高精度)</option>
-          <option value="PRO_AI">🧠 PRO AI (17秒高度思考)</option>
-          <option value="PRO_PLUS">🌟 PRO+ (15秒最高品質)</option>
+          <option value="COOL_AI">⚡ COOL AI (爆速・プログラミング対応)</option>
+          <option value="VISION_ART">🎨 VISION/ART AI (高解像度画像生成)</option>
+          <option value="DEEP_THINK">🧠 DEEP THINK (思考プロセス表示)</option>
+          <option value="ASSISTANT">🗣️ ASSISTANT (万能会話・学習支援)</option>
         </select>
-        <button class="code-btn" onclick="enterCode()">コード入力</button>
+        <button class="btn-small" onclick="enterCode()">Passcode</button>
       </div>
     </div>
 
-    <!-- 機能ショートカットボタン -->
-    <div class="action-buttons">
-      <button class="action-btn" onclick="setAction('画像生成')">🖼️ 画像生成</button>
-      <button class="action-btn" onclick="setAction('コード生成')">💻 コード生成</button>
-      <button class="action-btn" onclick="setAction('雑談')">🗣️ 雑談</button>
-      <button class="action-btn" onclick="setAction('しりとり')">🎈 しりとり</button>
-      <button class="action-btn" onclick="setAction('天気')">☀️ 天気確認</button>
+    <div class="action-bar">
+      <button class="action-chip" onclick="setAction('画像生成')">🖼️ 画像生成</button>
+      <button class="action-chip" onclick="setAction('コード生成')">💻 高度なコード</button>
+      <button class="action-chip" onclick="setAction('雑談')">🗣️ 雑談・相談</button>
+      <button class="action-chip" onclick="setAction('しりとり')">🎈 AIとしりとり</button>
+      <button class="action-chip" onclick="setAction('天気')">☀️ 最新気象確認</button>
+      <button class="action-chip" onclick="clearHistory()">🧹 履歴リセット</button>
     </div>
 
-    <div class="status-info">
-      <span id="planStatus">無料モード</span>
-      <span id="usageStatus">残通数: 100通 / 2時間</span>
+    <div class="status-bar">
+      <span id="planStatus">🌐 FREE TIER</span>
+      <span id="usageStatus">残利用枠: 100通/2時間</span>
     </div>
   </header>
 
-  <div class="chat-box" id="chatBox">
-    <div class="msg ai">
-      準備完了！モデルを選んで質問してください。「COOL AI」はコード作成に便利です！✨
+  <div class="chat-container" id="chatBox">
+    <div class="msg-wrapper ai">
+      <div class="msg-sender">ULTRA NEXUS AI</div>
+      <div class="msg-bubble">
+        システム準備完了。プロフェッショナルAIエンジンが待機中です。<br>
+        テキスト対話、プログラミングコード出力、高画質AI画像生成、音声入出力に対応しています。
+      </div>
     </div>
   </div>
 
-  <div class="input-box">
-    <input type="text" id="userInput" placeholder="メッセージを入力または上のボタンを選択..." onkeypress="onKey(event)">
-    <button class="send-btn" onclick="sendMsg()">➤</button>
-  </div>
+  <footer>
+    <div class="input-wrapper">
+      <button class="icon-btn mic-btn" id="micBtn" onclick="toggleSpeech()">🎙️</button>
+      <textarea class="main-input" id="userInput" placeholder="メッセージを入力... (Shift+Enterで改行)" rows="1" onkeydown="onKey(event)"></textarea>
+      <button class="icon-btn send-btn" onclick="sendMsg()">➤</button>
+    </div>
+  </footer>
 </div>
 
 <script>
+  /* GLOBAL STATE & LOCAL STORAGE */
   let isPremium = false;
+  let recognition = null;
+  let isListening = false;
+
+  // Initialize marked settings
+  marked.setOptions({
+    highlight: function(code, lang) {
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+      return hljs.highlight(code, { language }).value;
+    },
+    langPrefix: 'hljs language-'
+  });
 
   function init() {
     const now = Date.now();
-    let reset = localStorage.getItem("resetTime");
+    let reset = localStorage.getItem("nexus_reset");
     if (!reset || now > parseInt(reset)) {
-      localStorage.setItem("resetTime", now + 2 * 60 * 60 * 1000);
-      localStorage.setItem("used", "0");
-      localStorage.setItem("proAi", "0");
-      localStorage.setItem("proPlus", "0");
+      localStorage.setItem("nexus_reset", now + 2 * 60 * 60 * 1000);
+      localStorage.setItem("nexus_used", "0");
     }
-    isPremium = localStorage.getItem("isPremium") === "true";
+    isPremium = localStorage.getItem("nexus_premium") === "true";
     updateUI();
+    setupSpeech();
+    loadHistory();
   }
 
   function updateUI() {
-    const used = parseInt(localStorage.getItem("used") || "0");
-    const max = isPremium ? 150 : 100;
-    document.getElementById("planStatus").textContent = isPremium ? "🌟 プレミアム" : "無料モード";
-    document.getElementById("usageStatus").textContent = `使用可能: ${max - used}/${max}通`;
+    const used = parseInt(localStorage.getItem("nexus_used") || "0");
+    const max = isPremium ? 500 : 100;
+    document.getElementById("planStatus").textContent = isPremium ? "🌟 PRO UNLIMITED" : "🌐 FREE TIER";
+    document.getElementById("usageStatus").textContent = `残利用枠: ${max - used}/${max}通`;
   }
 
   function enterCode() {
-    const c = prompt("プレミアムコードを入力:");
-    if (c === "5533") {
+    const code = prompt("プレミアムパスコードを入力してください:");
+    if (code === "5533") {
       isPremium = true;
-      localStorage.setItem("isPremium", "true");
-      alert("プレミアムモード解放！(150通/2時間・PRO+制限解除)");
+      localStorage.setItem("nexus_premium", "true");
+      alert("PRO UNLIMITED モードが解除されました！（上限拡張・高速処理）");
       updateUI();
+    } else if (code) {
+      alert("無効なパスコードです。");
     }
   }
 
   function setAction(type) {
     const input = document.getElementById("userInput");
-    if (type === '画像生成') input.value = "サイバーパンクな街並みの画像を描いて";
-    if (type === 'コード生成') input.value = "HTML/JSでボタンを押すとカウントが増えるプログラムコードを作って";
-    if (type === '雑談') input.value = "最近おもしろかったことや雑談をしよう！";
-    if (type === 'しりとり') input.value = "しりとりをしよう！「りんご」からね！";
-    if (type === '天気') input.value = "東京の明日の天気を教えて";
+    if (type === '画像生成') input.value = "ネオンが輝くサイバーパンクな未来都市のリアルな画像を描いて";
+    if (type === 'コード生成') input.value = "HTML/CSS/JSで動作するモダンな3Dカード回転アニメーションのコードを作成して";
+    if (type === '雑談') input.value = "最近の技術動向や興味深いテーマについて雑談しよう！";
+    if (type === 'しりとり') input.value = "AIとしりとり対戦！「ルビー」からスタート！";
+    if (type === '天気') input.value = "東京都千代田区の明日の天気を詳しく確認して";
     input.focus();
   }
 
   function onModelChange() {
-    const m = document.getElementById("modelSelect").value;
-    if (m === "COOL_AI") {
-      addMsg("system", "「COOL AI」モードが選択されました。完全無料・コード記述が爆速で実行可能です。");
-    }
+    const mode = document.getElementById("modelSelect").value;
+    addSystemMsg(`モードを変更しました: 【${mode}】`);
   }
 
+  /* ROBUST AI API ROUTING WITH FALLBACKS */
   async function fetchAIResponse(promptText, mode) {
-    // API経由でリアルタイム会話取得
-    const systemPrompt = (mode === "COOL_AI") 
-      ? "あなたは高度なプログラミングと一般的な会話が得意なエンジニアAIです。コードは必ずマークダウンコードブロックで記述してください。"
-      : "あなたは優秀で親切な日本語AIアシスタントです。";
+    let systemPrompt = "あなたは世界最高峰の性能を持つ親切で高度なAIアシスタントです。";
+    if (mode === "COOL_AI") systemPrompt = "あなたは超優秀なシニアソフトウエアエンジニアです。コード表現は完璧に、マークダウンのコードブロック形式で出力してください。";
+    if (mode === "ASSISTANT") systemPrompt = "あなたはフレンドリーで知的な対話AIパートナーです。";
 
-    const url = `https://text.pollinations.ai/${encodeURIComponent(promptText)}?model=openai&system=${encodeURIComponent(systemPrompt)}`;
+    // Primary & Fallback URLs
+    const primaryUrl = `https://text.pollinations.ai/${encodeURIComponent(promptText)}?system=${encodeURIComponent(systemPrompt)}&model=openai`;
+    const fallbackUrl = `https://text.pollinations.ai/${encodeURIComponent(promptText)}?model=mistral`;
+
     try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("API Error");
-      return await res.text();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      const res = await fetch(primaryUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.trim().length > 0) return text;
+      }
+      throw new Error("Primary API unreachable");
     } catch (e) {
-      return "一時的に応答が取得できませんでした。時間をおいて再送信してください。";
+      console.warn("Primary API failed. Switching to fallback engine...", e);
+      try {
+        const res2 = await fetch(fallbackUrl);
+        if (res2.ok) {
+          const text2 = await res2.text();
+          if (text2 && text2.trim().length > 0) return text2;
+        }
+      } catch (err) {
+        console.error("Fallback API failed:", err);
+      }
+      return "⚠️ **ネットワーク接続エラー**: サービスへのアクセスが集中しています。再送信をお試しください。";
     }
   }
 
+  /* SEND MESSAGE HANDLER */
   async function sendMsg() {
     const input = document.getElementById("userInput");
     const txt = input.value.trim();
     if (!txt) return;
 
     const mode = document.getElementById("modelSelect").value;
+    let used = parseInt(localStorage.getItem("nexus_used") || "0");
+    const max = isPremium ? 500 : 100;
 
-    let used = parseInt(localStorage.getItem("used") || "0");
-    const max = isPremium ? 150 : 100;
-    let cost = (mode === "PRO_AI") ? 3 : 1;
-
-    if (mode === "PRO_AI" && !isPremium && parseInt(localStorage.getItem("proAi")||"0") >= 10) {
-      addMsg("system", "PRO AI の無料回数上限（10回）に達しました。");
-      return;
-    }
-    if (mode === "PRO_PLUS" && !isPremium) {
-      addMsg("system", "PRO+ はプレミアム限定機能です。コード「5533」を入力してください。");
+    if (used >= max) {
+      addSystemMsg("2時間の利用枠上限に達しました。パスコードを入力するか、時間をおいて再試行してください。");
       return;
     }
 
-    if (used + cost > max) {
-      addMsg("system", "2時間の制限に達しました。時間をおいてご利用ください。");
-      return;
-    }
-
-    localStorage.setItem("used", (used + cost).toString());
-    if (mode === "PRO_AI") localStorage.setItem("proAi", (parseInt(localStorage.getItem("proAi")||"0")+1).toString());
+    localStorage.setItem("nexus_used", (used + 1).toString());
     updateUI();
 
     addMsg("user", txt);
     input.value = "";
+    input.style.height = "auto";
 
-    const aiDiv = addMsg("ai", "思考中...");
+    // Check if Image Generation Request or VISION_ART mode
+    const isImageReq = mode === "VISION_ART" || txt.includes("画像") || txt.includes("描いて") || txt.includes("イラスト") || txt.includes("写真");
 
-    // 応答待機時間の設定
-    let delay = 600;
-    if (mode === "FLASH_PLUS") delay = 2500;
-    if (mode === "PRO_AI") delay = 17000;
-    if (mode === "PRO_PLUS") delay = 15000;
+    if (isImageReq) {
+      const aiWrapper = addMsg("ai", "");
+      const bubble = aiWrapper.querySelector(".msg-bubble");
+      
+      const thinkBox = document.createElement("div");
+      thinkBox.className = "thinking-box";
+      thinkBox.innerHTML = `<div class="spinner"></div> 画像プロンプトを解析・高画質レンダリング中...`;
+      bubble.appendChild(thinkBox);
 
-    let start = Date.now();
-    let timer = setInterval(() => {
-      if (mode === "PRO_AI" || mode === "PRO_PLUS") {
-        let p = Math.min(100, Math.floor(((Date.now() - start) / delay) * 100));
-        aiDiv.textContent = `思考中... 回答文生成 ${p}%`;
-      }
-    }, 200);
+      const cleanPrompt = encodeURIComponent(txt.replace(/(画像|描いて|イラスト|写真|の|作って|見せて)/g, ""));
+      const img = document.createElement("img");
+      const seed = Math.floor(Math.random() * 1000000);
+      img.src = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=800&height=800&nologo=true&seed=${seed}`;
+      img.className = "generated-img";
 
+      img.onload = () => {
+        thinkBox.remove();
+        bubble.appendChild(document.createTextNode("ご希望のイメージをリアルタイム生成しました："));
+        bubble.appendChild(document.createElement("br"));
+        bubble.appendChild(img);
+        saveHistory();
+      };
+      img.onerror = () => {
+        thinkBox.remove();
+        bubble.textContent = "画像の生成に失敗しました。プロンプト表現を変えてお試しください。";
+      };
+      return;
+    }
+
+    // Standard Text & Code Response
+    const aiWrapper = addMsg("ai", "");
+    const bubble = aiWrapper.querySelector(".msg-bubble");
+
+    const thinkBox = document.createElement("div");
+    thinkBox.className = "thinking-box";
+    thinkBox.innerHTML = `<div class="spinner"></div> ${mode === 'DEEP_THINK' ? '思考プロセスを実行中 (深層推論)...' : '応答を生成中...'}`;
+    bubble.appendChild(thinkBox);
+
+    const delay = (mode === "DEEP_THINK") ? 3000 : 400;
+    
     setTimeout(async () => {
-      clearInterval(timer);
-      
-      // 画像生成判定
-      if (txt.includes("画像") || txt.includes("描いて") || txt.includes("イラスト")) {
-        aiDiv.textContent = "要求に基づいて画像を生成しました！";
-        const img = document.createElement("img");
-        const cleanPrompt = encodeURIComponent(txt.replace(/(画像|描いて|イラスト|の|作って)/g, ""));
-        img.src = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=512&height=512&nologo=true`;
-        img.className = "generated-img";
-        aiDiv.appendChild(img);
-        return;
+      let promptText = txt;
+      if (txt.includes("天気")) promptText += " (最新の場所・気象条件を分析して回答してください)";
+
+      const reply = await fetchAIResponse(promptText, mode);
+      thinkBox.remove();
+
+      // Render Markdown
+      bubble.innerHTML = marked.parse(reply);
+
+      // Process Code Block Copy Buttons
+      bubble.querySelectorAll("pre").forEach(pre => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "code-block-wrapper";
+        const header = document.createElement("div");
+        header.className = "code-header";
+        header.innerHTML = `<span>Code</span><button class="copy-btn" onclick="copyCode(this)">コピー</button>`;
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(header);
+        wrapper.appendChild(pre);
+      });
+
+      // Optional Text-To-Speech if short reply
+      if (reply.length < 150 && !reply.includes("```")) {
+        speakText(reply.replace(/[\#\*\_]/g, ""));
       }
 
-      // 天気確認の注意書き補助
-      let finalPrompt = txt;
-      if (txt.includes("天気")) {
-        finalPrompt += " (注意: リアルタイムの最新気象情報をふまえて親切に回答してください)";
-      }
-
-      // AIテキスト生成呼び出し
-      const reply = await fetchAIResponse(finalPrompt, mode);
-      
-      // マークダウンコード整形表示
-      if (reply.includes("```")) {
-        const formatted = reply.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-        aiDiv.innerHTML = formatted;
-      } else {
-        aiDiv.textContent = reply;
-      }
+      saveHistory();
     }, delay);
   }
 
-  function onKey(e) { if (e.key === "Enter") sendMsg(); }
+  /* SPEECH RECOGNITION & SYNTHESIS */
+  function setupSpeech() {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.lang = 'ja-JP';
+      recognition.continuous = false;
 
-  function addMsg(type, content) {
-    const box = document.getElementById("chatBox");
-    const d = document.createElement("div");
-    d.className = `msg ${type}`;
-    d.textContent = content;
-    box.appendChild(d);
-    box.scrollTop = box.scrollHeight;
-    return d;
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("userInput").value = transcript;
+        toggleSpeech();
+      };
+
+      recognition.onerror = () => toggleSpeech();
+      recognition.onend = () => toggleSpeech(false);
+    } else {
+      document.getElementById("micBtn").style.display = "none";
+    }
   }
+
+  function toggleSpeech(forceState) {
+    const micBtn = document.getElementById("micBtn");
+    if (!recognition) return;
+
+    if (forceState === false || isListening) {
+      isListening = false;
+      recognition.stop();
+      micBtn.classList.remove("active");
+    } else {
+      isListening = true;
+      recognition.start();
+      micBtn.classList.add("active");
+    }
+  }
+
+  function speakText(text) {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const uttr = new SpeechSynthesisUtterance(text);
+      uttr.lang = 'ja-JP';
+      window.speechSynthesis.speak(uttr);
+    }
+  }
+
+  /* UTILITY FUNCTIONS */
+  function onKey(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMsg();
+    }
+  }
+
+  function copyCode(btn) {
+    const code = btn.closest(".code-block-wrapper").querySelector("code").innerText;
+    navigator.clipboard.writeText(code);
+    btn.textContent = "完了！";
+    setTimeout(() => btn.textContent = "コピー", 2000);
+  }
+
+  function addMsg(type, text) {
+    const box = document.getElementById("chatBox");
+    const wrap = document.createElement("div");
+    wrap.className = `msg-wrapper ${type}`;
+
+    const sender = document.createElement("div");
+    sender.className = "msg-sender";
+    sender.textContent = type === "user" ? "YOU" : (type === "ai" ? "ULTRA NEXUS AI" : "SYSTEM");
+
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble";
+    bubble.textContent = text;
+
+    wrap.appendChild(sender);
+    wrap.appendChild(bubble);
+    box.appendChild(wrap);
+    box.scrollTop = box.scrollHeight;
+    return wrap;
+  }
+
+  function addSystemMsg(text) {
+    const box = document.getElementById("chatBox");
+    const wrap = document.createElement("div");
+    wrap.className = "msg-wrapper system";
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble";
+    bubble.textContent = text;
+    wrap.appendChild(bubble);
+    box.appendChild(wrap);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function saveHistory() {
+    const chatBox = document.getElementById("chatBox");
+    localStorage.setItem("nexus_history", chatBox.innerHTML);
+  }
+
+  function loadHistory() {
+    const saved = localStorage.getItem("nexus_history");
+    if (saved) {
+      document.getElementById("chatBox").innerHTML = saved;
+    }
+  }
+
+  function clearHistory() {
+    if (confirm("会話履歴を全てリセットしますか？")) {
+      localStorage.removeItem("nexus_history");
+      location.reload();
+    }
+  }
+
+  // Auto resize input area
+  document.getElementById("userInput").addEventListener("input", function() {
+    this.style.height = "auto";
+    this.style.height = (this.scrollHeight) + "px";
+  });
 
   init();
 </script>
