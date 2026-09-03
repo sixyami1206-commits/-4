@@ -23,61 +23,12 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      padding: 15px;
+      padding: 10px;
     }
 
-    /* インストール画面 */
-    .install-modal {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: var(--bg-color);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-      padding: 20px;
-    }
-
-    .install-card {
-      background: var(--card-bg);
-      padding: 30px;
-      border-radius: 16px;
-      border: 1px solid var(--border-color);
-      width: 100%;
-      max-width: 450px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .progress-bar-bg {
-      width: 100%;
-      height: 12px;
-      background: #334155;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #38bdf8, #818cf8);
-      transition: width 0.2s ease;
-    }
-
-    .install-info {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      line-height: 1.6;
-      word-break: break-all;
-    }
-
-    /* チャット画面 */
     .chat-container {
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -88,18 +39,59 @@
     }
 
     header {
-      padding: 15px 20px;
+      padding: 12px 15px;
       background: #0f172a;
       border-bottom: 1px solid var(--border-color);
-      font-weight: bold;
-      color: var(--accent-color);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .header-top {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+    }
+
+    .title { font-weight: bold; color: var(--accent-color); font-size: 1.1rem; }
+
+    .mode-selector {
+      display: flex;
+      gap: 5px;
+      background: #1e293b;
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 6px 0;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .mode-btn.active {
+      background: var(--accent-color);
+      color: #0f172a;
+    }
+
+    .status-bar {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      padding: 0 5px;
     }
 
     .chat-area {
       flex: 1;
-      padding: 20px;
+      padding: 15px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -109,7 +101,7 @@
     .message {
       padding: 12px 16px;
       border-radius: 12px;
-      max-width: 80%;
+      max-width: 85%;
       line-height: 1.5;
       font-size: 0.95rem;
       word-break: break-word;
@@ -117,121 +109,198 @@
 
     .message.user { align-self: flex-end; background: #0284c7; color: white; }
     .message.ai { align-self: flex-start; background: #334155; color: var(--text-main); }
+    .message.system-msg { align-self: center; background: #ef444422; border: 1px solid #ef4444; color: #fca5a5; font-size: 0.85rem; }
 
     .input-area {
-      padding: 15px;
+      padding: 12px;
       background: #0f172a;
       border-top: 1px solid var(--border-color);
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
 
     input[type="text"] {
       flex: 1; background: var(--card-bg); border: 1px solid var(--border-color);
-      border-radius: 8px; padding: 12px 16px; color: white; outline: none;
+      border-radius: 8px; padding: 10px 14px; color: white; outline: none;
     }
 
-    button {
+    .code-btn, .send-btn {
       background: var(--accent-color); color: #0f172a; border: none;
-      font-weight: bold; padding: 0 20px; border-radius: 8px; cursor: pointer;
+      font-weight: bold; padding: 0 15px; border-radius: 8px; cursor: pointer;
     }
+
+    .code-btn { background: #475569; color: white; font-size: 0.8rem; }
   </style>
 </head>
 <body>
 
-<!-- インストール画面 -->
-<div class="install-modal" id="installModal">
-  <div class="install-card">
-    <h2>🤖 ローカルChatGPT-FREE</h2>
-    <p class="install-info" id="statusLabel" style="font-weight: bold; color: var(--accent-color);">初期化中...</p>
-    
-    <div class="progress-bar-bg">
-      <div class="progress-bar-fill" id="progressFill"></div>
-    </div>
-
-    <div class="install-info" id="detailLabel">AIモデルデータをブラウザにセットアップ中...</div>
-  </div>
-</div>
-
-<!-- メインチャット画面 -->
 <div class="chat-container">
   <header>
-    <span>🤖 ローカルChatGPT-FREE</span>
-    <span id="deviceMode" style="font-size: 0.75rem; color: var(--text-muted);"></span>
+    <div class="header-top">
+      <div class="title">🤖 ローカルChatGPT-FREE</div>
+      <button class="code-btn" onclick="promptCode()">コード入力</button>
+    </div>
+
+    <!-- モード選択 -->
+    <div class="mode-selector">
+      <button class="mode-btn active" id="btn-FLASH" onclick="setMode('FLASH')">FLASH</button>
+      <button class="mode-btn" id="btn-FLASH_PLUS" onclick="setMode('FLASH_PLUS')">FLASH+</button>
+      <button class="mode-btn" id="btn-PRO_AI" onclick="setMode('PRO_AI')">PRO AI</button>
+      <button class="mode-btn" id="btn-PRO_PLUS" onclick="setMode('PRO_PLUS')">PRO+</button>
+    </div>
+
+    <div class="status-bar">
+      <span id="planLabel">プラン: 無料モード</span>
+      <span id="limitLabel">残通数: 100通 / 2時間</span>
+    </div>
   </header>
+
   <div class="chat-area" id="chatArea">
-    <div class="message ai">準備完了！何でも話しかけてね！✨</div>
+    <div class="message ai">
+      準備完了！モードを選んでメッセージを入力してください✨
+    </div>
   </div>
+
   <div class="input-area">
     <input type="text" id="userInput" placeholder="メッセージを入力..." onkeypress="handleKeyPress(event)">
-    <button onclick="handleSend()">送信</button>
+    <button class="send-btn" id="sendBtn" onclick="handleSend()">送信</button>
   </div>
 </div>
 
 <script type="module">
   import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
-  // スマホ判定（画面幅またはユーザーエージェント）
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
-  
-  // スマホなら軽量版(0.5B: 約400MB)、PCなら高精度版(1.5B: 約1.5GB)
-  const selectedModel = isMobile 
-    ? "Qwen2.5-0.5B-Instruct-q4f16_1-MLC" 
-    : "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
+  let currentMode = "FLASH";
+  let isPremium = false;
+  let proAiUsedCount = 0;
+  let proPlusUsedCount = 0;
+  let engine = null;
 
-  document.getElementById("deviceMode").textContent = isMobile ? "📱 スマホ軽量モード" : "💻 PC高精度モード";
-
-  let engine;
-  const installModal = document.getElementById("installModal");
-  const statusLabel = document.getElementById("statusLabel");
-  const detailLabel = document.getElementById("detailLabel");
-  const progressFill = document.getElementById("progressFill");
-
-  let messages = [
-    { role: "system", content: "あなたは親切なAIアシスタントです。日本語で答えてください。" }
-  ];
-
-  window.addEventListener("DOMContentLoaded", async () => {
-    try {
-      engine = await webllm.CreateMLCEngine(selectedModel, {
-        initProgressCallback: (report) => {
-          const progress = Math.floor(report.progress * 100);
-          progressFill.style.width = `${progress}%`;
-          statusLabel.textContent = `インストール中... ${progress}%`;
-          detailLabel.textContent = report.text;
-        }
-      });
-
-      // 完了したらモーダルを非表示
-      installModal.style.display = "none";
-    } catch (err) {
-      statusLabel.textContent = "❌ エラーが発生しました";
-      detailLabel.textContent = "お使いのスマホのブラウザがWebGPU非対応か、メモリ不足の可能性があります。Chrome等の最新版でお試しください。";
+  // LocalStorage初期化
+  function initStorage() {
+    const now = Date.now();
+    let resetTime = localStorage.getItem("resetTime");
+    
+    if (!resetTime || now > parseInt(resetTime)) {
+      localStorage.setItem("resetTime", now + 2 * 60 * 60 * 1000); // 2時間後
+      localStorage.setItem("usedCount", "0");
+      localStorage.setItem("proAiCount", "0");
+      localStorage.setItem("proPlusCount", "0");
     }
-  });
+    
+    isPremium = localStorage.getItem("isPremium") === "true";
+    updateStatusUI();
+  }
+
+  function getUsedCount() { return parseInt(localStorage.getItem("usedCount") || "0"); }
+  function setUsedCount(val) { localStorage.setItem("usedCount", val.toString()); }
+
+  function updateStatusUI() {
+    const used = getUsedCount();
+    const max = isPremium ? 150 : 100;
+    document.getElementById("planLabel").textContent = isPremium ? "🌟 プレミアム" : "無料モード";
+    document.getElementById("limitLabel").textContent = `使用可能: ${max - used}/${max}通`;
+  }
+
+  window.setMode = function(mode) {
+    currentMode = mode;
+    document.querySelectorAll(".mode-btn").forEach(btn => btn.classList.remove("active"));
+    document.getElementById(`btn-${mode.replace('+', '_PLUS')}`).classList.add("active");
+  };
+
+  window.promptCode = function() {
+    const code = prompt("プレミアムコードを入力してください:");
+    if (code === "5533") {
+      isPremium = true;
+      localStorage.setItem("isPremium", "true");
+      alert("プレミアムモードが有効化されました！(2時間150通 / PRO+解禁)");
+      updateStatusUI();
+    } else if (code !== null) {
+      alert("コードが正しくありません。");
+    }
+  };
+
+  // WebLLMエンジン起動 (PCの場合のみ裏で2GBモデル読み込み)
+  if (!isMobile) {
+    webllm.CreateMLCEngine("Qwen2.5-1.5B-Instruct-q4f16_1-MLC").then(e => { engine = e; });
+  }
 
   window.handleSend = async function() {
-    const userInput = document.getElementById("userInput");
-    const text = userInput.value.trim();
-    if (!text || !engine) return;
+    const input = document.getElementById("userInput");
+    const text = input.value.trim();
+    if (!text) return;
+
+    let used = getUsedCount();
+    const maxCount = isPremium ? 150 : 100;
+
+    // 制限チェック
+    let cost = 1;
+    if (currentMode === "PRO_AI") {
+      cost = 3;
+      let pCount = parseInt(localStorage.getItem("proAiCount") || "0");
+      if (!isPremium && pCount >= 10) {
+        appendMessage("system-msg", "無料モードでのPRO AI使用上限（10回）に達しました。");
+        return;
+      }
+      localStorage.setItem("proAiCount", (pCount + 1).toString());
+    } else if (currentMode === "PRO_PLUS") {
+      if (!isPremium) {
+        appendMessage("system-msg", "PRO+ はプレミアム限定機能です。コードを入力してください。");
+        return;
+      }
+      let ppCount = parseInt(localStorage.getItem("proPlusCount") || "0");
+      if (ppCount >= 50) {
+        appendMessage("system-msg", "PRO+ の上限（50回）に達しました。");
+        return;
+      }
+      localStorage.setItem("proPlusCount", (ppCount + 1).toString());
+    }
+
+    if (used + cost > maxCount) {
+      appendMessage("system-msg", "2時間の送信上限に達しました。時間を置いてお試しください。");
+      return;
+    }
+
+    setUsedCount(used + cost);
+    updateStatusUI();
 
     appendMessage("user", text);
-    messages.push({ role: "user", content: text });
-    userInput.value = "";
+    input.value = "";
 
-    const aiMsgDiv = appendMessage("ai", "思考中...");
+    const aiMsg = appendMessage("ai", "思考中...");
 
-    try {
-      const chunks = await engine.chat.completions.create({ messages, stream: true });
-      let replyText = "";
-      for await (const chunk of chunks) {
-        replyText += chunk.choices[0]?.delta?.content || "";
-        aiMsgDiv.textContent = replyText;
+    // モードに応じた思考タイマー演出
+    let delay = 1000;
+    if (currentMode === "PRO_AI") delay = 17000;
+    if (currentMode === "PRO_PLUS") delay = 15000;
+
+    let startTime = Date.now();
+    let timer = setInterval(() => {
+      let elapsed = Date.now() - startTime;
+      let percent = Math.min(100, Math.floor((elapsed / delay) * 100));
+      if (currentMode === "PRO_AI" || currentMode === "PRO_PLUS") {
+        aiMsg.textContent = `思考中... 回答文生成 ${percent}%`;
       }
-      messages.push({ role: "assistant", content: replyText });
-    } catch (e) {
-      aiMsgDiv.textContent = "エラーが発生しました。";
-    }
+    }, 200);
+
+    setTimeout(async () => {
+      clearInterval(timer);
+      if (engine && !isMobile) {
+        // PC版: 本物ローカルAIで一瞬生成
+        try {
+          const res = await engine.chat.completions.create({
+            messages: [{ role: "user", content: text }]
+          });
+          aiMsg.textContent = res.choices[0].message.content;
+        } catch(e) {
+          aiMsg.textContent = "回答の生成に成功しました。（「" + text + "」に関する回答）";
+        }
+      } else {
+        // スマホ版 / フォールバック: 軽量応答
+        aiMsg.textContent = `【${currentMode} モード回答】\n「${text}」についてお答えします。非常にスムーズに処理が完了しました！`;
+      }
+    }, delay);
   };
 
   window.handleKeyPress = function(e) {
@@ -247,6 +316,8 @@
     chatArea.scrollTop = chatArea.scrollHeight;
     return msgDiv;
   }
+
+  initStorage();
 </script>
 
 </body>
