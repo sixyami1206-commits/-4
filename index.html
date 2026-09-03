@@ -2,706 +2,415 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ULTRA NEXUS AI - World's Most Powerful Local AI</title>
-
-  <!-- External Libraries for UI & Syntax Highlighting -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus Search - Custom Chrome Engine</title>
   <style>
     :root {
-      --bg-main: #0b0f19;
-      --bg-card: #151c2c;
-      --bg-user: #1e293b;
-      --bg-ai: #0f172a;
+      --bg-dark: #121214;
+      --bg-card: #1e1e24;
+      --bg-input: #2a2a32;
       --accent: #38bdf8;
-      --accent-gradient: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: #334155;
-      --success: #22c55e;
-      --warning: #f59e0b;
+      --accent-hover: #0284c7;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border: #374151;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
     body {
-      background-color: var(--bg-main);
+      background-color: var(--bg-dark);
       color: var(--text-main);
-      display: flex;
-      justify-content: center;
       height: 100vh;
-      height: 100dvh;
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
     }
 
-    .app-container {
-      width: 100%;
-      max-width: 900px;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      background: var(--bg-main);
-      box-shadow: 0 0 50px rgba(0,0,0,0.8);
-    }
-
-    /* HEADER AREA */
-    header {
-      padding: 12px 16px;
-      background: rgba(21, 28, 44, 0.8);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 10;
-    }
-
-    .header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .logo-container {
+    /* --- TABS BAR --- */
+    .tabs-bar {
+      background: #09090b;
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-
-    .logo-badge {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 10px var(--success);
-    }
-
-    .logo {
-      font-size: 1.2rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: var(--accent-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .controls-right {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    select.model-dropdown {
-      background: var(--bg-main);
-      color: var(--accent);
-      border: 1px solid var(--border);
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      outline: none;
-      cursor: pointer;
-    }
-
-    .btn-small {
-      background: rgba(56, 189, 248, 0.1);
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      padding: 6px 12px;
-      border-radius: 10px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-small:active { opacity: 0.7; transform: scale(0.95); }
-
-    /* ACTION SHORTCUTS */
-    .action-bar {
-      display: flex;
-      gap: 8px;
+      padding: 6px 10px 0 10px;
+      gap: 6px;
       overflow-x: auto;
-      padding-bottom: 2px;
-      scrollbar-width: none;
+      border-bottom: 1px solid var(--border);
     }
-    .action-bar::-webkit-scrollbar { display: none; }
 
-    .action-chip {
+    .tab-item {
       background: var(--bg-card);
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      white-space: nowrap;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.2s;
-    }
-
-    .action-chip:hover { border-color: var(--accent); }
-    .action-chip:active { background: var(--border); }
-
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.72rem;
       color: var(--text-muted);
-    }
-
-    /* CHAT STREAM AREA */
-    .chat-container {
-      flex: 1;
-      padding: 16px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      scroll-behavior: smooth;
-    }
-
-    .msg-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-width: 88%;
-      animation: fadeIn 0.3s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .msg-wrapper.user { align-self: flex-end; }
-    .msg-wrapper.ai { align-self: flex-start; max-width: 95%; }
-    .msg-wrapper.system { align-self: center; max-width: 100%; }
-
-    .msg-sender {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-left: 4px;
-    }
-
-    .msg-bubble {
-      padding: 14px 18px;
-      border-radius: 20px;
-      line-height: 1.65;
-      font-size: 0.95rem;
-      word-break: break-word;
-    }
-
-    .user .msg-bubble {
-      background: var(--bg-user);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-bottom-right-radius: 4px;
-    }
-
-    .ai .msg-bubble {
-      background: var(--bg-ai);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
-    }
-
-    .system .msg-bubble {
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid var(--warning);
-      color: #fde68a;
-      font-size: 0.8rem;
-      text-align: center;
-    }
-
-    /* MARKDOWN & CODE STYLING */
-    .msg-bubble p { margin-bottom: 0.8em; }
-    .msg-bubble p:last-child { margin-bottom: 0; }
-    .msg-bubble code { background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.88em; color: #f43f5e; }
-    
-    .code-block-wrapper {
-      margin: 12px 0;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-    .code-header {
-      background: #1e293b;
-      padding: 6px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-    .copy-btn {
-      background: transparent;
-      border: none;
-      color: var(--accent);
-      cursor: pointer;
-      font-size: 0.75rem;
-    }
-    pre code.hljs { padding: 14px; background: #090d16; font-size: 0.85rem; }
-
-    .generated-img {
-      width: 100%;
-      max-width: 450px;
-      border-radius: 16px;
-      margin-top: 10px;
-      border: 1px solid var(--border);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-
-    /* THINKING PROCESS BAR */
-    .thinking-box {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      padding: 8px 16px;
+      border-radius: 10px 10px 0 0;
       font-size: 0.85rem;
-      color: var(--accent);
-      padding: 8px 12px;
-      background: rgba(56, 189, 248, 0.05);
-      border-radius: 10px;
-      border: 1px dashed var(--accent);
-      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      max-width: 200px;
+      min-width: 120px;
+      border: 1px solid transparent;
+      border-bottom: none;
+      user-select: none;
     }
-    .spinner {
-      width: 14px;
-      height: 14px;
-      border: 2px solid var(--accent);
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* FOOTER INPUT AREA */
-    footer {
-      padding: 12px 16px;
+    .tab-item.active {
+      background: var(--bg-dark);
+      color: var(--accent);
+      border-color: var(--border);
+      font-weight: bold;
+    }
+
+    .tab-title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tab-close { font-size: 0.75rem; border-radius: 50%; padding: 2px 5px; }
+    .tab-close:hover { background: rgba(255,255,255,0.2); }
+
+    .new-tab-btn {
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      font-size: 1.2rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    .new-tab-btn:hover { background: var(--bg-card); color: var(--text-main); }
+
+    /* --- BROWSER TOOLBAR --- */
+    .toolbar {
       background: var(--bg-card);
-      border-top: 1px solid var(--border);
+      padding: 10px 16px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-    }
-
-    .input-wrapper {
-      display: flex;
       gap: 10px;
-      align-items: center;
+      border-bottom: 1px solid var(--border);
     }
 
-    textarea.main-input {
-      flex: 1;
-      background: var(--bg-main);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 12px 16px;
-      color: var(--text-main);
-      outline: none;
-      font-size: 0.95rem;
-      resize: none;
-      max-height: 120px;
-      min-height: 48px;
-      line-height: 1.4;
-    }
-
-    textarea.main-input:focus { border-color: var(--accent); }
-
-    .icon-btn {
-      background: var(--bg-main);
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      border-radius: 50%;
-      width: 44px;
-      height: 44px;
+    .url-row, .search-row {
       display: flex;
+      gap: 8px;
       align-items: center;
-      justify-content: center;
-      cursor: pointer;
+    }
+
+    .label {
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: var(--text-muted);
+      width: 70px;
       flex-shrink: 0;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.9rem;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+
+    .btn {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      white-space: nowrap;
       transition: all 0.2s;
     }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-primary { background: var(--accent); color: #000; font-weight: bold; border: none; }
+    .btn-primary:hover { background: var(--accent-hover); color: #fff; }
 
-    .icon-btn:active { transform: scale(0.9); }
-    .send-btn { background: var(--accent-gradient); border: none; color: #000; font-weight: bold; }
-    .mic-btn.active { background: #ef4444; color: #fff; animation: pulse 1s infinite; }
-
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    /* --- FAMOUS SITES --- */
+    .shortcuts-bar {
+      display: flex;
+      gap: 10px;
+      padding: 8px 16px;
+      background: #18181c;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
     }
+
+    .shortcut-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .shortcut-btn:hover { border-color: var(--accent); }
+
+    /* --- CONTENT VIEW AREA --- */
+    .content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #fff;
+    }
+
+    .ai-result-box {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      background: var(--bg-dark);
+      line-height: 1.7;
+    }
+
+    .ai-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .ai-card h3 { color: var(--accent); margin-bottom: 12px; }
   </style>
 </head>
 <body>
 
-<div class="app-container">
-  <header>
-    <div class="header-top">
-      <div class="logo-container">
-        <div class="logo-badge"></div>
-        <div class="logo">ULTRA NEXUS AI</div>
-      </div>
-      <div class="controls-right">
-        <select class="model-dropdown" id="modelSelect" onchange="onModelChange()">
-          <option value="COOL_AI">⚡ COOL AI (爆速・プログラミング対応)</option>
-          <option value="VISION_ART">🎨 VISION/ART AI (高解像度画像生成)</option>
-          <option value="DEEP_THINK">🧠 DEEP THINK (思考プロセス表示)</option>
-          <option value="ASSISTANT">🗣️ ASSISTANT (万能会話・学習支援)</option>
-        </select>
-        <button class="btn-small" onclick="enterCode()">Passcode</button>
-      </div>
+  <!-- 1. TABS AREA -->
+  <div class="tabs-bar" id="tabsBar">
+    <!-- Tabs dynamically injected -->
+    <button class="new-tab-btn" onclick="addNewTab()">＋</button>
+  </div>
+
+  <!-- 2. TOOLBAR (URL & SEARCH) -->
+  <div class="toolbar">
+    <!-- URL Row -->
+    <div class="url-row">
+      <span class="label">URL</span>
+      <input type="text" id="urlInput" placeholder="https://example.com" onkeydown="if(event.key==='Enter') navigateUrl()">
+      <button class="btn" onclick="navigateUrl()">移動</button>
+      <button class="btn" onclick="copyUrl()">URLコピー</button>
+      <button class="btn" onclick="refreshPage()">🔄 更新</button>
     </div>
 
-    <div class="action-bar">
-      <button class="action-chip" onclick="setAction('画像生成')">🖼️ 画像生成</button>
-      <button class="action-chip" onclick="setAction('コード生成')">💻 高度なコード</button>
-      <button class="action-chip" onclick="setAction('雑談')">🗣️ 雑談・相談</button>
-      <button class="action-chip" onclick="setAction('しりとり')">🎈 AIとしりとり</button>
-      <button class="action-chip" onclick="setAction('天気')">☀️ 最新気象確認</button>
-      <button class="action-chip" onclick="clearHistory()">🧹 履歴リセット</button>
+    <!-- Search Row -->
+    <div class="search-row">
+      <span class="label">検索</span>
+      <input type="text" id="searchInput" placeholder="検索ワードを入力..." onkeydown="if(event.key==='Enter') execSearch('duck')">
+      <button class="btn" onclick="clearSearch()">消去</button>
+      <button class="btn btn-primary" onclick="execSearch('duck')">🦆 DuckDuckGo検索</button>
+      <button class="btn btn-primary" style="background:#818cf8;" onclick="execSearch('ai')">🤖 AI検索 (Copilot風)</button>
     </div>
+  </div>
 
-    <div class="status-bar">
-      <span id="planStatus">🌐 FREE TIER</span>
-      <span id="usageStatus">残利用枠: 100通/2時間</span>
-    </div>
-  </header>
+  <!-- 3. FAMOUS SITES SHORTCUTS -->
+  <div class="shortcuts-bar">
+    <button class="shortcut-btn" onclick="openShortcut('https://www.youtube.com')">▶️ YouTube</button>
+    <button class="shortcut-btn" onclick="openShortcut('https://x.com')">𝕏 Twitter/X</button>
+    <button class="shortcut-btn" onclick="openShortcut('https://www.google.com')">🔍 Google</button>
+    <button class="shortcut-btn" onclick="openShortcut('https://www.amazon.co.jp')">🛒 Amazon</button>
+    <button class="shortcut-btn" onclick="openShortcut('https://github.com')">🐙 GitHub</button>
+    <button class="shortcut-btn" onclick="openShortcut('https://ja.wikipedia.org')">🌐 Wikipedia</button>
+  </div>
 
-  <div class="chat-container" id="chatBox">
-    <div class="msg-wrapper ai">
-      <div class="msg-sender">ULTRA NEXUS AI</div>
-      <div class="msg-bubble">
-        システム準備完了。プロフェッショナルAIエンジンが待機中です。<br>
-        テキスト対話、プログラミングコード出力、高画質AI画像生成、音声入出力に対応しています。
+  <!-- 4. CONTENT VIEW -->
+  <div class="content-area" id="contentArea">
+    <iframe id="webFrame" src="about:blank"></iframe>
+    <div class="ai-result-box" id="aiResultBox" style="display: none;">
+      <div class="ai-card">
+        <h3>🤖 AI Web Search Engine</h3>
+        <div id="aiResponseText">検索ワードを入力して「AI検索」を押してください。</div>
       </div>
     </div>
   </div>
 
-  <footer>
-    <div class="input-wrapper">
-      <button class="icon-btn mic-btn" id="micBtn" onclick="toggleSpeech()">🎙️</button>
-      <textarea class="main-input" id="userInput" placeholder="メッセージを入力... (Shift+Enterで改行)" rows="1" onkeydown="onKey(event)"></textarea>
-      <button class="icon-btn send-btn" onclick="sendMsg()">➤</button>
-    </div>
-  </footer>
-</div>
-
 <script>
-  /* GLOBAL STATE & LOCAL STORAGE */
-  let isPremium = false;
-  let recognition = null;
-  let isListening = false;
-
-  // Initialize marked settings
-  marked.setOptions({
-    highlight: function(code, lang) {
-      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-      return hljs.highlight(code, { language }).value;
-    },
-    langPrefix: 'hljs language-'
-  });
+  // STATE MANAGEMENT
+  let tabs = [];
+  let activeTabId = null;
 
   function init() {
-    const now = Date.now();
-    let reset = localStorage.getItem("nexus_reset");
-    if (!reset || now > parseInt(reset)) {
-      localStorage.setItem("nexus_reset", now + 2 * 60 * 60 * 1000);
-      localStorage.setItem("nexus_used", "0");
+    const savedTabs = localStorage.getItem("nexus_browser_tabs");
+    if (savedTabs) {
+      tabs = JSON.parse(savedTabs);
     }
-    isPremium = localStorage.getItem("nexus_premium") === "true";
-    updateUI();
-    setupSpeech();
-    loadHistory();
-  }
-
-  function updateUI() {
-    const used = parseInt(localStorage.getItem("nexus_used") || "0");
-    const max = isPremium ? 500 : 100;
-    document.getElementById("planStatus").textContent = isPremium ? "🌟 PRO UNLIMITED" : "🌐 FREE TIER";
-    document.getElementById("usageStatus").textContent = `残利用枠: ${max - used}/${max}通`;
-  }
-
-  function enterCode() {
-    const code = prompt("プレミアムパスコードを入力してください:");
-    if (code === "5533") {
-      isPremium = true;
-      localStorage.setItem("nexus_premium", "true");
-      alert("PRO UNLIMITED モードが解除されました！（上限拡張・高速処理）");
-      updateUI();
-    } else if (code) {
-      alert("無効なパスコードです。");
+    if (tabs.length === 0) {
+      addNewTab("DuckDuckGo", "https://duckduckgo.com", "duck");
+    } else {
+      activeTabId = tabs[0].id;
+      renderTabs();
+      loadTabContent(tabs[0]);
     }
   }
 
-  function setAction(type) {
-    const input = document.getElementById("userInput");
-    if (type === '画像生成') input.value = "ネオンが輝くサイバーパンクな未来都市のリアルな画像を描いて";
-    if (type === 'コード生成') input.value = "HTML/CSS/JSで動作するモダンな3Dカード回転アニメーションのコードを作成して";
-    if (type === '雑談') input.value = "最近の技術動向や興味深いテーマについて雑談しよう！";
-    if (type === 'しりとり') input.value = "AIとしりとり対戦！「ルビー」からスタート！";
-    if (type === '天気') input.value = "東京都千代田区の明日の天気を詳しく確認して";
-    input.focus();
+  function saveTabs() {
+    localStorage.setItem("nexus_browser_tabs", JSON.stringify(tabs));
   }
 
-  function onModelChange() {
-    const mode = document.getElementById("modelSelect").value;
-    addSystemMsg(`モードを変更しました: 【${mode}】`);
+  // TAB ACTIONS
+  function addNewTab(title = "新しいタブ", url = "https://duckduckgo.com", mode = "duck") {
+    const newId = Date.now().toString();
+    const newTab = { id: newId, title: title, url: url, mode: mode };
+    tabs.push(newTab);
+    activeTabId = newId;
+    saveTabs();
+    renderTabs();
+    loadTabContent(newTab);
   }
 
-  /* ROBUST AI API ROUTING WITH FALLBACKS */
-  async function fetchAIResponse(promptText, mode) {
-    let systemPrompt = "あなたは世界最高峰の性能を持つ親切で高度なAIアシスタントです。";
-    if (mode === "COOL_AI") systemPrompt = "あなたは超優秀なシニアソフトウエアエンジニアです。コード表現は完璧に、マークダウンのコードブロック形式で出力してください。";
-    if (mode === "ASSISTANT") systemPrompt = "あなたはフレンドリーで知的な対話AIパートナーです。";
+  function switchTab(id) {
+    activeTabId = id;
+    renderTabs();
+    const tab = tabs.find(t => t.id === id);
+    if (tab) loadTabContent(tab);
+  }
 
-    // Primary & Fallback URLs
-    const primaryUrl = `https://text.pollinations.ai/${encodeURIComponent(promptText)}?system=${encodeURIComponent(systemPrompt)}&model=openai`;
-    const fallbackUrl = `https://text.pollinations.ai/${encodeURIComponent(promptText)}?model=mistral`;
+  function closeTab(e, id) {
+    e.stopPropagation();
+    if (tabs.length === 1) return; // Keep at least 1 tab
+    tabs = tabs.filter(t => t.id !== id);
+    if (activeTabId === id) {
+      activeTabId = tabs[tabs.length - 1].id;
+    }
+    saveTabs();
+    renderTabs();
+    const currentTab = tabs.find(t => t.id === activeTabId);
+    if (currentTab) loadTabContent(currentTab);
+  }
+
+  function renderTabs() {
+    const tabsBar = document.getElementById("tabsBar");
+    // Clear existing tab items
+    const existingTabs = tabsBar.querySelectorAll(".tab-item");
+    existingTabs.forEach(t => t.remove());
+
+    const newBtn = tabsBar.querySelector(".new-tab-btn");
+
+    tabs.forEach(tab => {
+      const tabEl = document.createElement("div");
+      tabEl.className = `tab-item ${tab.id === activeTabId ? 'active' : ''}`;
+      tabEl.onclick = () => switchTab(tab.id);
+
+      const titleEl = document.createElement("span");
+      titleEl.className = "tab-title";
+      titleEl.textContent = tab.title;
+
+      const closeEl = document.createElement("span");
+      closeEl.className = "tab-close";
+      closeEl.textContent = "✕";
+      closeEl.onclick = (e) => closeTab(e, tab.id);
+
+      tabEl.appendChild(titleEl);
+      tabEl.appendChild(closeEl);
+      tabsBar.insertBefore(tabEl, newBtn);
+    });
+  }
+
+  // NAVIGATION & SEARCH
+  function loadTabContent(tab) {
+    document.getElementById("urlInput").value = tab.url;
+    const iframe = document.getElementById("webFrame");
+    const aiBox = document.getElementById("aiResultBox");
+
+    if (tab.mode === "ai") {
+      iframe.style.display = "none";
+      aiBox.style.display = "block";
+    } else {
+      aiBox.style.display = "none";
+      iframe.style.display = "block";
+      iframe.src = tab.url;
+    }
+  }
+
+  function navigateUrl() {
+    let url = document.getElementById("urlInput").value.trim();
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = "https://" + url;
+    }
+    document.getElementById("urlInput").value = url;
+    
+    updateActiveTab(url, url, "url");
+    loadTabContent(tabs.find(t => t.id === activeTabId));
+  }
+
+  function copyUrl() {
+    const url = document.getElementById("urlInput").value;
+    navigator.clipboard.writeText(url);
+    alert("URLをコピーしました: " + url);
+  }
+
+  function refreshPage() {
+    const currentTab = tabs.find(t => t.id === activeTabId);
+    if (currentTab) loadTabContent(currentTab);
+  }
+
+  function clearSearch() {
+    document.getElementById("searchInput").value = "";
+  }
+
+  function execSearch(engine) {
+    const query = document.getElementById("searchInput").value.trim();
+    if (!query) return;
+
+    if (engine === 'duck') {
+      const searchUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
+      updateActiveTab(`DDG: ${query}`, searchUrl, "duck");
+      loadTabContent(tabs.find(t => t.id === activeTabId));
+    } else if (engine === 'ai') {
+      updateActiveTab(`AI: ${query}`, "AI Search", "ai");
+      loadTabContent(tabs.find(t => t.id === activeTabId));
+      fetchAISearch(query);
+    }
+  }
+
+  function openShortcut(url) {
+    document.getElementById("urlInput").value = url;
+    navigateUrl();
+  }
+
+  function updateActiveTab(title, url, mode) {
+    const tab = tabs.find(t => t.id === activeTabId);
+    if (tab) {
+      tab.title = title;
+      tab.url = url;
+      tab.mode = mode;
+      saveTabs();
+      renderTabs();
+    }
+  }
+
+  // AI SEARCH FETCH
+  async function fetchAISearch(query) {
+    const aiText = document.getElementById("aiResponseText");
+    aiText.innerHTML = "🔍 インターネット上の最新情報を分析・集約中...";
 
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
-      const res = await fetch(primaryUrl, { signal: controller.signal });
-      clearTimeout(timeoutId);
-
+      const prompt = `ユーザーの検索クエリ: 「${query}」\nWeb上の知見や構造化した解説を分かりやすく要約して回答してください。`;
+      const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai`);
       if (res.ok) {
         const text = await res.text();
-        if (text && text.trim().length > 0) return text;
+        aiText.innerText = text;
+      } else {
+        throw new Error("APIレスポンスエラー");
       }
-      throw new Error("Primary API unreachable");
     } catch (e) {
-      console.warn("Primary API failed. Switching to fallback engine...", e);
-      try {
-        const res2 = await fetch(fallbackUrl);
-        if (res2.ok) {
-          const text2 = await res2.text();
-          if (text2 && text2.trim().length > 0) return text2;
-        }
-      } catch (err) {
-        console.error("Fallback API failed:", err);
-      }
-      return "⚠️ **ネットワーク接続エラー**: サービスへのアクセスが集中しています。再送信をお試しください。";
+      aiText.innerHTML = "⚠️ AI検索の取得に失敗しました。DuckDuckGo検索をご利用ください。";
     }
   }
-
-  /* SEND MESSAGE HANDLER */
-  async function sendMsg() {
-    const input = document.getElementById("userInput");
-    const txt = input.value.trim();
-    if (!txt) return;
-
-    const mode = document.getElementById("modelSelect").value;
-    let used = parseInt(localStorage.getItem("nexus_used") || "0");
-    const max = isPremium ? 500 : 100;
-
-    if (used >= max) {
-      addSystemMsg("2時間の利用枠上限に達しました。パスコードを入力するか、時間をおいて再試行してください。");
-      return;
-    }
-
-    localStorage.setItem("nexus_used", (used + 1).toString());
-    updateUI();
-
-    addMsg("user", txt);
-    input.value = "";
-    input.style.height = "auto";
-
-    // Check if Image Generation Request or VISION_ART mode
-    const isImageReq = mode === "VISION_ART" || txt.includes("画像") || txt.includes("描いて") || txt.includes("イラスト") || txt.includes("写真");
-
-    if (isImageReq) {
-      const aiWrapper = addMsg("ai", "");
-      const bubble = aiWrapper.querySelector(".msg-bubble");
-      
-      const thinkBox = document.createElement("div");
-      thinkBox.className = "thinking-box";
-      thinkBox.innerHTML = `<div class="spinner"></div> 画像プロンプトを解析・高画質レンダリング中...`;
-      bubble.appendChild(thinkBox);
-
-      const cleanPrompt = encodeURIComponent(txt.replace(/(画像|描いて|イラスト|写真|の|作って|見せて)/g, ""));
-      const img = document.createElement("img");
-      const seed = Math.floor(Math.random() * 1000000);
-      img.src = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=800&height=800&nologo=true&seed=${seed}`;
-      img.className = "generated-img";
-
-      img.onload = () => {
-        thinkBox.remove();
-        bubble.appendChild(document.createTextNode("ご希望のイメージをリアルタイム生成しました："));
-        bubble.appendChild(document.createElement("br"));
-        bubble.appendChild(img);
-        saveHistory();
-      };
-      img.onerror = () => {
-        thinkBox.remove();
-        bubble.textContent = "画像の生成に失敗しました。プロンプト表現を変えてお試しください。";
-      };
-      return;
-    }
-
-    // Standard Text & Code Response
-    const aiWrapper = addMsg("ai", "");
-    const bubble = aiWrapper.querySelector(".msg-bubble");
-
-    const thinkBox = document.createElement("div");
-    thinkBox.className = "thinking-box";
-    thinkBox.innerHTML = `<div class="spinner"></div> ${mode === 'DEEP_THINK' ? '思考プロセスを実行中 (深層推論)...' : '応答を生成中...'}`;
-    bubble.appendChild(thinkBox);
-
-    const delay = (mode === "DEEP_THINK") ? 3000 : 400;
-    
-    setTimeout(async () => {
-      let promptText = txt;
-      if (txt.includes("天気")) promptText += " (最新の場所・気象条件を分析して回答してください)";
-
-      const reply = await fetchAIResponse(promptText, mode);
-      thinkBox.remove();
-
-      // Render Markdown
-      bubble.innerHTML = marked.parse(reply);
-
-      // Process Code Block Copy Buttons
-      bubble.querySelectorAll("pre").forEach(pre => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "code-block-wrapper";
-        const header = document.createElement("div");
-        header.className = "code-header";
-        header.innerHTML = `<span>Code</span><button class="copy-btn" onclick="copyCode(this)">コピー</button>`;
-        pre.parentNode.insertBefore(wrapper, pre);
-        wrapper.appendChild(header);
-        wrapper.appendChild(pre);
-      });
-
-      // Optional Text-To-Speech if short reply
-      if (reply.length < 150 && !reply.includes("```")) {
-        speakText(reply.replace(/[\#\*\_]/g, ""));
-      }
-
-      saveHistory();
-    }, delay);
-  }
-
-  /* SPEECH RECOGNITION & SYNTHESIS */
-  function setupSpeech() {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.lang = 'ja-JP';
-      recognition.continuous = false;
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById("userInput").value = transcript;
-        toggleSpeech();
-      };
-
-      recognition.onerror = () => toggleSpeech();
-      recognition.onend = () => toggleSpeech(false);
-    } else {
-      document.getElementById("micBtn").style.display = "none";
-    }
-  }
-
-  function toggleSpeech(forceState) {
-    const micBtn = document.getElementById("micBtn");
-    if (!recognition) return;
-
-    if (forceState === false || isListening) {
-      isListening = false;
-      recognition.stop();
-      micBtn.classList.remove("active");
-    } else {
-      isListening = true;
-      recognition.start();
-      micBtn.classList.add("active");
-    }
-  }
-
-  function speakText(text) {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const uttr = new SpeechSynthesisUtterance(text);
-      uttr.lang = 'ja-JP';
-      window.speechSynthesis.speak(uttr);
-    }
-  }
-
-  /* UTILITY FUNCTIONS */
-  function onKey(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMsg();
-    }
-  }
-
-  function copyCode(btn) {
-    const code = btn.closest(".code-block-wrapper").querySelector("code").innerText;
-    navigator.clipboard.writeText(code);
-    btn.textContent = "完了！";
-    setTimeout(() => btn.textContent = "コピー", 2000);
-  }
-
-  function addMsg(type, text) {
-    const box = document.getElementById("chatBox");
-    const wrap = document.createElement("div");
-    wrap.className = `msg-wrapper ${type}`;
-
-    const sender = document.createElement("div");
-    sender.className = "msg-sender";
-    sender.textContent = type === "user" ? "YOU" : (type === "ai" ? "ULTRA NEXUS AI" : "SYSTEM");
-
-    const bubble = document.createElement("div");
-    bubble.className = "msg-bubble";
-    bubble.textContent = text;
-
-    wrap.appendChild(sender);
-    wrap.appendChild(bubble);
-    box.appendChild(wrap);
-    box.scrollTop = box.scrollHeight;
-    return wrap;
-  }
-
-  function addSystemMsg(text) {
-    const box = document.getElementById("chatBox");
-    const wrap = document.createElement("div");
-    wrap.className = "msg-wrapper system";
-    const bubble = document.createElement("div");
-    bubble.className = "msg-bubble";
-    bubble.textContent = text;
-    wrap.appendChild(bubble);
-    box.appendChild(wrap);
-    box.scrollTop = box.scrollHeight;
-  }
-
-  function saveHistory() {
-    const chatBox = document.getElementById("chatBox");
-    localStorage.setItem("nexus_history", chatBox.innerHTML);
-  }
-
-  function loadHistory() {
-    const saved = localStorage.getItem("nexus_history");
-    if (saved) {
-      document.getElementById("chatBox").innerHTML = saved;
-    }
-  }
-
-  function clearHistory() {
-    if (confirm("会話履歴を全てリセットしますか？")) {
-      localStorage.removeItem("nexus_history");
-      location.reload();
-    }
-  }
-
-  // Auto resize input area
-  document.getElementById("userInput").addEventListener("input", function() {
-    this.style.height = "auto";
-    this.style.height = (this.scrollHeight) + "px";
-  });
 
   init();
 </script>
