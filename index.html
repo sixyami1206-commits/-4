@@ -7,7 +7,7 @@
   <style>
     :root {
       --bg-color: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-bg: rgba(30, 41, 59, 0.85);
       --accent: #38bdf8;
       --text: #f8fafc;
       --border: #334155;
@@ -21,57 +21,63 @@
       height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
       overflow: hidden;
-      transition: all 0.3s ease;
     }
 
-    /* LOGO AREA */
+    /* HEADER AREA */
+    header {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      z-index: 10;
+    }
+
     .logo-container {
-      text-align: center;
-      margin-bottom: 28px;
-      transition: opacity 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .logo-main {
-      font-size: 3.2rem;
+      font-size: 1.8rem;
       font-weight: 900;
-      letter-spacing: -1px;
+      letter-spacing: -0.5px;
       background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .logo-sub {
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       color: #94a3b8;
-      letter-spacing: 2px;
-      margin-top: 4px;
     }
 
-    /* SEARCH BAR (Google Style) */
+    /* SEARCH BAR & FIXED SUFFIX */
     .search-box {
-      width: 90%;
-      max-width: 580px;
-      background: var(--card-bg);
-      backdrop-filter: blur(10px);
+      width: 100%;
+      max-width: 650px;
+      background: rgba(15, 23, 42, 0.6);
       border: 1px solid var(--border);
       border-radius: 30px;
-      padding: 8px 16px;
+      padding: 4px 12px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-      transition: all 0.3s;
+      gap: 8px;
     }
 
-    .search-box:focus-within {
-      border-color: var(--accent);
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
-    }
+    .search-box:focus-within { border-color: var(--accent); }
 
-    .search-icon { font-size: 1.1rem; color: #64748b; }
+    .input-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: transparent;
+    }
 
     input.search-input {
       flex: 1;
@@ -79,53 +85,92 @@
       border: none;
       outline: none;
       color: var(--text);
-      font-size: 1rem;
-      padding: 6px 0;
+      font-size: 0.95rem;
+      padding: 8px 0;
+      text-align: right;
     }
 
-    .game-mode-btn {
-      background: rgba(56, 189, 248, 0.15);
-      border: 1px solid var(--accent);
+    .fixed-suffix {
       color: var(--accent);
-      padding: 6px 14px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      user-select: none;
+      padding-left: 4px;
+      white-space: nowrap;
+    }
+
+    .btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 12px;
       border-radius: 20px;
       font-size: 0.8rem;
       font-weight: bold;
       cursor: pointer;
       white-space: nowrap;
-      transition: transform 0.2s;
     }
 
-    .game-mode-btn:active { transform: scale(0.95); }
+    .btn-ai { background: linear-gradient(135deg, #38bdf8, #818cf8); color: #000; border: none; }
+    .game-mode-btn { background: rgba(56, 189, 248, 0.2); border-color: var(--accent); color: var(--accent); display: none; }
 
-    /* FAMOUS SITES SHORTCUTS */
+    /* SHORTCUTS */
     .shortcuts {
       display: flex;
-      gap: 16px;
-      margin-top: 32px;
-      flex-wrap: wrap;
+      gap: 12px;
+      overflow-x: auto;
+      width: 100%;
+      max-width: 650px;
       justify-content: center;
-      max-width: 500px;
-      transition: opacity 0.3s;
     }
 
-    .shortcut-icon {
-      width: 48px;
-      height: 48px;
+    .shortcut-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* MAIN CONTENT VIEW (IFRAME & CrawlAI) */
+    .content-viewport {
+      flex: 1;
+      width: 100%;
+      position: relative;
+      background: #000;
+    }
+
+    iframe#webFrame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #fff;
+      display: none;
+    }
+
+    .ai-result-panel {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg-color);
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    .ai-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-      color: var(--text);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 750px;
+      height: fit-content;
+      line-height: 1.7;
     }
 
-    .shortcut-icon:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .ai-card h3 { color: var(--accent); margin-bottom: 12px; }
 
     /* GAME MODE OVERLAY */
     .game-overlay {
@@ -138,103 +183,139 @@
 
     .game-controls {
       position: absolute;
-      top: 16px;
-      right: 16px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      background: rgba(0,0,0,0.6);
-      padding: 8px 16px;
-      border-radius: 20px;
-      border: 1px solid #333;
+      top: 16px; right: 16px;
+      display: flex; gap: 12px; align-items: center;
+      background: rgba(0,0,0,0.7); padding: 8px 16px; border-radius: 20px; border: 1px solid #333;
     }
 
-    .fps-badge {
-      color: #22c55e;
-      font-size: 0.85rem;
-      font-weight: bold;
-      font-family: monospace;
-    }
-
-    .off-btn {
-      background: #ef4444;
-      color: #fff;
-      border: none;
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    /* WebGPU Canvas Effect for Game Mode */
-    canvas#gpuCanvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
+    .fps-badge { color: #22c55e; font-size: 0.85rem; font-family: monospace; font-weight: bold; }
+    .off-btn { background: #ef4444; color: #fff; border: none; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
+    canvas#gpuCanvas { width: 100%; height: 100%; display: block; }
   </style>
 </head>
 <body>
 
-  <!-- 1. LOGO -->
-  <div class="logo-container" id="logoArea">
-    <div class="logo-main">crawlWeb</div>
-    <div class="logo-sub">クロワルウェィブ</div>
+  <!-- HEADER / TOOLBAR -->
+  <header>
+    <div class="logo-container">
+      <span class="logo-main">crawlWeb</span>
+      <span class="logo-sub">クロワルウェィブ</span>
+    </div>
+
+    <!-- SEARCH BAR -->
+    <div class="search-box">
+      <div class="input-wrapper">
+        <input type="text" class="search-input" id="searchInput" placeholder="単語を入力" onkeydown="if(event.key==='Enter') execSearch('duck')">
+        <span class="fixed-suffix">について</span>
+      </div>
+      <button class="btn" onclick="execSearch('duck')">検索</button>
+      <button class="btn btn-ai" onclick="execSearch('ai')">CrawlAI検索</button>
+      <button class="btn game-mode-btn" id="gameBtn" onclick="enableGameMode()">🎮 ゲームモード</button>
+    </div>
+
+    <!-- FAMOUS SITES -->
+    <div class="shortcuts">
+      <button class="shortcut-btn" onclick="openUrl('https://www.wikipedia.org')">Wikipedia</button>
+      <button class="shortcut-btn" onclick="openUrl('https://www.youtube.com')">YouTube</button>
+      <button class="shortcut-btn" onclick="openUrl('https://x.com')">𝕏</button>
+      <button class="shortcut-btn" onclick="openUrl('https://www.google.com')">Google</button>
+      <button class="shortcut-btn" onclick="openUrl('https://github.com')">GitHub</button>
+    </div>
+  </header>
+
+  <!-- CONTENT VIEW (In-Site Browser / CrawlAI) -->
+  <div class="content-viewport">
+    <iframe id="webFrame"></iframe>
+    <div class="ai-result-panel" id="aiPanel">
+      <div class="ai-card">
+        <h3 id="aiTitle">🤖 CrawlAI 検索</h3>
+        <div id="aiBody">単語を入力して「CrawlAI検索」を押すと、Wikipediaから情報を収集して要約表示します。</div>
+      </div>
+    </div>
   </div>
 
-  <!-- 2. SEARCH BAR -->
-  <div class="search-box" id="searchArea">
-    <span class="search-icon">🔍</span>
-    <input type="text" class="search-input" id="searchInput" placeholder="検索またはURLを入力..." onkeydown="if(event.key==='Enter') doSearch()">
-    <button class="game-mode-btn" onclick="enableGameMode()">🎮 ゲームモード</button>
-  </div>
-
-  <!-- 3. SHORTCUTS -->
-  <div class="shortcuts" id="shortcutArea">
-    <a class="shortcut-icon" href="https://www.youtube.com" target="_blank" title="YouTube">▶️</a>
-    <a class="shortcut-icon" href="https://x.com" target="_blank" title="X (Twitter)">𝕏</a>
-    <a class="shortcut-icon" href="https://www.google.com" target="_blank" title="Google">🔍</a>
-    <a class="shortcut-icon" href="https://www.amazon.co.jp" target="_blank" title="Amazon">🛒</a>
-    <a class="shortcut-icon" href="https://github.com" target="_blank" title="GitHub">🐙</a>
-  </div>
-
-  <!-- 4. GAME MODE OVERLAY (WebGPU / High FPS) -->
+  <!-- GAME MODE OVERLAY -->
   <div class="game-overlay" id="gameOverlay">
     <canvas id="gpuCanvas"></canvas>
     <div class="game-controls">
-      <span class="fps-badge" id="fpsDisplay">FPS: -- (WebGPU Active)</span>
-      <button class="off-btn" onclick="disableGameMode()">ゲームモード OFF</button>
+      <span class="fps-badge" id="fpsDisplay">FPS: -- (GPU Max)</span>
+      <button class="off-btn" onclick="disableGameMode()">OFF</button>
     </div>
   </div>
 
 <script>
-  // SEARCH FUNCTION
-  function doSearch() {
-    const val = document.getElementById("searchInput").value.trim();
-    if (!val) return;
-    if (val.startsWith("http://") || val.startsWith("https://")) {
-      window.location.href = val;
-    } else {
-      window.location.href = `https://duckduckgo.com/?q=${encodeURIComponent(val)}`;
+  /* SEARCH & IN-SITE DISPLAY */
+  function getFullQuery() {
+    const keyword = document.getElementById("searchInput").value.trim();
+    if (!keyword) return "";
+    return `${keyword}について`;
+  }
+
+  function showGameBtn() {
+    document.getElementById("gameBtn").style.display = "inline-block";
+  }
+
+  function openUrl(url) {
+    showGameBtn();
+    document.getElementById("aiPanel").style.display = "none";
+    const iframe = document.getElementById("webFrame");
+    iframe.style.display = "block";
+    iframe.src = url;
+  }
+
+  function execSearch(type) {
+    const fullQuery = getFullQuery();
+    if (!fullQuery) return;
+
+    showGameBtn(); // 検索したらゲームボタンを表示
+
+    if (type === 'duck') {
+      const searchUrl = `https://duckduckgo.com/?q=${encodeURIComponent(fullQuery)}`;
+      openUrl(searchUrl);
+    } else if (type === 'ai') {
+      document.getElementById("webFrame").style.display = "none";
+      document.getElementById("aiPanel").style.display = "flex";
+      fetchCrawlAI();
     }
   }
 
-  // WEBGPU & FPS GAME MODE ENGINE
+  /* CrawlAI SEARCH (Wikipedia API) */
+  async function fetchCrawlAI() {
+    const rawWord = document.getElementById("searchInput").value.trim();
+    const fullQuery = getFullQuery();
+    const titleEl = document.getElementById("aiTitle");
+    const bodyEl = document.getElementById("aiBody");
+
+    titleEl.textContent = `🤖 CrawlAI: 「${fullQuery}」`;
+    bodyEl.textContent = "🔍 Wikipediaから情報を収集・生成中...";
+
+    if (!rawWord) {
+      bodyEl.textContent = "表示不可";
+      return;
+    }
+
+    try {
+      // Wikipedia REST API
+      const res = await fetch(`https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(rawWord)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.extract) {
+          bodyEl.innerHTML = `<p><strong>【${data.title}について】</strong></p><p style="margin-top:8px;">${data.extract}</p>`;
+        } else {
+          bodyEl.textContent = "表示不可";
+        }
+      } else {
+        bodyEl.textContent = "表示不可";
+      }
+    } catch (e) {
+      bodyEl.textContent = "表示不可";
+    }
+  }
+
+  /* WEBGPU & FPS GAME MODE ENGINE */
   let animId = null;
   let lastTime = performance.now();
   let frameCount = 0;
-
-  async function initWebGPU() {
-    if (navigator.gpu) {
-      try {
-        const adapter = await navigator.gpu.requestAdapter();
-        if (adapter) console.log("WebGPU Ready!");
-      } catch (e) {
-        console.warn("WebGPU fallback to Canvas2D");
-      }
-    }
-  }
 
   function enableGameMode() {
     document.getElementById("gameOverlay").style.display = "block";
@@ -262,21 +343,16 @@
       const now = performance.now();
       frameCount++;
       if (now - lastTime >= 1000) {
-        document.getElementById("fpsDisplay").textContent = `FPS: ${frameCount} (Max GPU Boost)`;
+        document.getElementById("fpsDisplay").textContent = `FPS: ${frameCount} (GPU Max)`;
         frameCount = 0;
         lastTime = now;
       }
-
-      // Minimal background loop
-      ctx.fillStyle = "#050811";
+      ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
       animId = requestAnimationFrame(render);
     }
     render();
   }
-
-  initWebGPU();
 </script>
 </body>
 </html>
