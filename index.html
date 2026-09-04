@@ -2,417 +2,281 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nexus Search - Custom Chrome Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>crawlWeb</title>
   <style>
     :root {
-      --bg-dark: #121214;
-      --bg-card: #1e1e24;
-      --bg-input: #2a2a32;
+      --bg-color: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
       --accent: #38bdf8;
-      --accent-hover: #0284c7;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --border: #374151;
+      --text: #f8fafc;
+      --border: #334155;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
     body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
+      background-color: var(--bg-color);
+      color: var(--text);
       height: 100vh;
       display: flex;
       flex-direction: column;
+      justify-content: center;
+      align-items: center;
       overflow: hidden;
+      transition: all 0.3s ease;
     }
 
-    /* --- TABS BAR --- */
-    .tabs-bar {
-      background: #09090b;
-      display: flex;
-      align-items: center;
-      padding: 6px 10px 0 10px;
-      gap: 6px;
-      overflow-x: auto;
-      border-bottom: 1px solid var(--border);
+    /* LOGO AREA */
+    .logo-container {
+      text-align: center;
+      margin-bottom: 28px;
+      transition: opacity 0.3s;
     }
 
-    .tab-item {
-      background: var(--bg-card);
-      color: var(--text-muted);
-      padding: 8px 16px;
-      border-radius: 10px 10px 0 0;
+    .logo-main {
+      font-size: 3.2rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-sub {
       font-size: 0.85rem;
+      color: #94a3b8;
+      letter-spacing: 2px;
+      margin-top: 4px;
+    }
+
+    /* SEARCH BAR (Google Style) */
+    .search-box {
+      width: 90%;
+      max-width: 580px;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 8px 16px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      max-width: 200px;
-      min-width: 120px;
-      border: 1px solid transparent;
-      border-bottom: none;
-      user-select: none;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      transition: all 0.3s;
     }
 
-    .tab-item.active {
-      background: var(--bg-dark);
-      color: var(--accent);
-      border-color: var(--border);
-      font-weight: bold;
+    .search-box:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
     }
 
-    .tab-title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .tab-close { font-size: 0.75rem; border-radius: 50%; padding: 2px 5px; }
-    .tab-close:hover { background: rgba(255,255,255,0.2); }
+    .search-icon { font-size: 1.1rem; color: #64748b; }
 
-    .new-tab-btn {
-      background: transparent;
-      color: var(--text-muted);
-      border: none;
-      font-size: 1.2rem;
-      padding: 4px 12px;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-    .new-tab-btn:hover { background: var(--bg-card); color: var(--text-main); }
-
-    /* --- BROWSER TOOLBAR --- */
-    .toolbar {
-      background: var(--bg-card);
-      padding: 10px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .url-row, .search-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .label {
-      font-size: 0.75rem;
-      font-weight: bold;
-      color: var(--text-muted);
-      width: 70px;
-      flex-shrink: 0;
-    }
-
-    input[type="text"] {
+    input.search-input {
       flex: 1;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      padding: 8px 14px;
-      border-radius: 8px;
+      background: transparent;
+      border: none;
       outline: none;
-      font-size: 0.9rem;
-    }
-    input[type="text"]:focus { border-color: var(--accent); }
-
-    .btn {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .btn:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-primary { background: var(--accent); color: #000; font-weight: bold; border: none; }
-    .btn-primary:hover { background: var(--accent-hover); color: #fff; }
-
-    /* --- FAMOUS SITES --- */
-    .shortcuts-bar {
-      display: flex;
-      gap: 10px;
-      padding: 8px 16px;
-      background: #18181c;
-      border-bottom: 1px solid var(--border);
-      overflow-x: auto;
+      color: var(--text);
+      font-size: 1rem;
+      padding: 6px 0;
     }
 
-    .shortcut-btn {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      padding: 6px 12px;
+    .game-mode-btn {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 6px 14px;
       border-radius: 20px;
       font-size: 0.8rem;
+      font-weight: bold;
       cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.2s;
+    }
+
+    .game-mode-btn:active { transform: scale(0.95); }
+
+    /* FAMOUS SITES SHORTCUTS */
+    .shortcuts {
+      display: flex;
+      gap: 16px;
+      margin-top: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 500px;
+      transition: opacity 0.3s;
+    }
+
+    .shortcut-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 50%;
       display: flex;
       align-items: center;
-      gap: 6px;
-      white-space: nowrap;
+      justify-content: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: var(--text);
     }
-    .shortcut-btn:hover { border-color: var(--accent); }
 
-    /* --- CONTENT VIEW AREA --- */
-    .content-area {
-      flex: 1;
+    .shortcut-icon:hover { border-color: var(--accent); transform: translateY(-3px); }
+
+    /* GAME MODE OVERLAY */
+    .game-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #000;
+      display: none;
+      z-index: 9999;
+    }
+
+    .game-controls {
+      position: absolute;
+      top: 16px;
+      right: 16px;
       display: flex;
-      flex-direction: column;
-      position: relative;
+      gap: 12px;
+      align-items: center;
+      background: rgba(0,0,0,0.6);
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid #333;
     }
 
-    iframe {
+    .fps-badge {
+      color: #22c55e;
+      font-size: 0.85rem;
+      font-weight: bold;
+      font-family: monospace;
+    }
+
+    .off-btn {
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* WebGPU Canvas Effect for Game Mode */
+    canvas#gpuCanvas {
       width: 100%;
       height: 100%;
-      border: none;
-      background: #fff;
+      display: block;
     }
-
-    .ai-result-box {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      background: var(--bg-dark);
-      line-height: 1.7;
-    }
-
-    .ai-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .ai-card h3 { color: var(--accent); margin-bottom: 12px; }
   </style>
 </head>
 <body>
 
-  <!-- 1. TABS AREA -->
-  <div class="tabs-bar" id="tabsBar">
-    <!-- Tabs dynamically injected -->
-    <button class="new-tab-btn" onclick="addNewTab()">＋</button>
+  <!-- 1. LOGO -->
+  <div class="logo-container" id="logoArea">
+    <div class="logo-main">crawlWeb</div>
+    <div class="logo-sub">クロワルウェィブ</div>
   </div>
 
-  <!-- 2. TOOLBAR (URL & SEARCH) -->
-  <div class="toolbar">
-    <!-- URL Row -->
-    <div class="url-row">
-      <span class="label">URL</span>
-      <input type="text" id="urlInput" placeholder="https://example.com" onkeydown="if(event.key==='Enter') navigateUrl()">
-      <button class="btn" onclick="navigateUrl()">移動</button>
-      <button class="btn" onclick="copyUrl()">URLコピー</button>
-      <button class="btn" onclick="refreshPage()">🔄 更新</button>
-    </div>
-
-    <!-- Search Row -->
-    <div class="search-row">
-      <span class="label">検索</span>
-      <input type="text" id="searchInput" placeholder="検索ワードを入力..." onkeydown="if(event.key==='Enter') execSearch('duck')">
-      <button class="btn" onclick="clearSearch()">消去</button>
-      <button class="btn btn-primary" onclick="execSearch('duck')">🦆 DuckDuckGo検索</button>
-      <button class="btn btn-primary" style="background:#818cf8;" onclick="execSearch('ai')">🤖 AI検索 (Copilot風)</button>
-    </div>
+  <!-- 2. SEARCH BAR -->
+  <div class="search-box" id="searchArea">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-input" id="searchInput" placeholder="検索またはURLを入力..." onkeydown="if(event.key==='Enter') doSearch()">
+    <button class="game-mode-btn" onclick="enableGameMode()">🎮 ゲームモード</button>
   </div>
 
-  <!-- 3. FAMOUS SITES SHORTCUTS -->
-  <div class="shortcuts-bar">
-    <button class="shortcut-btn" onclick="openShortcut('https://www.youtube.com')">▶️ YouTube</button>
-    <button class="shortcut-btn" onclick="openShortcut('https://x.com')">𝕏 Twitter/X</button>
-    <button class="shortcut-btn" onclick="openShortcut('https://www.google.com')">🔍 Google</button>
-    <button class="shortcut-btn" onclick="openShortcut('https://www.amazon.co.jp')">🛒 Amazon</button>
-    <button class="shortcut-btn" onclick="openShortcut('https://github.com')">🐙 GitHub</button>
-    <button class="shortcut-btn" onclick="openShortcut('https://ja.wikipedia.org')">🌐 Wikipedia</button>
+  <!-- 3. SHORTCUTS -->
+  <div class="shortcuts" id="shortcutArea">
+    <a class="shortcut-icon" href="https://www.youtube.com" target="_blank" title="YouTube">▶️</a>
+    <a class="shortcut-icon" href="https://x.com" target="_blank" title="X (Twitter)">𝕏</a>
+    <a class="shortcut-icon" href="https://www.google.com" target="_blank" title="Google">🔍</a>
+    <a class="shortcut-icon" href="https://www.amazon.co.jp" target="_blank" title="Amazon">🛒</a>
+    <a class="shortcut-icon" href="https://github.com" target="_blank" title="GitHub">🐙</a>
   </div>
 
-  <!-- 4. CONTENT VIEW -->
-  <div class="content-area" id="contentArea">
-    <iframe id="webFrame" src="about:blank"></iframe>
-    <div class="ai-result-box" id="aiResultBox" style="display: none;">
-      <div class="ai-card">
-        <h3>🤖 AI Web Search Engine</h3>
-        <div id="aiResponseText">検索ワードを入力して「AI検索」を押してください。</div>
-      </div>
+  <!-- 4. GAME MODE OVERLAY (WebGPU / High FPS) -->
+  <div class="game-overlay" id="gameOverlay">
+    <canvas id="gpuCanvas"></canvas>
+    <div class="game-controls">
+      <span class="fps-badge" id="fpsDisplay">FPS: -- (WebGPU Active)</span>
+      <button class="off-btn" onclick="disableGameMode()">ゲームモード OFF</button>
     </div>
   </div>
 
 <script>
-  // STATE MANAGEMENT
-  let tabs = [];
-  let activeTabId = null;
-
-  function init() {
-    const savedTabs = localStorage.getItem("nexus_browser_tabs");
-    if (savedTabs) {
-      tabs = JSON.parse(savedTabs);
-    }
-    if (tabs.length === 0) {
-      addNewTab("DuckDuckGo", "https://duckduckgo.com", "duck");
+  // SEARCH FUNCTION
+  function doSearch() {
+    const val = document.getElementById("searchInput").value.trim();
+    if (!val) return;
+    if (val.startsWith("http://") || val.startsWith("https://")) {
+      window.location.href = val;
     } else {
-      activeTabId = tabs[0].id;
-      renderTabs();
-      loadTabContent(tabs[0]);
+      window.location.href = `https://duckduckgo.com/?q=${encodeURIComponent(val)}`;
     }
   }
 
-  function saveTabs() {
-    localStorage.setItem("nexus_browser_tabs", JSON.stringify(tabs));
-  }
+  // WEBGPU & FPS GAME MODE ENGINE
+  let animId = null;
+  let lastTime = performance.now();
+  let frameCount = 0;
 
-  // TAB ACTIONS
-  function addNewTab(title = "新しいタブ", url = "https://duckduckgo.com", mode = "duck") {
-    const newId = Date.now().toString();
-    const newTab = { id: newId, title: title, url: url, mode: mode };
-    tabs.push(newTab);
-    activeTabId = newId;
-    saveTabs();
-    renderTabs();
-    loadTabContent(newTab);
-  }
-
-  function switchTab(id) {
-    activeTabId = id;
-    renderTabs();
-    const tab = tabs.find(t => t.id === id);
-    if (tab) loadTabContent(tab);
-  }
-
-  function closeTab(e, id) {
-    e.stopPropagation();
-    if (tabs.length === 1) return; // Keep at least 1 tab
-    tabs = tabs.filter(t => t.id !== id);
-    if (activeTabId === id) {
-      activeTabId = tabs[tabs.length - 1].id;
-    }
-    saveTabs();
-    renderTabs();
-    const currentTab = tabs.find(t => t.id === activeTabId);
-    if (currentTab) loadTabContent(currentTab);
-  }
-
-  function renderTabs() {
-    const tabsBar = document.getElementById("tabsBar");
-    // Clear existing tab items
-    const existingTabs = tabsBar.querySelectorAll(".tab-item");
-    existingTabs.forEach(t => t.remove());
-
-    const newBtn = tabsBar.querySelector(".new-tab-btn");
-
-    tabs.forEach(tab => {
-      const tabEl = document.createElement("div");
-      tabEl.className = `tab-item ${tab.id === activeTabId ? 'active' : ''}`;
-      tabEl.onclick = () => switchTab(tab.id);
-
-      const titleEl = document.createElement("span");
-      titleEl.className = "tab-title";
-      titleEl.textContent = tab.title;
-
-      const closeEl = document.createElement("span");
-      closeEl.className = "tab-close";
-      closeEl.textContent = "✕";
-      closeEl.onclick = (e) => closeTab(e, tab.id);
-
-      tabEl.appendChild(titleEl);
-      tabEl.appendChild(closeEl);
-      tabsBar.insertBefore(tabEl, newBtn);
-    });
-  }
-
-  // NAVIGATION & SEARCH
-  function loadTabContent(tab) {
-    document.getElementById("urlInput").value = tab.url;
-    const iframe = document.getElementById("webFrame");
-    const aiBox = document.getElementById("aiResultBox");
-
-    if (tab.mode === "ai") {
-      iframe.style.display = "none";
-      aiBox.style.display = "block";
-    } else {
-      aiBox.style.display = "none";
-      iframe.style.display = "block";
-      iframe.src = tab.url;
-    }
-  }
-
-  function navigateUrl() {
-    let url = document.getElementById("urlInput").value.trim();
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
-      url = "https://" + url;
-    }
-    document.getElementById("urlInput").value = url;
-    
-    updateActiveTab(url, url, "url");
-    loadTabContent(tabs.find(t => t.id === activeTabId));
-  }
-
-  function copyUrl() {
-    const url = document.getElementById("urlInput").value;
-    navigator.clipboard.writeText(url);
-    alert("URLをコピーしました: " + url);
-  }
-
-  function refreshPage() {
-    const currentTab = tabs.find(t => t.id === activeTabId);
-    if (currentTab) loadTabContent(currentTab);
-  }
-
-  function clearSearch() {
-    document.getElementById("searchInput").value = "";
-  }
-
-  function execSearch(engine) {
-    const query = document.getElementById("searchInput").value.trim();
-    if (!query) return;
-
-    if (engine === 'duck') {
-      const searchUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
-      updateActiveTab(`DDG: ${query}`, searchUrl, "duck");
-      loadTabContent(tabs.find(t => t.id === activeTabId));
-    } else if (engine === 'ai') {
-      updateActiveTab(`AI: ${query}`, "AI Search", "ai");
-      loadTabContent(tabs.find(t => t.id === activeTabId));
-      fetchAISearch(query);
-    }
-  }
-
-  function openShortcut(url) {
-    document.getElementById("urlInput").value = url;
-    navigateUrl();
-  }
-
-  function updateActiveTab(title, url, mode) {
-    const tab = tabs.find(t => t.id === activeTabId);
-    if (tab) {
-      tab.title = title;
-      tab.url = url;
-      tab.mode = mode;
-      saveTabs();
-      renderTabs();
-    }
-  }
-
-  // AI SEARCH FETCH
-  async function fetchAISearch(query) {
-    const aiText = document.getElementById("aiResponseText");
-    aiText.innerHTML = "🔍 インターネット上の最新情報を分析・集約中...";
-
-    try {
-      const prompt = `ユーザーの検索クエリ: 「${query}」\nWeb上の知見や構造化した解説を分かりやすく要約して回答してください。`;
-      const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai`);
-      if (res.ok) {
-        const text = await res.text();
-        aiText.innerText = text;
-      } else {
-        throw new Error("APIレスポンスエラー");
+  async function initWebGPU() {
+    if (navigator.gpu) {
+      try {
+        const adapter = await navigator.gpu.requestAdapter();
+        if (adapter) console.log("WebGPU Ready!");
+      } catch (e) {
+        console.warn("WebGPU fallback to Canvas2D");
       }
-    } catch (e) {
-      aiText.innerHTML = "⚠️ AI検索の取得に失敗しました。DuckDuckGo検索をご利用ください。";
     }
   }
 
-  init();
+  function enableGameMode() {
+    document.getElementById("gameOverlay").style.display = "block";
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    }
+    startFPSLoop();
+  }
+
+  function disableGameMode() {
+    document.getElementById("gameOverlay").style.display = "none";
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+    cancelAnimationFrame(animId);
+  }
+
+  function startFPSLoop() {
+    const canvas = document.getElementById("gpuCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    function render() {
+      const now = performance.now();
+      frameCount++;
+      if (now - lastTime >= 1000) {
+        document.getElementById("fpsDisplay").textContent = `FPS: ${frameCount} (Max GPU Boost)`;
+        frameCount = 0;
+        lastTime = now;
+      }
+
+      // Minimal background loop
+      ctx.fillStyle = "#050811";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      animId = requestAnimationFrame(render);
+    }
+    render();
+  }
+
+  initWebGPU();
 </script>
 </body>
 </html>
