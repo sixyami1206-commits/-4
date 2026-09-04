@@ -121,9 +121,7 @@
       font-weight: 700; cursor: pointer; text-align: center; transition: opacity 0.2s;
     }
     .drawer-btn:hover { opacity: 0.9; }
-    .drawer-btn.delete-btn {
-      background: var(--danger);
-    }
+    .drawer-btn.delete-btn { background: var(--danger); }
 
     /* INITIAL SURVEY FORM */
     .init-survey-card {
@@ -186,8 +184,8 @@
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; justify-content: center; align-items: center; z-index: 300; padding: 16px;
     }
     .modal {
-      background: #ffffff; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; text-align: center;
-      box-shadow: var(--shadow-lg); border: 1px solid var(--card-border);
+      background: #ffffff; border-radius: 16px; padding: 24px; max-width: 440px; width: 100%; text-align: center;
+      box-shadow: var(--shadow-lg); border: 1px solid var(--card-border); position: relative;
     }
     .modal h3 { font-size: 1.15rem; margin-bottom: 14px; color: var(--primary); font-weight: 800; }
     .modal p { font-size: 0.85rem; margin-bottom: 18px; line-height: 1.6; color: var(--text-sub); }
@@ -195,6 +193,21 @@
     .modal-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; }
     .modal-btn.cancel { background: #e2e8f0; color: var(--text); }
     .modal-btn.go { background: var(--primary); color: #fff; }
+
+    /* IN-APP SURVEY CONTAINER (IFRAME) */
+    .survey-iframe-container {
+      width: 100%;
+      height: 65vh;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .survey-iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
 
     /* SPINNER */
     .spinner {
@@ -289,7 +302,7 @@
     </div>
   </div>
 
-  <!-- CONFIRM & ANIMATION MODAL -->
+  <!-- CONFIRM & IN-APP SURVEY MODAL -->
   <div class="modal-overlay" id="confirmModal">
     <div class="modal" id="modalCard">
       <h3 id="modalTitle">アンケート回答確認</h3>
@@ -324,8 +337,11 @@
 
   let userData = JSON.parse(localStorage.getItem('crawl_user_data')) || null;
   let answeredState = JSON.parse(localStorage.getItem('crawl_answered_state')) || {}; 
+  let exchangedDeduction = parseInt(localStorage.getItem('crawl_exchanged_pts')) || 0;
 
   let currentEarnedPoint = 0;
+  let rawEarnedPoint = 0;
+  let isFormLoaded = false;
 
   function getOrGenerateID() {
     if (userData && userData.id) return userData.id;
@@ -397,6 +413,7 @@
       localStorage.removeItem('crawl_user_data');
       localStorage.removeItem('crawl_user_id');
       localStorage.removeItem('crawl_answered_state');
+      localStorage.removeItem('crawl_exchanged_pts');
       location.reload();
     }
   }
@@ -528,8 +545,9 @@
 
     localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
 
-    currentEarnedPoint = totalEarned;
-    document.getElementById('earnedPoint').textContent = `${totalEarned} pt`;
+    rawEarnedPoint = totalEarned;
+    currentEarnedPoint = Math.max(0, totalEarned - exchangedDeduction);
+    document.getElementById('earnedPoint').textContent = `${currentEarnedPoint} pt`;
     document.getElementById('pendingPoint').textContent = `${totalPending} pt`;
   }
 
@@ -547,24 +565,44 @@
       <p>個人番号（<strong>${userId}</strong>）を確認してからアンケートを行ってください。</p>
       <div class="modal-btn-group">
         <button class="modal-btn cancel" onclick="closeModal()">キャンセル</button>
-        <button class="modal-btn go" onclick="startSurvey('${encodeURIComponent(name)}', '${encodeURIComponent(link)}')">アンケートへ進む</button>
+        <button class="modal-btn go" onclick="startSurveyInApp('${encodeURIComponent(name)}', '${encodeURIComponent(link)}')">アンケートへ進む</button>
       </div>
     `;
 
     document.getElementById('confirmModal').style.display = 'flex';
   }
 
-  function startSurvey(encName, encLink) {
+  function startSurveyInApp(encName, encLink) {
     const name = decodeURIComponent(encName);
     const link = decodeURIComponent(encLink);
 
     answeredState[name] = 'pending';
     localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
 
-    // Google Form を別タブで起動
-    window.open(link, '_blank');
+    isFormLoaded = false;
 
-    // モーダルをアニメーションモードに変更
+    // タブ内（iframe）でGoogleフォームを表示
+    document.getElementById('modalTitle').textContent = name;
+    document.getElementById('modalBody').innerHTML = `
+      <div class="survey-iframe-container">
+        <iframe src="${link}" onload="handleIframeLoad('${encodeURIComponent(name)}')"></iframe>
+      </div>
+      <button class="modal-btn cancel" onclick="handleSurveyFinished()">回答完了（画面に戻る）</button>
+    `;
+  }
+
+  function handleIframeLoad(encName) {
+    // 初回読み込み完了フラグ
+    if (!isFormLoaded) {
+      isFormLoaded = true;
+    } else {
+      // ユーザーがGoogleフォーム送信ボタンを押してリダイレクト（完了画面移行）したことを検知
+      handleSurveyFinished();
+    }
+  }
+
+  function handleSurveyFinished() {
+    // 処理・ローディング画面に切り替え
     document.getElementById('modalTitle').textContent = "データ送信・確認中";
     document.getElementById('modalBody').innerHTML = `
       <div class="spinner"></div>
@@ -582,7 +620,7 @@
 
       fetchSpreadsheetData();
 
-      // 0.9秒後に自動でモーダル閉じる
+      // 0.9秒後に自動でモーダルを閉じて画面へ復帰
       setTimeout(() => {
         closeModal();
       }, 900);
@@ -620,6 +658,12 @@
       alert(`交換申請できるのは「獲得Point」の範囲内のみです。\n現在の獲得Point: ${currentEarnedPoint} pt`);
       return;
     }
+
+    // ポイントを減算してローカルストレージへ保存
+    exchangedDeduction += pts;
+    localStorage.setItem('crawl_exchanged_pts', exchangedDeduction);
+    currentEarnedPoint = Math.max(0, rawEarnedPoint - exchangedDeduction);
+    document.getElementById('earnedPoint').textContent = `${currentEarnedPoint} pt`;
 
     const recipient = "sixyami67@gmail.com";
     const subject = encodeURIComponent("ポイント交換申請（現金等）");
