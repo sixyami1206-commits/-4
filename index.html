@@ -4,10 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>crawlWeb</title>
-  
-  <!-- Google Custom Search Engine Element -->
-  <script async src="https://cse.google.com/cse.js?cx=0220ba049f4274edf"></script>
-
   <style>
     :root {
       --bg-color: #0f172a;
@@ -28,7 +24,6 @@
       overflow: hidden;
     }
 
-    /* HEADER */
     header {
       background: var(--card-bg);
       backdrop-filter: blur(10px);
@@ -52,7 +47,6 @@
     }
     .logo-sub { font-size: 0.75rem; color: #94a3b8; letter-spacing: 1px; }
 
-    /* SEARCH BAR UI */
     .search-box {
       width: 100%;
       max-width: 680px;
@@ -94,7 +88,6 @@
     .btn-ai { background: linear-gradient(135deg, #38bdf8, #818cf8); color: #0f172a; border: none; }
     .game-mode-btn { background: rgba(56, 189, 248, 0.2); border-color: var(--accent); color: var(--accent); display: none; }
 
-    /* RESULTS VIEWPORT */
     .content-viewport {
       flex: 1;
       width: 100%;
@@ -119,21 +112,14 @@
       padding: 18px;
     }
 
-    .result-card h3 { font-size: 1.1rem; margin-bottom: 6px; color: var(--accent); }
+    .result-card h3 { font-size: 1.1rem; margin-bottom: 6px; }
+    .result-card h3 a { color: var(--accent); text-decoration: none; }
+    .result-card h3 a:hover { text-decoration: underline; }
     .result-card p { color: #cbd5e1; font-size: 0.9rem; line-height: 1.6; }
+    .result-url { font-size: 0.75rem; color: #64748b; margin-bottom: 4px; display: block; word-break: break-all; }
 
     .error-msg { color: #f87171; font-weight: bold; text-align: center; padding: 40px 0; }
 
-    /* GOOGLE CSE OVERRIDE STYLE */
-    .gsc-control-cse {
-      background-color: transparent !important;
-      border: none !important;
-      padding: 0 !important;
-    }
-    .gsc-search-button-v2 { display: none !important; }
-    .gsc-input-box { display: none !important; }
-
-    /* GAME MODE OVERLAY */
     .game-overlay {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -156,7 +142,6 @@
 </head>
 <body>
 
-  <!-- HEADER -->
   <header>
     <div class="logo-container">
       <div class="logo-main">crawlWeb</div>
@@ -171,19 +156,15 @@
     </div>
   </header>
 
-  <!-- CONTENT VIEWPORT -->
   <div class="content-viewport">
     <div class="results-container" id="resultsArea">
       <div class="result-card">
-        <h3>🚀 crawlWeb へようこそ</h3>
-        <p>Googleカスタム検索機能（CX: 0220ba049f4274edf）を接続しました。「Google検索」でWeb検索結果をそのまま表示し、「CrawlAI検索」で「〜について」の自動要約を実行します。</p>
+        <h3>🚀 crawlWeb 準備完了</h3>
+        <p>キーワードを入力して検索を実行してください。</p>
       </div>
-      <!-- Google Custom Search Element Container -->
-      <div class="gcse-searchresults-only" id="gcseContainer"></div>
     </div>
   </div>
 
-  <!-- GAME MODE OVERLAY -->
   <div class="game-overlay" id="gameOverlay">
     <canvas id="gpuCanvas"></canvas>
     <div class="game-controls">
@@ -193,9 +174,31 @@
   </div>
 
 <script>
+  const CX_KEY = "0220ba049f4274edf";
+
   function showGameBtn() {
     document.getElementById("gameBtn").style.display = "inline-block";
   }
+
+  // Google CSE JSONP Callback
+  window.handleGoogleResults = function(data) {
+    const resultsArea = document.getElementById("resultsArea");
+    if (data && data.items && data.items.length > 0) {
+      let html = '';
+      data.items.forEach(item => {
+        html += `
+          <div class="result-card">
+            <span class="result-url">${item.link}</span>
+            <h3><a href="${item.link}" target="_blank">${item.title}</a></h3>
+            <p>${item.snippet || ''}</p>
+          </div>
+        `;
+      });
+      resultsArea.innerHTML = html;
+    } else {
+      resultsArea.innerHTML = `<div class="result-card"><p>検索結果が見つかりませんでした。</p></div>`;
+    }
+  };
 
   function execSearch(type) {
     const rawVal = document.getElementById("searchInput").value.trim();
@@ -206,38 +209,23 @@
     showGameBtn();
 
     if (type === 'google') {
-      // Google Custom Search Element へ検索クエリを発行
-      resultsArea.innerHTML = '<div class="gcse-searchresults-only"></div>';
+      resultsArea.innerHTML = `<div class="result-card"><p>🔍 「${rawVal}」を検索中...</p></div>`;
+
+      // スクリプトタグを動的生成してJSONP検索（CORS回避）
+      const oldScript = document.getElementById('googleSearchScript');
+      if (oldScript) oldScript.remove();
+
+      const script = document.createElement('script');
+      script.id = 'googleSearchScript';
+      script.src = `https://www.googleapis.com/customsearch/v1?key=&cx=${CX_KEY}&q=${encodeURIComponent(rawVal)}&callback=handleGoogleResults`;
       
-      if (window.google && window.google.search && window.google.search.cse) {
-        const element = google.search.cse.element.getElement('gsearch');
-        if (element) {
-          element.execute(rawVal);
-        } else {
-          // 要素が初期化前の場合の直接URL制御
-          const cseEl = document.querySelector('.gcse-searchresults-only');
-          if (cseEl) {
-            google.search.cse.element.render({
-              div: cseEl,
-              tag: 'searchresults-only'
-            });
-            const instance = google.search.cse.element.getElement(cseEl);
-            if (instance) instance.execute(rawVal);
-          }
-        }
-      } else {
-        // 標準Google CSE呼び出しフォールバック
-        const gcseBox = document.querySelector('.gcse-searchresults-only');
-        if (gcseBox) {
-          gcseBox.innerHTML = `<div class="result-card"><p>🔍 「${rawVal}」の検索結果を読み込み中...</p></div>`;
-        }
-        // Google CSEのクエリ実行
-        const element = google.search.cse.element.getElement('searchresults-only0');
-        if (element) element.execute(rawVal);
-      }
+      // CSEエレメントのJSONPエンドポイント
+      const cseScript = document.createElement('script');
+      cseScript.src = `https://cse.google.com/api/0220ba049f4274edf/desc/v1?q=${encodeURIComponent(rawVal)}&callback=handleGoogleResults`;
+      
+      document.body.appendChild(cseScript);
 
     } else if (type === 'ai') {
-      // CrawlAI検索（AI時のみ「〜について」を付与）
       const aiQuery = `${rawVal}について`;
       resultsArea.innerHTML = `<div class="result-card"><h3>🤖 CrawlAI: 「${aiQuery}」</h3><p>🔍 情報を解析・収集しています...</p></div>`;
 
@@ -245,7 +233,6 @@
     }
   }
 
-  /* CrawlAI Search Engine */
   async function fetchCrawlAI(rawVal, aiQuery) {
     const resultsArea = document.getElementById("resultsArea");
     try {
