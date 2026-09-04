@@ -54,6 +54,12 @@
       border-radius: 8px;
       border: 1px solid var(--border);
       display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .point-values {
+      display: flex;
       justify-content: space-around;
       text-align: center;
     }
@@ -61,6 +67,19 @@
     .point-box .label { font-size: 0.75rem; color: #64748b; font-weight: bold; margin-bottom: 4px; }
     .point-box .value { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
     .point-box .value.pending { color: var(--accent); }
+
+    .exchange-action-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-align: center;
+    }
 
     /* DRAWER MENU */
     .drawer-overlay {
@@ -81,7 +100,12 @@
     .user-info-card {
       background: #f1f5f9; padding: 12px; border-radius: 6px; font-size: 0.85rem; line-height: 1.6;
     }
-    .user-info-card div { margin-bottom: 4px; }
+
+    .drawer-menu-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .drawer-btn {
+      width: 100%; padding: 10px; background: var(--primary); color: #fff; border: none; border-radius: 4px;
+      font-weight: bold; cursor: pointer; text-align: center;
+    }
 
     /* MAIN CONTAINER */
     main { flex: 1; padding: 16px; max-width: 600px; margin: 0 auto; width: 100%; }
@@ -97,7 +121,7 @@
     .init-survey-card h2 { font-size: 1.1rem; color: var(--primary); margin-bottom: 12px; text-align: center; }
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 4px; }
-    .form-group input, .form-group select {
+    .form-group input {
       width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem;
     }
     .form-group input[readonly] { background: #e2e8f0; color: #64748b; }
@@ -136,6 +160,7 @@
     .survey-action .btn.done { background: #94a3b8; cursor: not-allowed; }
     .survey-action .btn.pending-btn { background: var(--accent); cursor: not-allowed; }
 
+    /* MODAL */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 300; padding: 16px;
@@ -161,25 +186,31 @@
   </header>
 
   <div class="point-board">
-    <div class="point-box">
-      <div class="label">獲得Point</div>
-      <div class="value" id="earnedPoint">0 pt</div>
+    <div class="point-values">
+      <div class="point-box">
+        <div class="label">獲得Point</div>
+        <div class="value" id="earnedPoint">0 pt</div>
+      </div>
+      <div class="point-box">
+        <div class="label">判定中Point</div>
+        <div class="value pending" id="pendingPoint">0 pt</div>
+      </div>
     </div>
-    <div class="point-box">
-      <div class="label">判定中Point</div>
-      <div class="value pending" id="pendingPoint">0 pt</div>
-    </div>
+    <button class="exchange-action-btn" onclick="openExchangeModal()">ポイント交換を申請する</button>
   </div>
 
   <!-- DRAWER MENU -->
   <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
   <div class="drawer" id="drawer">
     <div class="drawer-header">
-      <span class="drawer-title">ユーザー情報</span>
+      <span class="drawer-title">メニュー</span>
       <button class="close-btn" onclick="toggleDrawer(false)">✕</button>
     </div>
     <div class="user-info-card" id="userInfoDisplay">
       未登録です
+    </div>
+    <div class="drawer-menu-list">
+      <button class="drawer-btn" onclick="toggleDrawer(false); openExchangeModal();">ポイント交換申請</button>
     </div>
   </div>
 
@@ -226,11 +257,27 @@
   <!-- CONFIRM MODAL -->
   <div class="modal-overlay" id="confirmModal">
     <div class="modal">
-      <h3>アンケート回答確認</h3>
-      <p id="modalMsg">個人番号を確認してからアンケートを行ってください。<br>回答完了後、「判定中Point」に即時反映されます。</p>
-      <div class="modal-btn-group">
-        <button class="modal-btn cancel" onclick="closeModal()">キャンセル</button>
-        <button class="modal-btn go" id="modalGoBtn">アンケートへ進む</button>
+      <h3 id="modalTitle">アンケート回答確認</h3>
+      <p id="modalMsg"></p>
+      <div class="modal-btn-group" id="modalBtnGroup"></div>
+    </div>
+  </div>
+
+  <!-- EXCHANGE MODAL -->
+  <div class="modal-overlay" id="exchangeModal">
+    <div class="modal">
+      <h3>ポイント交換申請</h3>
+      <p style="text-align: left; font-size: 0.85rem; margin-bottom: 12px;">
+        交換方法は、当社に申請してから確認してください。<br><br>
+        「申請」ボタンを押すとメールアプリが起動します。内容を確認の上、送信してください。
+      </p>
+      <div class="form-group" style="text-align: left;">
+        <label>交換希望ポイント数</label>
+        <input type="number" id="exchangePtsInput" placeholder="例: 500">
+      </div>
+      <div class="modal-btn-group" style="margin-top: 16px;">
+        <button class="modal-btn cancel" onclick="closeExchangeModal()">キャンセル</button>
+        <button class="modal-btn go" onclick="execExchangeEmail()">申請（メール起動）</button>
       </div>
     </div>
   </div>
@@ -240,16 +287,14 @@
 
   let userData = JSON.parse(localStorage.getItem('crawl_user_data')) || null;
   let answeredState = JSON.parse(localStorage.getItem('crawl_answered_state')) || {}; 
-  // answeredState: { [surveyName]: 'pending' | 'earned' }
 
-  let currentTargetSurvey = null;
+  let currentEarnedPoint = 0;
 
-  // Initialize User ID
   function getOrGenerateID() {
     if (userData && userData.id) return userData.id;
     let savedId = localStorage.getItem('crawl_user_id');
     if (!savedId) {
-      savedId = String(Math.floor(100 + Math.random() * 900)); // 3-digit number
+      savedId = String(Math.floor(100 + Math.random() * 900));
       localStorage.setItem('crawl_user_id', savedId);
     }
     return savedId;
@@ -299,13 +344,13 @@
     const display = document.getElementById('userInfoDisplay');
     if (userData) {
       display.innerHTML = `
-        <div><strong>お客様ID:</strong> ${userData.id}</div>
+        <div><strong>ユーザー番号:</strong> ${userData.id}</div>
         <div><strong>お名前:</strong> ${userData.name}</div>
         <div><strong>年齢:</strong> ${userData.age} 歳</div>
         <div><strong>都道府県:</strong> ${userData.pref}</div>
       `;
     } else {
-      display.innerHTML = `<div><strong>お客様ID:</strong> ${userId} (未登録)</div>`;
+      display.innerHTML = `<div><strong>ユーザー番号:</strong> ${userId} (未登録)</div>`;
     }
   }
 
@@ -321,7 +366,6 @@
     }
   }
 
-  // Parse CSV Helper
   function parseCSV(text) {
     const lines = text.split('\n');
     return lines.map(line => {
@@ -346,10 +390,7 @@
       const res = await fetch(SHEET_CSV_URL);
       const text = await res.text();
       const rows = parseCSV(text);
-
-      // Skip Header Row (Row 0)
       const dataRows = rows.slice(1);
-
       renderSurveys(dataRows);
     } catch (e) {
       console.error(e);
@@ -372,31 +413,28 @@
     let mainCount = 0;
 
     rows.forEach(row => {
-      if (!row[0]) return; // Empty title check
+      if (!row[0]) return;
 
       const name = row[0];
       const point = parseInt(row[1]) || 0;
-      const type = row[2]; // "事前" or "本"
+      const type = row[2];
       const link = row[3];
-      const eColumn = row[4] || ''; // E欄: ポイント確定ID（例: 237、526）
-      const fColumn = row[5] || ''; // F欄: 対象者ID（例: 237、526）
+      const eColumn = row[4] || '';
+      const fColumn = row[5] || '';
 
-      // Helper to check if ID exists in Japanese/English comma-separated string
       const checkIDInString = (str, targetId) => {
         if (!str) return false;
         const tokens = str.split(/[、,]/).map(s => s.trim());
         return tokens.includes(targetId);
       };
 
-      // Check E column for point confirmation
       const isConfirmedInSheet = checkIDInString(eColumn, userId);
 
-      // Auto-update status if E column contains ID
       if (isConfirmedInSheet) {
         answeredState[name] = 'earned';
       }
 
-      const currentState = answeredState[name]; // undefined, 'pending', 'earned'
+      const currentState = answeredState[name];
 
       if (currentState === 'earned') {
         totalEarned += point;
@@ -404,13 +442,11 @@
         totalPending += point;
       }
 
-      // Check Target Condition for Main Survey
       if (type === '本') {
         const isTargetUser = checkIDInString(fColumn, userId);
-        if (!isTargetUser) return; // Hide if user is not in target list F
+        if (!isTargetUser) return;
       }
 
-      // Build HTML Card
       const card = document.createElement('div');
       card.className = 'survey-card';
 
@@ -445,10 +481,9 @@
     if (preCount === 0) preContainer.innerHTML = `<div style="font-size:0.85rem; color:#64748b; text-align:center; padding:12px;">現在回答できる事前アンケートはありません</div>`;
     if (mainCount === 0) mainContainer.innerHTML = `<div style="font-size:0.85rem; color:#64748b; text-align:center; padding:12px;">現在回答できる本アンケートはありません</div>`;
 
-    // Save Status
     localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
 
-    // Update Points
+    currentEarnedPoint = totalEarned;
     document.getElementById('earnedPoint').textContent = `${totalEarned} pt`;
     document.getElementById('pendingPoint').textContent = `${totalPending} pt`;
   }
@@ -462,30 +497,64 @@
     const name = decodeURIComponent(encName);
     const link = decodeURIComponent(encLink);
 
-    currentTargetSurvey = { name, link, point };
-
+    document.getElementById('modalTitle').textContent = "アンケート回答確認";
     document.getElementById('modalMsg').innerHTML = `個人番号（<strong>${userId}</strong>）を確認してからアンケートを行ってください。<br><br>回答完了後、ポイントは「判定中Point」へ反映されます。`;
+    
+    document.getElementById('modalBtnGroup').innerHTML = `
+      <button class="modal-btn cancel" onclick="closeModal()">キャンセル</button>
+      <button class="modal-btn go" onclick="startSurvey('${encodeURIComponent(name)}', '${encodeURIComponent(link)}')">アンケートへ進む</button>
+    `;
+
     document.getElementById('confirmModal').style.display = 'flex';
+  }
 
-    document.getElementById('modalGoBtn').onclick = () => {
-      // Mark as Pending immediately upon clicking to answer
-      answeredState[name] = 'pending';
-      localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
+  function startSurvey(encName, encLink) {
+    const name = decodeURIComponent(encName);
+    const link = decodeURIComponent(encLink);
 
-      closeModal();
-      
-      // Open Google Form in new tab
-      window.open(link, '_blank');
+    answeredState[name] = 'pending';
+    localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
 
-      alert('回答完了後、「回答ありがとうございます！ 判定中Pointに反映されました！」画面の「判定中Point」へ加算されます。');
-      
-      // Refresh list
-      fetchSpreadsheetData();
-    };
+    closeModal();
+    window.open(link, '_blank');
+
+    alert('回答ありがとうございます！\n判定中Point に反映されました！');
+    fetchSpreadsheetData();
   }
 
   function closeModal() {
     document.getElementById('confirmModal').style.display = 'none';
+  }
+
+  /* EXCHANGE POINT FUNCTIONS */
+  function openExchangeModal() {
+    if (!userData) {
+      alert('先に初回登録アンケートを行ってください。');
+      return;
+    }
+    document.getElementById('exchangeModal').style.display = 'flex';
+  }
+
+  function closeExchangeModal() {
+    document.getElementById('exchangeModal').style.display = 'none';
+  }
+
+  function execExchangeEmail() {
+    const pts = document.getElementById('exchangePtsInput').value.trim();
+    if (!pts || parseInt(pts) <= 0) {
+      alert('交換希望ポイント数を入力してください。');
+      return;
+    }
+
+    const recipient = "sixyami67@gmail.com";
+    const subject = encodeURIComponent("ポイント交換申請（現金等）");
+    const bodyText = `【ポイント交換申請】\n\n交換種別: 現金等で交換\n交換ポイント数: ${pts} pt\nユーザー番号: ${userId}\nお名前: ${userData.name}\n\n上記内容で申請いたします。方法の確認をお願いいたします。`;
+    const body = encodeURIComponent(bodyText);
+
+    // Mailto triggers default mail client
+    window.location.href = `mailto:${recipient}?subject=${subject}&body=${body}`;
+
+    closeExchangeModal();
   }
 </script>
 </body>
