@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>crawlWeb</title>
+  
+  <!-- Google Custom Search Engine Element -->
+  <script async src="https://cse.google.com/cse.js?cx=0220ba049f4274edf"></script>
+
   <style>
     :root {
       --bg-color: #0f172a;
@@ -24,47 +28,38 @@
       overflow: hidden;
     }
 
-    /* HEADER AREA */
+    /* HEADER */
     header {
       background: var(--card-bg);
       backdrop-filter: blur(10px);
-      padding: 12px 16px;
+      padding: 16px;
       border-bottom: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       z-index: 10;
     }
 
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
+    .logo-container { text-align: center; }
     .logo-main {
-      font-size: 1.8rem;
+      font-size: 2.2rem;
       font-weight: 900;
       letter-spacing: -0.5px;
       background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
+    .logo-sub { font-size: 0.75rem; color: #94a3b8; letter-spacing: 1px; }
 
-    .logo-sub {
-      font-size: 0.75rem;
-      color: #94a3b8;
-    }
-
-    /* SEARCH BAR & FIXED SUFFIX */
+    /* SEARCH BAR UI */
     .search-box {
       width: 100%;
-      max-width: 700px;
+      max-width: 680px;
       background: rgba(15, 23, 42, 0.6);
       border: 1px solid var(--border);
       border-radius: 30px;
-      padding: 4px 12px;
+      padding: 6px 14px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -72,86 +67,71 @@
 
     .search-box:focus-within { border-color: var(--accent); }
 
-    .input-wrapper {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      background: transparent;
-    }
-
     input.search-input {
       flex: 1;
       background: transparent;
       border: none;
       outline: none;
       color: var(--text);
-      font-size: 0.95rem;
-      padding: 8px 0;
-      text-align: right;
-    }
-
-    .fixed-suffix {
-      color: var(--accent);
-      font-weight: bold;
-      font-size: 0.95rem;
-      user-select: none;
-      padding-left: 4px;
-      white-space: nowrap;
+      font-size: 1rem;
+      padding: 6px 8px;
     }
 
     .btn {
       background: var(--card-bg);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 6px 12px;
+      padding: 8px 16px;
       border-radius: 20px;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: bold;
       cursor: pointer;
       white-space: nowrap;
+      transition: all 0.2s;
     }
 
-    .btn-ai { background: linear-gradient(135deg, #38bdf8, #818cf8); color: #000; border: none; }
+    .btn:hover { border-color: var(--accent); }
+    .btn-ai { background: linear-gradient(135deg, #38bdf8, #818cf8); color: #0f172a; border: none; }
     .game-mode-btn { background: rgba(56, 189, 248, 0.2); border-color: var(--accent); color: var(--accent); display: none; }
 
-    /* CONTENT VIEW */
+    /* RESULTS VIEWPORT */
     .content-viewport {
       flex: 1;
       width: 100%;
-      position: relative;
-      background: #0f172a;
-    }
-
-    iframe#webFrame {
-      width: 100%;
-      height: 100%;
-      border: none;
-      background: #fff;
-      display: none;
-    }
-
-    .ai-result-panel {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: var(--bg-color);
-      padding: 24px;
       overflow-y: auto;
+      padding: 24px 16px;
       display: flex;
       justify-content: center;
     }
 
-    .ai-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
+    .results-container {
       width: 100%;
-      max-width: 750px;
-      height: fit-content;
-      line-height: 1.7;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
-    .ai-card h3 { color: var(--accent); margin-bottom: 12px; }
+    .result-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .result-card h3 { font-size: 1.1rem; margin-bottom: 6px; color: var(--accent); }
+    .result-card p { color: #cbd5e1; font-size: 0.9rem; line-height: 1.6; }
+
+    .error-msg { color: #f87171; font-weight: bold; text-align: center; padding: 40px 0; }
+
+    /* GOOGLE CSE OVERRIDE STYLE */
+    .gsc-control-cse {
+      background-color: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+    }
+    .gsc-search-button-v2 { display: none !important; }
+    .gsc-input-box { display: none !important; }
 
     /* GAME MODE OVERLAY */
     .game-overlay {
@@ -176,33 +156,30 @@
 </head>
 <body>
 
-  <!-- HEADER / TOOLBAR -->
+  <!-- HEADER -->
   <header>
     <div class="logo-container">
-      <span class="logo-main">crawlWeb</span>
-      <span class="logo-sub">クロワルウェィブ</span>
+      <div class="logo-main">crawlWeb</div>
+      <div class="logo-sub">クロワルウェィブ</div>
     </div>
 
-    <!-- SEARCH BAR -->
     <div class="search-box">
-      <div class="input-wrapper">
-        <input type="text" class="search-input" id="searchInput" placeholder="単語を入力" onkeydown="if(event.key==='Enter') execSearch('wiki')">
-        <span class="fixed-suffix">について</span>
-      </div>
-      <button class="btn" onclick="execSearch('wiki')">Web検索</button>
+      <input type="text" class="search-input" id="searchInput" placeholder="検索キーワードを入力..." onkeydown="if(event.key==='Enter') execSearch('google')">
+      <button class="btn" onclick="execSearch('google')">Google検索</button>
       <button class="btn btn-ai" onclick="execSearch('ai')">CrawlAI検索</button>
       <button class="btn game-mode-btn" id="gameBtn" onclick="enableGameMode()">🎮 ゲームモード</button>
     </div>
   </header>
 
-  <!-- CONTENT VIEW -->
+  <!-- CONTENT VIEWPORT -->
   <div class="content-viewport">
-    <iframe id="webFrame"></iframe>
-    <div class="ai-result-panel" id="aiPanel">
-      <div class="ai-card">
-        <h3 id="aiTitle">🤖 CrawlAI 検索</h3>
-        <div id="aiBody">単語を入力して「Web検索」または「CrawlAI検索」を実行してください。</div>
+    <div class="results-container" id="resultsArea">
+      <div class="result-card">
+        <h3>🚀 crawlWeb へようこそ</h3>
+        <p>Googleカスタム検索機能（CX: 0220ba049f4274edf）を接続しました。「Google検索」でWeb検索結果をそのまま表示し、「CrawlAI検索」で「〜について」の自動要約を実行します。</p>
       </div>
+      <!-- Google Custom Search Element Container -->
+      <div class="gcse-searchresults-only" id="gcseContainer"></div>
     </div>
   </div>
 
@@ -216,58 +193,81 @@
   </div>
 
 <script>
-  function getFullQuery() {
-    const keyword = document.getElementById("searchInput").value.trim();
-    if (!keyword) return "";
-    return `${keyword}について`;
-  }
-
   function showGameBtn() {
     document.getElementById("gameBtn").style.display = "inline-block";
   }
 
   function execSearch(type) {
-    const rawWord = document.getElementById("searchInput").value.trim();
-    const fullQuery = getFullQuery();
-    if (!rawWord) return;
+    const rawVal = document.getElementById("searchInput").value.trim();
+    const resultsArea = document.getElementById("resultsArea");
+
+    if (!rawVal) return;
 
     showGameBtn();
 
-    if (type === 'wiki') {
-      // Wikipediaのモバイル表示ページ（iframe埋め込み許可）を使用
-      document.getElementById("aiPanel").style.display = "none";
-      const iframe = document.getElementById("webFrame");
-      iframe.style.display = "block";
-      iframe.src = `https://ja.m.wikipedia.org/wiki/${encodeURIComponent(rawWord)}`;
+    if (type === 'google') {
+      // Google Custom Search Element へ検索クエリを発行
+      resultsArea.innerHTML = '<div class="gcse-searchresults-only"></div>';
+      
+      if (window.google && window.google.search && window.google.search.cse) {
+        const element = google.search.cse.element.getElement('gsearch');
+        if (element) {
+          element.execute(rawVal);
+        } else {
+          // 要素が初期化前の場合の直接URL制御
+          const cseEl = document.querySelector('.gcse-searchresults-only');
+          if (cseEl) {
+            google.search.cse.element.render({
+              div: cseEl,
+              tag: 'searchresults-only'
+            });
+            const instance = google.search.cse.element.getElement(cseEl);
+            if (instance) instance.execute(rawVal);
+          }
+        }
+      } else {
+        // 標準Google CSE呼び出しフォールバック
+        const gcseBox = document.querySelector('.gcse-searchresults-only');
+        if (gcseBox) {
+          gcseBox.innerHTML = `<div class="result-card"><p>🔍 「${rawVal}」の検索結果を読み込み中...</p></div>`;
+        }
+        // Google CSEのクエリ実行
+        const element = google.search.cse.element.getElement('searchresults-only0');
+        if (element) element.execute(rawVal);
+      }
+
     } else if (type === 'ai') {
-      document.getElementById("webFrame").style.display = "none";
-      document.getElementById("aiPanel").style.display = "flex";
-      fetchCrawlAI(rawWord, fullQuery);
+      // CrawlAI検索（AI時のみ「〜について」を付与）
+      const aiQuery = `${rawVal}について`;
+      resultsArea.innerHTML = `<div class="result-card"><h3>🤖 CrawlAI: 「${aiQuery}」</h3><p>🔍 情報を解析・収集しています...</p></div>`;
+
+      fetchCrawlAI(rawVal, aiQuery);
     }
   }
 
-  /* CrawlAI SEARCH (Wikipedia API) */
-  async function fetchCrawlAI(rawWord, fullQuery) {
-    const titleEl = document.getElementById("aiTitle");
-    const bodyEl = document.getElementById("aiBody");
-
-    titleEl.textContent = `🤖 CrawlAI: 「${fullQuery}」`;
-    bodyEl.textContent = "🔍 Wikipediaから情報を収集・生成中...";
-
+  /* CrawlAI Search Engine */
+  async function fetchCrawlAI(rawVal, aiQuery) {
+    const resultsArea = document.getElementById("resultsArea");
     try {
-      const res = await fetch(`https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(rawWord)}`);
+      const res = await fetch(`https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(rawVal)}`);
       if (res.ok) {
         const data = await res.json();
         if (data.extract) {
-          bodyEl.innerHTML = `<p><strong>【${data.title}について】</strong></p><p style="margin-top:8px;">${data.extract}</p>`;
+          resultsArea.innerHTML = `
+            <div class="result-card">
+              <h3>🤖 CrawlAI: 「${aiQuery}」</h3>
+              <p><strong>【${data.title}】</strong></p>
+              <p style="margin-top: 8px;">${data.extract}</p>
+            </div>
+          `;
         } else {
-          bodyEl.textContent = "表示不可";
+          resultsArea.innerHTML = `<div class="error-msg">表示不可</div>`;
         }
       } else {
-        bodyEl.textContent = "表示不可";
+        resultsArea.innerHTML = `<div class="error-msg">表示不可</div>`;
       }
     } catch (e) {
-      bodyEl.textContent = "表示不可";
+      resultsArea.innerHTML = `<div class="error-msg">表示不可</div>`;
     }
   }
 
