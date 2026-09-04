@@ -15,7 +15,7 @@
       --accent-glow: rgba(251, 191, 36, 0.4);
       --text: #f8fafc;
       --text-sub: #94a3b8;
-      --success: #22c55e;
+      --danger: #f87171;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -77,9 +77,6 @@
       backdrop-filter: blur(8px);
       padding: 20px;
       border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       margin-bottom: 24px;
     }
@@ -102,22 +99,6 @@
     .point-box .value { font-size: 1.5rem; font-weight: 900; color: var(--primary); text-shadow: 0 0 12px var(--primary-glow); }
     .point-box .value.pending { color: var(--accent); text-shadow: 0 0 12px var(--accent-glow); }
 
-    .exchange-action-btn {
-      width: 100%;
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      color: #fff;
-      border: none;
-      padding: 12px;
-      border-radius: 10px;
-      font-weight: 800;
-      font-size: 0.95rem;
-      cursor: pointer;
-      text-align: center;
-      box-shadow: 0 4px 15px var(--accent-glow);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .exchange-action-btn:active { transform: scale(0.98); }
-
     /* DRAWER MENU */
     .drawer-overlay {
       position: fixed; top:0; left:0; width:100vw; height:100vh;
@@ -126,7 +107,7 @@
     .drawer {
       position: fixed; top:0; right:-300px; width:300px; height:100vh;
       background: #0f172a; border-left: 1px solid var(--card-border); z-index: 201; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      padding: 24px 20px; display: flex; flex-direction: column; gap: 20px;
+      padding: 24px 20px; display: flex; flex-direction: column; gap: 16px;
       box-shadow: -10px 0 30px rgba(0,0,0,0.5);
     }
     .drawer.open { right: 0; }
@@ -142,6 +123,10 @@
     .drawer-btn {
       width: 100%; padding: 12px; background: linear-gradient(135deg, #38bdf8, #0284c7); color: #fff; border: none; border-radius: 8px;
       font-weight: 800; cursor: pointer; text-align: center; box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .drawer-btn.delete-btn {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
     }
 
     /* INITIAL SURVEY FORM */
@@ -199,10 +184,10 @@
     .survey-action .btn.done { background: #475569; box-shadow: none; cursor: not-allowed; color: #94a3b8; }
     .survey-action .btn.pending-btn { background: var(--accent); box-shadow: 0 2px 10px var(--accent-glow); cursor: not-allowed; color: #0f172a; }
 
-    /* MODAL */
+    /* MODAL & ANIMATIONS */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 300; padding: 16px;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); display: none; justify-content: center; align-items: center; z-index: 300; padding: 16px;
     }
     .modal {
       background: #0f172a; border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; text-align: center;
@@ -214,6 +199,20 @@
     .modal-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; }
     .modal-btn.cancel { background: #334155; color: var(--text); }
     .modal-btn.go { background: linear-gradient(135deg, #38bdf8, #0284c7); color: #fff; box-shadow: 0 4px 12px var(--primary-glow); }
+
+    /* SPINNER */
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 5px solid rgba(56, 189, 248, 0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -237,7 +236,6 @@
           <div class="value pending" id="pendingPoint">0 pt</div>
         </div>
       </div>
-      <button class="exchange-action-btn" onclick="openExchangeModal()">ポイント交換申請（10pt〜）</button>
     </div>
 
     <!-- INITIAL REGISTRATION SURVEY -->
@@ -291,15 +289,18 @@
     </div>
     <div class="drawer-menu-list">
       <button class="drawer-btn" onclick="toggleDrawer(false); openExchangeModal();">ポイント交換申請</button>
+      <button class="drawer-btn delete-btn" onclick="clearUserData()">モニター情報削除</button>
     </div>
   </div>
 
-  <!-- CONFIRM MODAL -->
+  <!-- CONFIRM & ANIMATION MODAL -->
   <div class="modal-overlay" id="confirmModal">
-    <div class="modal">
+    <div class="modal" id="modalCard">
       <h3 id="modalTitle">アンケート回答確認</h3>
-      <p id="modalMsg"></p>
-      <div class="modal-btn-group" id="modalBtnGroup"></div>
+      <div id="modalBody">
+        <p id="modalMsg"></p>
+        <div class="modal-btn-group" id="modalBtnGroup"></div>
+      </div>
     </div>
   </div>
 
@@ -345,7 +346,6 @@
   window.addEventListener('DOMContentLoaded', () => {
     checkRegistration();
     fetchSpreadsheetData();
-    // 10秒ごとに自動更新
     setInterval(fetchSpreadsheetData, 10000);
   });
 
@@ -393,6 +393,15 @@
       `;
     } else {
       display.innerHTML = `<div><strong>ユーザー番号:</strong> ${userId} (未登録)</div>`;
+    }
+  }
+
+  function clearUserData() {
+    if (confirm('モニター情報および回答状態をすべて削除して初期化しますか？')) {
+      localStorage.removeItem('crawl_user_data');
+      localStorage.removeItem('crawl_user_id');
+      localStorage.removeItem('crawl_answered_state');
+      location.reload();
     }
   }
 
@@ -538,11 +547,12 @@
     const link = decodeURIComponent(encLink);
 
     document.getElementById('modalTitle').textContent = "アンケート回答確認";
-    document.getElementById('modalMsg').innerHTML = `個人番号（<strong>${userId}</strong>）を確認してからアンケートを行ってください。<br><br>回答完了後、ポイントは「判定中Point」へ反映されます。`;
-    
-    document.getElementById('modalBtnGroup').innerHTML = `
-      <button class="modal-btn cancel" onclick="closeModal()">キャンセル</button>
-      <button class="modal-btn go" onclick="startSurvey('${encodeURIComponent(name)}', '${encodeURIComponent(link)}')">アンケートへ進む</button>
+    document.getElementById('modalBody').innerHTML = `
+      <p>個人番号（<strong>${userId}</strong>）を確認してからアンケートを行ってください。</p>
+      <div class="modal-btn-group">
+        <button class="modal-btn cancel" onclick="closeModal()">キャンセル</button>
+        <button class="modal-btn go" onclick="startSurvey('${encodeURIComponent(name)}', '${encodeURIComponent(link)}')">アンケートへ進む</button>
+      </div>
     `;
 
     document.getElementById('confirmModal').style.display = 'flex';
@@ -555,11 +565,33 @@
     answeredState[name] = 'pending';
     localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
 
-    closeModal();
+    // Google Form を別タブで起動
     window.open(link, '_blank');
 
-    alert('回答ありがとうございます！\n判定中Point に反映されました！');
-    fetchSpreadsheetData();
+    // モーダルをアニメーションモードに変更
+    document.getElementById('modalTitle').textContent = "データ送信・確認中";
+    document.getElementById('modalBody').innerHTML = `
+      <div class="spinner"></div>
+      <p style="color: var(--primary); font-weight: bold;">アンケート状況を処理中...</p>
+    `;
+
+    // 2秒間🌀アニメーション
+    setTimeout(() => {
+      document.getElementById('modalTitle').textContent = "完了！";
+      document.getElementById('modalBody').innerHTML = `
+        <p style="color: var(--accent); font-weight: bold; font-size: 1.05rem; margin: 16px 0;">
+          判定中Pointに反映されました！
+        </p>
+      `;
+
+      fetchSpreadsheetData();
+
+      // 0.9秒後に自動でモーダル閉じる
+      setTimeout(() => {
+        closeModal();
+      }, 900);
+
+    }, 2000);
   }
 
   function closeModal() {
