@@ -3,306 +3,489 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>crawlWeb</title>
+  <title>Crawlモニター</title>
   <style>
     :root {
-      --bg-color: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.85);
-      --accent: #38bdf8;
-      --text: #f8fafc;
-      --border: #334155;
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #334155;
+      --border: #e2e8f0;
+      --accent: #f59e0b;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
     body {
-      background-color: var(--bg-color);
+      background-color: var(--bg);
       color: var(--text);
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
+    /* HEADER */
     header {
       background: var(--card-bg);
-      backdrop-filter: blur(10px);
+      border-bottom: 2px solid var(--primary);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .logo-area { display: flex; align-items: center; gap: 8px; }
+    .logo-title { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+
+    .menu-btn {
+      background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text); padding: 4px 8px;
+    }
+
+    /* POINT STATUS BOARD */
+    .point-board {
+      background: var(--card-bg);
+      margin: 12px 16px 0;
       padding: 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      z-index: 10;
-    }
-
-    .logo-container { text-align: center; }
-    .logo-main {
-      font-size: 2.2rem;
-      font-weight: 900;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .logo-sub { font-size: 0.75rem; color: #94a3b8; letter-spacing: 1px; }
-
-    .search-box {
-      width: 100%;
-      max-width: 680px;
-      background: rgba(15, 23, 42, 0.6);
+      border-radius: 8px;
       border: 1px solid var(--border);
-      border-radius: 30px;
-      padding: 6px 14px;
       display: flex;
-      align-items: center;
-      gap: 8px;
+      justify-content: space-around;
+      text-align: center;
     }
 
-    .search-box:focus-within { border-color: var(--accent); }
+    .point-box .label { font-size: 0.75rem; color: #64748b; font-weight: bold; margin-bottom: 4px; }
+    .point-box .value { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+    .point-box .value.pending { color: var(--accent); }
 
-    input.search-input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font-size: 1rem;
-      padding: 6px 8px;
+    /* DRAWER MENU */
+    .drawer-overlay {
+      position: fixed; top:0; left:0; width:100vw; height:100vh;
+      background: rgba(0,0,0,0.5); display: none; z-index: 200;
+    }
+    .drawer {
+      position: fixed; top:0; right:-280px; width:280px; height:100vh;
+      background: var(--card-bg); z-index: 201; transition: right 0.3s ease;
+      padding: 20px; display: flex; flex-direction: column; gap: 16px;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+    }
+    .drawer.open { right: 0; }
+    .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    .drawer-title { font-weight: bold; color: var(--primary); }
+    .close-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; }
+
+    .user-info-card {
+      background: #f1f5f9; padding: 12px; border-radius: 6px; font-size: 0.85rem; line-height: 1.6;
+    }
+    .user-info-card div { margin-bottom: 4px; }
+
+    /* MAIN CONTAINER */
+    main { flex: 1; padding: 16px; max-width: 600px; margin: 0 auto; width: 100%; }
+
+    /* INITIAL SURVEY FORM */
+    .init-survey-card {
+      background: var(--card-bg);
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .init-survey-card h2 { font-size: 1.1rem; color: var(--primary); margin-bottom: 12px; text-align: center; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 4px; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem;
+    }
+    .form-group input[readonly] { background: #e2e8f0; color: #64748b; }
+    .form-check { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; margin: 16px 0; }
+    .submit-btn {
+      width: 100%; background: var(--primary); color: #fff; border: none; padding: 10px;
+      border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.95rem;
     }
 
-    .btn {
+    /* SURVEY LIST SECTIONS */
+    .section-title {
+      font-size: 1rem; font-weight: 800; color: #1e293b;
+      margin: 20px 0 10px; padding-left: 8px; border-left: 4px solid var(--primary);
+    }
+
+    .survey-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .survey-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      color: var(--text);
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s;
-    }
-
-    .btn:hover { border-color: var(--accent); }
-    .btn-ai { background: linear-gradient(135deg, #38bdf8, #818cf8); color: #0f172a; border: none; }
-    .game-mode-btn { background: rgba(56, 189, 248, 0.2); border-color: var(--accent); color: var(--accent); display: none; }
-
-    .content-viewport {
-      flex: 1;
-      width: 100%;
-      overflow-y: auto;
-      padding: 24px 16px;
+      border-radius: 6px;
+      padding: 14px;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .results-container {
-      width: 100%;
-      max-width: 800px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+    .survey-info { flex: 1; padding-right: 12px; }
+    .survey-name { font-size: 0.9rem; font-weight: bold; margin-bottom: 4px; color: #0f172a; }
+    .survey-point { font-size: 0.85rem; color: var(--primary); font-weight: bold; }
+
+    .survey-action .btn {
+      background: var(--primary); color: #fff; border: none; padding: 6px 12px;
+      border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block;
     }
+    .survey-action .btn.done { background: #94a3b8; cursor: not-allowed; }
+    .survey-action .btn.pending-btn { background: var(--accent); cursor: not-allowed; }
 
-    .result-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 18px;
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 300; padding: 16px;
     }
-
-    .result-card h3 { font-size: 1.1rem; margin-bottom: 6px; }
-    .result-card h3 a { color: var(--accent); text-decoration: none; }
-    .result-card h3 a:hover { text-decoration: underline; }
-    .result-card p { color: #cbd5e1; font-size: 0.9rem; line-height: 1.6; }
-
-    .error-msg { color: #f87171; font-weight: bold; text-align: center; padding: 40px 0; }
-
-    .game-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: #000;
-      display: none;
-      z-index: 9999;
+    .modal {
+      background: var(--card-bg); border-radius: 8px; padding: 20px; max-width: 400px; width: 100%; text-align: center;
     }
-
-    .game-controls {
-      position: absolute;
-      top: 16px; right: 16px;
-      display: flex; gap: 12px; align-items: center;
-      background: rgba(0,0,0,0.7); padding: 8px 16px; border-radius: 20px; border: 1px solid #333;
-    }
-
-    .fps-badge { color: #22c55e; font-size: 0.85rem; font-family: monospace; font-weight: bold; }
-    .off-btn { background: #ef4444; color: #fff; border: none; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
-    canvas#gpuCanvas { width: 100%; height: 100%; display: block; }
+    .modal h3 { font-size: 1.1rem; margin-bottom: 12px; color: var(--primary); }
+    .modal p { font-size: 0.85rem; margin-bottom: 16px; line-height: 1.5; }
+    .modal-btn-group { display: flex; gap: 8px; }
+    .modal-btn { flex: 1; padding: 8px; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; }
+    .modal-btn.cancel { background: #cbd5e1; }
+    .modal-btn.go { background: var(--primary); color: #fff; }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="logo-container">
-      <div class="logo-main">crawlWeb</div>
-      <div class="logo-sub">クロワルウェィブ</div>
+    <div class="logo-area">
+      <span class="logo-title">Crawlモニター</span>
     </div>
-
-    <div class="search-box">
-      <input type="text" class="search-input" id="searchInput" placeholder="検索キーワードを入力..." onkeydown="if(event.key==='Enter') execSearch('web')">
-      <button class="btn" onclick="execSearch('web')">Web検索</button>
-      <button class="btn btn-ai" onclick="execSearch('ai')">CrawlAI検索</button>
-      <button class="btn game-mode-btn" id="gameBtn" onclick="enableGameMode()">🎮 ゲームモード</button>
-    </div>
+    <button class="menu-btn" onclick="toggleDrawer(true)">☰</button>
   </header>
 
-  <div class="content-viewport">
-    <div class="results-container" id="resultsArea">
-      <div class="result-card">
-        <h3>🚀 crawlWeb システム起動完了</h3>
-        <p>「Web検索」または「CrawlAI検索」を実行してください。接続エラーを起こさず、すべてこの画面内にテキスト描画されます。</p>
+  <div class="point-board">
+    <div class="point-box">
+      <div class="label">獲得Point</div>
+      <div class="value" id="earnedPoint">0 pt</div>
+    </div>
+    <div class="point-box">
+      <div class="label">判定中Point</div>
+      <div class="value pending" id="pendingPoint">0 pt</div>
+    </div>
+  </div>
+
+  <!-- DRAWER MENU -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <span class="drawer-title">ユーザー情報</span>
+      <button class="close-btn" onclick="toggleDrawer(false)">✕</button>
+    </div>
+    <div class="user-info-card" id="userInfoDisplay">
+      未登録です
+    </div>
+  </div>
+
+  <main>
+    <!-- INITIAL REGISTRATION SURVEY -->
+    <div class="init-survey-card" id="initSurveyCard" style="display: none;">
+      <h2>初回登録アンケート</h2>
+      <div class="form-group">
+        <label>個人番号（ID）</label>
+        <input type="text" id="regId" readonly>
+      </div>
+      <div class="form-group">
+        <label>お名前</label>
+        <input type="text" id="regName" placeholder="例: 山田 太郎">
+      </div>
+      <div class="form-group">
+        <label>年齢</label>
+        <input type="number" id="regAge" placeholder="例: 25">
+      </div>
+      <div class="form-group">
+        <label>都道府県</label>
+        <input type="text" id="regPref" placeholder="例: 東京都">
+      </div>
+      <div class="form-check">
+        <input type="checkbox" id="regConfirm">
+        <label for="regConfirm">個人番号を確認の上、アンケートを行います</label>
+      </div>
+      <button class="submit-btn" onclick="submitInitSurvey()">登録を完了してはじめる</button>
+    </div>
+
+    <!-- PRELIMINARY SURVEYS -->
+    <div class="section-title">事前アンケート</div>
+    <div class="survey-list" id="preliminaryList">
+      <div style="font-size:0.85rem; color:#64748b; text-align:center; padding:12px;">読み込み中...</div>
+    </div>
+
+    <!-- MAIN SURVEYS -->
+    <div class="section-title">本アンケート</div>
+    <div class="survey-list" id="mainList">
+      <div style="font-size:0.85rem; color:#64748b; text-align:center; padding:12px;">読み込み中...</div>
+    </div>
+  </main>
+
+  <!-- CONFIRM MODAL -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <h3>アンケート回答確認</h3>
+      <p id="modalMsg">個人番号を確認してからアンケートを行ってください。<br>回答完了後、「判定中Point」に即時反映されます。</p>
+      <div class="modal-btn-group">
+        <button class="modal-btn cancel" onclick="closeModal()">キャンセル</button>
+        <button class="modal-btn go" id="modalGoBtn">アンケートへ進む</button>
       </div>
     </div>
   </div>
 
-  <div class="game-overlay" id="gameOverlay">
-    <canvas id="gpuCanvas"></canvas>
-    <div class="game-controls">
-      <span class="fps-badge" id="fpsDisplay">FPS: -- (GPU Max)</span>
-      <button class="off-btn" onclick="disableGameMode()">OFF</button>
-    </div>
-  </div>
-
 <script>
-  function showGameBtn() {
-    document.getElementById("gameBtn").style.display = "inline-block";
+  const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1bfvvx6bgTkHYvFyZxpSFS-HsuqhOThr5RAsJ39Bgxvo/export?format=csv';
+
+  let userData = JSON.parse(localStorage.getItem('crawl_user_data')) || null;
+  let answeredState = JSON.parse(localStorage.getItem('crawl_answered_state')) || {}; 
+  // answeredState: { [surveyName]: 'pending' | 'earned' }
+
+  let currentTargetSurvey = null;
+
+  // Initialize User ID
+  function getOrGenerateID() {
+    if (userData && userData.id) return userData.id;
+    let savedId = localStorage.getItem('crawl_user_id');
+    if (!savedId) {
+      savedId = String(Math.floor(100 + Math.random() * 900)); // 3-digit number
+      localStorage.setItem('crawl_user_id', savedId);
+    }
+    return savedId;
   }
 
-  // DuckDuckGo API (JSONP/CORS回避)
-  window.ddgCallback = function(data) {
-    const resultsArea = document.getElementById("resultsArea");
-    let html = '';
+  const userId = getOrGenerateID();
 
-    if (data && data.Abstract) {
-      html += `
-        <div class="result-card">
-          <h3><a href="${data.AbstractURL}" target="_blank">${data.Heading}</a></h3>
-          <p>${data.Abstract}</p>
+  window.addEventListener('DOMContentLoaded', () => {
+    checkRegistration();
+    fetchSpreadsheetData();
+  });
+
+  function checkRegistration() {
+    if (!userData) {
+      document.getElementById('initSurveyCard').style.display = 'block';
+      document.getElementById('regId').value = userId;
+      updateDrawerInfo();
+    } else {
+      document.getElementById('initSurveyCard').style.display = 'none';
+      updateDrawerInfo();
+    }
+  }
+
+  function submitInitSurvey() {
+    const name = document.getElementById('regName').value.trim();
+    const age = document.getElementById('regAge').value.trim();
+    const pref = document.getElementById('regPref').value.trim();
+    const confirm = document.getElementById('regConfirm').checked;
+
+    if (!name || !age || !pref) {
+      alert('すべての項目を入力してください。');
+      return;
+    }
+    if (!confirm) {
+      alert('「個人番号を確認の上〜」のチェックボックスにチェックを入れてください。');
+      return;
+    }
+
+    userData = { id: userId, name, age, pref };
+    localStorage.setItem('crawl_user_data', JSON.stringify(userData));
+    alert('登録が完了しました！');
+    document.getElementById('initSurveyCard').style.display = 'none';
+    updateDrawerInfo();
+  }
+
+  function updateDrawerInfo() {
+    const display = document.getElementById('userInfoDisplay');
+    if (userData) {
+      display.innerHTML = `
+        <div><strong>お客様ID:</strong> ${userData.id}</div>
+        <div><strong>お名前:</strong> ${userData.name}</div>
+        <div><strong>年齢:</strong> ${userData.age} 歳</div>
+        <div><strong>都道府県:</strong> ${userData.pref}</div>
+      `;
+    } else {
+      display.innerHTML = `<div><strong>お客様ID:</strong> ${userId} (未登録)</div>`;
+    }
+  }
+
+  function toggleDrawer(open) {
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('drawerOverlay');
+    if (open) {
+      drawer.classList.add('open');
+      overlay.style.display = 'block';
+    } else {
+      drawer.classList.remove('open');
+      overlay.style.display = 'none';
+    }
+  }
+
+  // Parse CSV Helper
+  function parseCSV(text) {
+    const lines = text.split('\n');
+    return lines.map(line => {
+      const result = [];
+      let cell = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') { inQuotes = !inQuotes; }
+        else if (c === ',' && !inQuotes) {
+          result.push(cell.trim());
+          cell = '';
+        } else { cell += c; }
+      }
+      result.push(cell.trim());
+      return result;
+    });
+  }
+
+  async function fetchSpreadsheetData() {
+    try {
+      const res = await fetch(SHEET_CSV_URL);
+      const text = await res.text();
+      const rows = parseCSV(text);
+
+      // Skip Header Row (Row 0)
+      const dataRows = rows.slice(1);
+
+      renderSurveys(dataRows);
+    } catch (e) {
+      console.error(e);
+      document.getElementById('preliminaryList').innerHTML = `<div style="font-size:0.85rem; color:#ef4444; text-align:center;">データの取得に失敗しました</div>`;
+      document.getElementById('mainList').innerHTML = `<div style="font-size:0.85rem; color:#ef4444; text-align:center;">データの取得に失敗しました</div>`;
+    }
+  }
+
+  function renderSurveys(rows) {
+    const preContainer = document.getElementById('preliminaryList');
+    const mainContainer = document.getElementById('mainList');
+
+    preContainer.innerHTML = '';
+    mainContainer.innerHTML = '';
+
+    let totalEarned = 0;
+    let totalPending = 0;
+
+    let preCount = 0;
+    let mainCount = 0;
+
+    rows.forEach(row => {
+      if (!row[0]) return; // Empty title check
+
+      const name = row[0];
+      const point = parseInt(row[1]) || 0;
+      const type = row[2]; // "事前" or "本"
+      const link = row[3];
+      const eColumn = row[4] || ''; // E欄: ポイント確定ID（例: 237、526）
+      const fColumn = row[5] || ''; // F欄: 対象者ID（例: 237、526）
+
+      // Helper to check if ID exists in Japanese/English comma-separated string
+      const checkIDInString = (str, targetId) => {
+        if (!str) return false;
+        const tokens = str.split(/[、,]/).map(s => s.trim());
+        return tokens.includes(targetId);
+      };
+
+      // Check E column for point confirmation
+      const isConfirmedInSheet = checkIDInString(eColumn, userId);
+
+      // Auto-update status if E column contains ID
+      if (isConfirmedInSheet) {
+        answeredState[name] = 'earned';
+      }
+
+      const currentState = answeredState[name]; // undefined, 'pending', 'earned'
+
+      if (currentState === 'earned') {
+        totalEarned += point;
+      } else if (currentState === 'pending') {
+        totalPending += point;
+      }
+
+      // Check Target Condition for Main Survey
+      if (type === '本') {
+        const isTargetUser = checkIDInString(fColumn, userId);
+        if (!isTargetUser) return; // Hide if user is not in target list F
+      }
+
+      // Build HTML Card
+      const card = document.createElement('div');
+      card.className = 'survey-card';
+
+      let actionBtnHTML = '';
+      if (currentState === 'earned') {
+        actionBtnHTML = `<button class="btn done" disabled>回答済み</button>`;
+      } else if (currentState === 'pending') {
+        actionBtnHTML = `<button class="btn pending-btn" disabled>判定中</button>`;
+      } else {
+        actionBtnHTML = `<button class="btn" onclick="openConfirmModal('${encodeURIComponent(name)}', '${encodeURIComponent(link)}', ${point})">回答する</button>`;
+      }
+
+      card.innerHTML = `
+        <div class="survey-info">
+          <div class="survey-name">${name}</div>
+          <div class="survey-point">+${point} pt</div>
+        </div>
+        <div class="survey-action">
+          ${actionBtnHTML}
         </div>
       `;
-    }
 
-    if (data && data.RelatedTopics && data.RelatedTopics.length > 0) {
-      data.RelatedTopics.forEach(item => {
-        if (item.Text && item.FirstURL) {
-          html += `
-            <div class="result-card">
-              <h3><a href="${item.FirstURL}" target="_blank">${item.Text.split(' - ')[0]}</a></h3>
-              <p>${item.Text}</p>
-            </div>
-          `;
-        }
-      });
-    }
-
-    if (html) {
-      resultsArea.innerHTML = html;
-    } else {
-      resultsArea.innerHTML = `<div class="result-card"><p>詳細なダイレクトデータが見つかりませんでした。「CrawlAI検索」をお試しください。</p></div>`;
-    }
-  };
-
-  function execSearch(type) {
-    const rawVal = document.getElementById("searchInput").value.trim();
-    const resultsArea = document.getElementById("resultsArea");
-
-    if (!rawVal) return;
-
-    showGameBtn();
-
-    if (type === 'web') {
-      resultsArea.innerHTML = `<div class="result-card"><p>🔍 Web情報を収集・検索中...</p></div>`;
-
-      const oldScript = document.getElementById('ddgScript');
-      if (oldScript) oldScript.remove();
-
-      const script = document.createElement('script');
-      script.id = 'ddgScript';
-      script.src = `https://api.duckduckgo.com/?q=${encodeURIComponent(rawVal)}&format=json&callback=ddgCallback`;
-      document.body.appendChild(script);
-
-    } else if (type === 'ai') {
-      const aiQuery = `${rawVal}について`;
-      resultsArea.innerHTML = `<div class="result-card"><h3>🤖 CrawlAI: 「${aiQuery}」</h3><p>🔍 情報を解析・抽出中...</p></div>`;
-
-      fetchCrawlAI(rawVal, aiQuery);
-    }
-  }
-
-  async function fetchCrawlAI(rawVal, aiQuery) {
-    const resultsArea = document.getElementById("resultsArea");
-    try {
-      const res = await fetch(`https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(rawVal)}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.extract) {
-          resultsArea.innerHTML = `
-            <div class="result-card">
-              <h3>🤖 CrawlAI: 「${aiQuery}」</h3>
-              <p><strong>【${data.title}】</strong></p>
-              <p style="margin-top: 8px;">${data.extract}</p>
-            </div>
-          `;
-        } else {
-          resultsArea.innerHTML = `<div class="error-msg">表示不可（該当データなし）</div>`;
-        }
-      } else {
-        resultsArea.innerHTML = `<div class="error-msg">表示不可</div>`;
+      if (type === '事前') {
+        preContainer.appendChild(card);
+        preCount++;
+      } else if (type === '本') {
+        mainContainer.appendChild(card);
+        mainCount++;
       }
-    } catch (e) {
-      resultsArea.innerHTML = `<div class="error-msg">表示不可</div>`;
-    }
+    });
+
+    if (preCount === 0) preContainer.innerHTML = `<div style="font-size:0.85rem; color:#64748b; text-align:center; padding:12px;">現在回答できる事前アンケートはありません</div>`;
+    if (mainCount === 0) mainContainer.innerHTML = `<div style="font-size:0.85rem; color:#64748b; text-align:center; padding:12px;">現在回答できる本アンケートはありません</div>`;
+
+    // Save Status
+    localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
+
+    // Update Points
+    document.getElementById('earnedPoint').textContent = `${totalEarned} pt`;
+    document.getElementById('pendingPoint').textContent = `${totalPending} pt`;
   }
 
-  /* WEBGPU & FPS GAME MODE ENGINE */
-  let animId = null;
-  let lastTime = performance.now();
-  let frameCount = 0;
-
-  function enableGameMode() {
-    document.getElementById("gameOverlay").style.display = "block";
-    if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen();
+  function openConfirmModal(encName, encLink, point) {
+    if (!userData) {
+      alert('先に初回登録アンケートを行ってください。');
+      return;
     }
-    startFPSLoop();
+
+    const name = decodeURIComponent(encName);
+    const link = decodeURIComponent(encLink);
+
+    currentTargetSurvey = { name, link, point };
+
+    document.getElementById('modalMsg').innerHTML = `個人番号（<strong>${userId}</strong>）を確認してからアンケートを行ってください。<br><br>回答完了後、ポイントは「判定中Point」へ反映されます。`;
+    document.getElementById('confirmModal').style.display = 'flex';
+
+    document.getElementById('modalGoBtn').onclick = () => {
+      // Mark as Pending immediately upon clicking to answer
+      answeredState[name] = 'pending';
+      localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
+
+      closeModal();
+      
+      // Open Google Form in new tab
+      window.open(link, '_blank');
+
+      alert('回答完了後、「回答ありがとうございます！ 判定中Pointに反映されました！」画面の「判定中Point」へ加算されます。');
+      
+      // Refresh list
+      fetchSpreadsheetData();
+    };
   }
 
-  function disableGameMode() {
-    document.getElementById("gameOverlay").style.display = "none";
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    }
-    cancelAnimationFrame(animId);
-  }
-
-  function startFPSLoop() {
-    const canvas = document.getElementById("gpuCanvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    function render() {
-      const now = performance.now();
-      frameCount++;
-      if (now - lastTime >= 1000) {
-        document.getElementById("fpsDisplay").textContent = `FPS: ${frameCount} (GPU Max)`;
-        frameCount = 0;
-        lastTime = now;
-      }
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      animId = requestAnimationFrame(render);
-    }
-    render();
+  function closeModal() {
+    document.getElementById('confirmModal').style.display = 'none';
   }
 </script>
 </body>
