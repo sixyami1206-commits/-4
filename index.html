@@ -6,19 +6,25 @@
   <title>Crawlモニター</title>
   <style>
     :root {
-      --primary: #0284c7;
-      --primary-dark: #0369a1;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #334155;
-      --border: #e2e8f0;
-      --accent: #f59e0b;
+      --bg: #0b0f19;
+      --card-bg: rgba(21, 29, 46, 0.85);
+      --card-border: rgba(56, 189, 248, 0.2);
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.4);
+      --accent: #fbbf24;
+      --accent-glow: rgba(251, 191, 36, 0.4);
+      --text: #f8fafc;
+      --text-sub: #94a3b8;
+      --success: #22c55e;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
     body {
       background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(251, 191, 36, 0.08) 0px, transparent 50%);
       color: var(--text);
       min-height: 100vh;
       display: flex;
@@ -27,153 +33,187 @@
 
     /* HEADER */
     header {
-      background: var(--card-bg);
-      border-bottom: 2px solid var(--primary);
-      padding: 12px 16px;
+      background: rgba(11, 15, 25, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 14px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
-    .logo-area { display: flex; align-items: center; gap: 8px; }
-    .logo-title { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+    .logo-area { display: flex; align-items: center; gap: 10px; }
+    .logo-title {
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
     .menu-btn {
-      background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text); padding: 4px 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 10px;
+      transition: all 0.2s;
     }
+    .menu-btn:hover { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
+
+    /* MAIN CONTAINER */
+    main { flex: 1; padding: 20px 16px; max-width: 640px; margin: 0 auto; width: 100%; }
 
     /* POINT STATUS BOARD */
     .point-board {
       background: var(--card-bg);
-      margin: 12px 16px 0;
-      padding: 16px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
+      padding: 20px;
+      border-radius: 16px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      margin-bottom: 24px;
     }
 
     .point-values {
-      display: flex;
-      justify-content: space-around;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .point-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      padding: 14px;
+      border-radius: 12px;
       text-align: center;
     }
 
-    .point-box .label { font-size: 0.75rem; color: #64748b; font-weight: bold; margin-bottom: 4px; }
-    .point-box .value { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
-    .point-box .value.pending { color: var(--accent); }
+    .point-box .label { font-size: 0.75rem; color: var(--text-sub); font-weight: 700; margin-bottom: 6px; }
+    .point-box .value { font-size: 1.5rem; font-weight: 900; color: var(--primary); text-shadow: 0 0 12px var(--primary-glow); }
+    .point-box .value.pending { color: var(--accent); text-shadow: 0 0 12px var(--accent-glow); }
 
     .exchange-action-btn {
       width: 100%;
-      background: var(--accent);
+      background: linear-gradient(135deg, #f59e0b, #d97706);
       color: #fff;
       border: none;
-      padding: 10px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 0.9rem;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 0.95rem;
       cursor: pointer;
       text-align: center;
+      box-shadow: 0 4px 15px var(--accent-glow);
+      transition: transform 0.2s, box-shadow 0.2s;
     }
+    .exchange-action-btn:active { transform: scale(0.98); }
 
     /* DRAWER MENU */
     .drawer-overlay {
       position: fixed; top:0; left:0; width:100vw; height:100vh;
-      background: rgba(0,0,0,0.5); display: none; z-index: 200;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; z-index: 200;
     }
     .drawer {
-      position: fixed; top:0; right:-280px; width:280px; height:100vh;
-      background: var(--card-bg); z-index: 201; transition: right 0.3s ease;
-      padding: 20px; display: flex; flex-direction: column; gap: 16px;
-      box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+      position: fixed; top:0; right:-300px; width:300px; height:100vh;
+      background: #0f172a; border-left: 1px solid var(--card-border); z-index: 201; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 24px 20px; display: flex; flex-direction: column; gap: 20px;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.5);
     }
     .drawer.open { right: 0; }
-    .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-    .drawer-title { font-weight: bold; color: var(--primary); }
-    .close-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; }
+    .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 14px; }
+    .drawer-title { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
+    .close-btn { background: none; border: none; font-size: 1.4rem; color: var(--text-sub); cursor: pointer; }
 
     .user-info-card {
-      background: #f1f5f9; padding: 12px; border-radius: 6px; font-size: 0.85rem; line-height: 1.6;
+      background: rgba(30, 41, 59, 0.6); border: 1px solid var(--card-border); padding: 16px; border-radius: 12px; font-size: 0.85rem; line-height: 1.8;
     }
 
-    .drawer-menu-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .drawer-menu-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
     .drawer-btn {
-      width: 100%; padding: 10px; background: var(--primary); color: #fff; border: none; border-radius: 4px;
-      font-weight: bold; cursor: pointer; text-align: center;
+      width: 100%; padding: 12px; background: linear-gradient(135deg, #38bdf8, #0284c7); color: #fff; border: none; border-radius: 8px;
+      font-weight: 800; cursor: pointer; text-align: center; box-shadow: 0 4px 12px var(--primary-glow);
     }
-
-    /* MAIN CONTAINER */
-    main { flex: 1; padding: 16px; max-width: 600px; margin: 0 auto; width: 100%; }
 
     /* INITIAL SURVEY FORM */
     .init-survey-card {
       background: var(--card-bg);
-      border: 2px solid var(--primary);
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
+      border: 1px solid var(--primary);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 0 20px var(--primary-glow);
     }
-    .init-survey-card h2 { font-size: 1.1rem; color: var(--primary); margin-bottom: 12px; text-align: center; }
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 4px; }
+    .init-survey-card h2 { font-size: 1.2rem; color: var(--primary); margin-bottom: 16px; text-align: center; font-weight: 800; }
+    .form-group { margin-bottom: 14px; text-align: left; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; }
     .form-group input {
-      width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem;
+      width: 100%; padding: 10px 12px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--card-border); border-radius: 8px; font-size: 0.9rem; color: var(--text);
     }
-    .form-group input[readonly] { background: #e2e8f0; color: #64748b; }
-    .form-check { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; margin: 16px 0; }
+    .form-group input[readonly] { background: rgba(51, 65, 85, 0.5); color: var(--text-sub); }
+    .form-check { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; margin: 18px 0; color: var(--text-sub); }
     .submit-btn {
-      width: 100%; background: var(--primary); color: #fff; border: none; padding: 10px;
-      border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.95rem;
+      width: 100%; background: linear-gradient(135deg, #38bdf8, #0284c7); color: #fff; border: none; padding: 12px;
+      border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.95rem; box-shadow: 0 4px 15px var(--primary-glow);
     }
 
     /* SURVEY LIST SECTIONS */
     .section-title {
-      font-size: 1rem; font-weight: 800; color: #1e293b;
-      margin: 20px 0 10px; padding-left: 8px; border-left: 4px solid var(--primary);
+      font-size: 1rem; font-weight: 900; color: var(--text);
+      margin: 24px 0 12px; padding-left: 10px; border-left: 4px solid var(--primary);
+      display: flex; justify-content: space-between; align-items: center;
     }
 
-    .survey-list { display: flex; flex-direction: column; gap: 10px; }
+    .survey-list { display: flex; flex-direction: column; gap: 12px; }
 
     .survey-card {
       background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 14px;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: border-color 0.2s, transform 0.2s;
     }
+    .survey-card:hover { border-color: var(--primary); transform: translateY(-2px); }
 
     .survey-info { flex: 1; padding-right: 12px; }
-    .survey-name { font-size: 0.9rem; font-weight: bold; margin-bottom: 4px; color: #0f172a; }
-    .survey-point { font-size: 0.85rem; color: var(--primary); font-weight: bold; }
+    .survey-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    .survey-point { font-size: 0.9rem; color: var(--primary); font-weight: 800; }
 
     .survey-action .btn {
-      background: var(--primary); color: #fff; border: none; padding: 6px 12px;
-      border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block;
+      background: linear-gradient(135deg, #38bdf8, #0284c7); color: #fff; border: none; padding: 8px 16px;
+      border-radius: 20px; font-size: 0.8rem; font-weight: 800; cursor: pointer; text-decoration: none; display: inline-block;
+      box-shadow: 0 2px 10px var(--primary-glow);
     }
-    .survey-action .btn.done { background: #94a3b8; cursor: not-allowed; }
-    .survey-action .btn.pending-btn { background: var(--accent); cursor: not-allowed; }
+    .survey-action .btn.done { background: #475569; box-shadow: none; cursor: not-allowed; color: #94a3b8; }
+    .survey-action .btn.pending-btn { background: var(--accent); box-shadow: 0 2px 10px var(--accent-glow); cursor: not-allowed; color: #0f172a; }
 
     /* MODAL */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 300; padding: 16px;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 300; padding: 16px;
     }
     .modal {
-      background: var(--card-bg); border-radius: 8px; padding: 20px; max-width: 400px; width: 100%; text-align: center;
+      background: #0f172a; border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
-    .modal h3 { font-size: 1.1rem; margin-bottom: 12px; color: var(--primary); }
-    .modal p { font-size: 0.85rem; margin-bottom: 16px; line-height: 1.5; }
-    .modal-btn-group { display: flex; gap: 8px; }
-    .modal-btn { flex: 1; padding: 8px; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; }
-    .modal-btn.cancel { background: #cbd5e1; }
-    .modal-btn.go { background: var(--primary); color: #fff; }
+    .modal h3 { font-size: 1.15rem; margin-bottom: 14px; color: var(--primary); font-weight: 800; }
+    .modal p { font-size: 0.85rem; margin-bottom: 18px; line-height: 1.6; color: var(--text-sub); }
+    .modal-btn-group { display: flex; gap: 10px; }
+    .modal-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; }
+    .modal-btn.cancel { background: #334155; color: var(--text); }
+    .modal-btn.go { background: linear-gradient(135deg, #38bdf8, #0284c7); color: #fff; box-shadow: 0 4px 12px var(--primary-glow); }
   </style>
 </head>
 <body>
@@ -185,36 +225,21 @@
     <button class="menu-btn" onclick="toggleDrawer(true)">☰</button>
   </header>
 
-  <div class="point-board">
-    <div class="point-values">
-      <div class="point-box">
-        <div class="label">獲得Point</div>
-        <div class="value" id="earnedPoint">0 pt</div>
-      </div>
-      <div class="point-box">
-        <div class="label">判定中Point</div>
-        <div class="value pending" id="pendingPoint">0 pt</div>
-      </div>
-    </div>
-    <button class="exchange-action-btn" onclick="openExchangeModal()">ポイント交換を申請する</button>
-  </div>
-
-  <!-- DRAWER MENU -->
-  <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
-  <div class="drawer" id="drawer">
-    <div class="drawer-header">
-      <span class="drawer-title">メニュー</span>
-      <button class="close-btn" onclick="toggleDrawer(false)">✕</button>
-    </div>
-    <div class="user-info-card" id="userInfoDisplay">
-      未登録です
-    </div>
-    <div class="drawer-menu-list">
-      <button class="drawer-btn" onclick="toggleDrawer(false); openExchangeModal();">ポイント交換申請</button>
-    </div>
-  </div>
-
   <main>
+    <div class="point-board">
+      <div class="point-values">
+        <div class="point-box">
+          <div class="label">獲得Point</div>
+          <div class="value" id="earnedPoint">0 pt</div>
+        </div>
+        <div class="point-box">
+          <div class="label">判定中Point</div>
+          <div class="value pending" id="pendingPoint">0 pt</div>
+        </div>
+      </div>
+      <button class="exchange-action-btn" onclick="openExchangeModal()">ポイント交換申請（10pt〜）</button>
+    </div>
+
     <!-- INITIAL REGISTRATION SURVEY -->
     <div class="init-survey-card" id="initSurveyCard" style="display: none;">
       <h2>初回登録アンケート</h2>
@@ -244,15 +269,30 @@
     <!-- PRELIMINARY SURVEYS -->
     <div class="section-title">事前アンケート</div>
     <div class="survey-list" id="preliminaryList">
-      <div style="font-size:0.85rem; color:#64748b; text-align:center; padding:12px;">読み込み中...</div>
+      <div style="font-size:0.85rem; color:var(--text-sub); text-align:center; padding:12px;">読み込み中...</div>
     </div>
 
     <!-- MAIN SURVEYS -->
     <div class="section-title">本アンケート</div>
     <div class="survey-list" id="mainList">
-      <div style="font-size:0.85rem; color:#64748b; text-align:center; padding:12px;">読み込み中...</div>
+      <div style="font-size:0.85rem; color:var(--text-sub); text-align:center; padding:12px;">読み込み中...</div>
     </div>
   </main>
+
+  <!-- DRAWER MENU -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <span class="drawer-title">メニュー</span>
+      <button class="close-btn" onclick="toggleDrawer(false)">✕</button>
+    </div>
+    <div class="user-info-card" id="userInfoDisplay">
+      未登録です
+    </div>
+    <div class="drawer-menu-list">
+      <button class="drawer-btn" onclick="toggleDrawer(false); openExchangeModal();">ポイント交換申請</button>
+    </div>
+  </div>
 
   <!-- CONFIRM MODAL -->
   <div class="modal-overlay" id="confirmModal">
@@ -267,15 +307,15 @@
   <div class="modal-overlay" id="exchangeModal">
     <div class="modal">
       <h3>ポイント交換申請</h3>
-      <p style="text-align: left; font-size: 0.85rem; margin-bottom: 12px;">
-        交換方法は、当社に申請してから確認してください。<br><br>
-        「申請」ボタンを押すとメールアプリが起動します。内容を確認の上、送信してください。
+      <p style="text-align: left; font-size: 0.85rem; margin-bottom: 12px; color: var(--text-sub);">
+        ※交換は<strong>10pt以上</strong>かつ<strong>獲得ポイントの範囲内</strong>で申請可能です。<br><br>
+        交換方法は、当社に申請してから確認してください。「申請」を押すとメールアプリが自動起動します。
       </p>
-      <div class="form-group" style="text-align: left;">
-        <label>交換希望ポイント数</label>
-        <input type="number" id="exchangePtsInput" placeholder="例: 500">
+      <div class="form-group">
+        <label>交換希望ポイント数（最低 10 pt）</label>
+        <input type="number" id="exchangePtsInput" placeholder="例: 10" min="10">
       </div>
-      <div class="modal-btn-group" style="margin-top: 16px;">
+      <div class="modal-btn-group" style="margin-top: 18px;">
         <button class="modal-btn cancel" onclick="closeExchangeModal()">キャンセル</button>
         <button class="modal-btn go" onclick="execExchangeEmail()">申請（メール起動）</button>
       </div>
@@ -305,6 +345,8 @@
   window.addEventListener('DOMContentLoaded', () => {
     checkRegistration();
     fetchSpreadsheetData();
+    // 10秒ごとに自動更新
+    setInterval(fetchSpreadsheetData, 10000);
   });
 
   function checkRegistration() {
@@ -387,15 +429,13 @@
 
   async function fetchSpreadsheetData() {
     try {
-      const res = await fetch(SHEET_CSV_URL);
+      const res = await fetch(SHEET_CSV_URL + '&t=' + new Date().getTime());
       const text = await res.text();
       const rows = parseCSV(text);
       const dataRows = rows.slice(1);
       renderSurveys(dataRows);
     } catch (e) {
-      console.error(e);
-      document.getElementById('preliminaryList').innerHTML = `<div style="font-size:0.85rem; color:#ef4444; text-align:center;">データの取得に失敗しました</div>`;
-      document.getElementById('mainList').innerHTML = `<div style="font-size:0.85rem; color:#ef4444; text-align:center;">データの取得に失敗しました</div>`;
+      console.error('Data update error:', e);
     }
   }
 
@@ -478,8 +518,8 @@
       }
     });
 
-    if (preCount === 0) preContainer.innerHTML = `<div style="font-size:0.85rem; color:#64748b; text-align:center; padding:12px;">現在回答できる事前アンケートはありません</div>`;
-    if (mainCount === 0) mainContainer.innerHTML = `<div style="font-size:0.85rem; color:#64748b; text-align:center; padding:12px;">現在回答できる本アンケートはありません</div>`;
+    if (preCount === 0) preContainer.innerHTML = `<div style="font-size:0.85rem; color:var(--text-sub); text-align:center; padding:12px;">現在回答できる事前アンケートはありません</div>`;
+    if (mainCount === 0) mainContainer.innerHTML = `<div style="font-size:0.85rem; color:var(--text-sub); text-align:center; padding:12px;">現在回答できる本アンケートはありません</div>`;
 
     localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
 
@@ -540,9 +580,16 @@
   }
 
   function execExchangeEmail() {
-    const pts = document.getElementById('exchangePtsInput').value.trim();
-    if (!pts || parseInt(pts) <= 0) {
-      alert('交換希望ポイント数を入力してください。');
+    const ptsInput = document.getElementById('exchangePtsInput').value.trim();
+    const pts = parseInt(ptsInput);
+
+    if (!ptsInput || isNaN(pts) || pts < 10) {
+      alert('交換ポイント数は10 pt以上を入力してください。');
+      return;
+    }
+
+    if (pts > currentEarnedPoint) {
+      alert(`交換申請できるのは「獲得Point」の範囲内のみです。\n現在の獲得Point: ${currentEarnedPoint} pt`);
       return;
     }
 
@@ -551,7 +598,6 @@
     const bodyText = `【ポイント交換申請】\n\n交換種別: 現金等で交換\n交換ポイント数: ${pts} pt\nユーザー番号: ${userId}\nお名前: ${userData.name}\n\n上記内容で申請いたします。方法の確認をお願いいたします。`;
     const body = encodeURIComponent(bodyText);
 
-    // Mailto triggers default mail client
     window.location.href = `mailto:${recipient}?subject=${subject}&body=${body}`;
 
     closeExchangeModal();
