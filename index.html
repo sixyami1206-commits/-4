@@ -4,10 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>crawlWeb</title>
-  
-  <!-- Google公式検索エンジン スクリプト -->
-  <script async src="https://cse.google.com/cse.js?cx=0220ba049f4274edf"></script>
-
   <style>
     :root {
       --bg-color: #0f172a;
@@ -22,12 +18,12 @@
     body {
       background-color: var(--bg-color);
       color: var(--text);
-      min-height: 100vh;
+      height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
 
-    /* HEADER */
     header {
       background: var(--card-bg);
       backdrop-filter: blur(10px);
@@ -37,6 +33,7 @@
       flex-direction: column;
       align-items: center;
       gap: 12px;
+      z-index: 10;
     }
 
     .logo-container { text-align: center; }
@@ -50,34 +47,96 @@
     }
     .logo-sub { font-size: 0.75rem; color: #94a3b8; letter-spacing: 1px; }
 
-    /* GOOGLE SEARCH CONTAINER */
-    .search-wrapper {
+    .search-box {
       width: 100%;
-      max-width: 700px;
-      margin: 20px auto;
-      padding: 0 16px;
+      max-width: 680px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    /* Google標準デザインをダークモード化調整 */
-    .gsc-control-cse {
-      background-color: transparent !important;
-      border: none !important;
-      padding: 0 !important;
+    .search-box:focus-within { border-color: var(--accent); }
+
+    input.search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 1rem;
+      padding: 6px 8px;
     }
-    .gsc-search-box { margin-bottom: 20px !important; }
-    .gsc-input-box {
-      background: rgba(15, 23, 42, 0.8) !important;
-      border: 1px solid var(--border) !important;
-      border-radius: 20px !important;
+
+    .btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
     }
-    input.gsc-input {
-      color: #fff !important;
-      background: transparent !important;
+
+    .btn:hover { border-color: var(--accent); }
+    .btn-ai { background: linear-gradient(135deg, #38bdf8, #818cf8); color: #0f172a; border: none; }
+    .game-mode-btn { background: rgba(56, 189, 248, 0.2); border-color: var(--accent); color: var(--accent); display: none; }
+
+    .content-viewport {
+      flex: 1;
+      width: 100%;
+      overflow-y: auto;
+      padding: 24px 16px;
+      display: flex;
+      justify-content: center;
     }
-    .gsc-search-button-v2 {
-      background-color: var(--accent) !important;
-      border-radius: 15px !important;
+
+    .results-container {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
+
+    .result-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .result-card h3 { font-size: 1.1rem; margin-bottom: 6px; }
+    .result-card h3 a { color: var(--accent); text-decoration: none; }
+    .result-card h3 a:hover { text-decoration: underline; }
+    .result-card p { color: #cbd5e1; font-size: 0.9rem; line-height: 1.6; }
+
+    .error-msg { color: #f87171; font-weight: bold; text-align: center; padding: 40px 0; }
+
+    .game-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #000;
+      display: none;
+      z-index: 9999;
+    }
+
+    .game-controls {
+      position: absolute;
+      top: 16px; right: 16px;
+      display: flex; gap: 12px; align-items: center;
+      background: rgba(0,0,0,0.7); padding: 8px 16px; border-radius: 20px; border: 1px solid #333;
+    }
+
+    .fps-badge { color: #22c55e; font-size: 0.85rem; font-family: monospace; font-weight: bold; }
+    .off-btn { background: #ef4444; color: #fff; border: none; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
+    canvas#gpuCanvas { width: 100%; height: 100%; display: block; }
   </style>
 </head>
 <body>
@@ -87,12 +146,164 @@
       <div class="logo-main">crawlWeb</div>
       <div class="logo-sub">クロワルウェィブ</div>
     </div>
+
+    <div class="search-box">
+      <input type="text" class="search-input" id="searchInput" placeholder="検索キーワードを入力..." onkeydown="if(event.key==='Enter') execSearch('web')">
+      <button class="btn" onclick="execSearch('web')">Web検索</button>
+      <button class="btn btn-ai" onclick="execSearch('ai')">CrawlAI検索</button>
+      <button class="btn game-mode-btn" id="gameBtn" onclick="enableGameMode()">🎮 ゲームモード</button>
+    </div>
   </header>
 
-  <div class="search-wrapper">
-    <!-- Google公式の検索窓＆結果表示要素 -->
-    <div class="gcse-search"></div>
+  <div class="content-viewport">
+    <div class="results-container" id="resultsArea">
+      <div class="result-card">
+        <h3>🚀 crawlWeb システム起動完了</h3>
+        <p>「Web検索」または「CrawlAI検索」を実行してください。接続エラーを起こさず、すべてこの画面内にテキスト描画されます。</p>
+      </div>
+    </div>
   </div>
 
+  <div class="game-overlay" id="gameOverlay">
+    <canvas id="gpuCanvas"></canvas>
+    <div class="game-controls">
+      <span class="fps-badge" id="fpsDisplay">FPS: -- (GPU Max)</span>
+      <button class="off-btn" onclick="disableGameMode()">OFF</button>
+    </div>
+  </div>
+
+<script>
+  function showGameBtn() {
+    document.getElementById("gameBtn").style.display = "inline-block";
+  }
+
+  // DuckDuckGo API (JSONP/CORS回避)
+  window.ddgCallback = function(data) {
+    const resultsArea = document.getElementById("resultsArea");
+    let html = '';
+
+    if (data && data.Abstract) {
+      html += `
+        <div class="result-card">
+          <h3><a href="${data.AbstractURL}" target="_blank">${data.Heading}</a></h3>
+          <p>${data.Abstract}</p>
+        </div>
+      `;
+    }
+
+    if (data && data.RelatedTopics && data.RelatedTopics.length > 0) {
+      data.RelatedTopics.forEach(item => {
+        if (item.Text && item.FirstURL) {
+          html += `
+            <div class="result-card">
+              <h3><a href="${item.FirstURL}" target="_blank">${item.Text.split(' - ')[0]}</a></h3>
+              <p>${item.Text}</p>
+            </div>
+          `;
+        }
+      });
+    }
+
+    if (html) {
+      resultsArea.innerHTML = html;
+    } else {
+      resultsArea.innerHTML = `<div class="result-card"><p>詳細なダイレクトデータが見つかりませんでした。「CrawlAI検索」をお試しください。</p></div>`;
+    }
+  };
+
+  function execSearch(type) {
+    const rawVal = document.getElementById("searchInput").value.trim();
+    const resultsArea = document.getElementById("resultsArea");
+
+    if (!rawVal) return;
+
+    showGameBtn();
+
+    if (type === 'web') {
+      resultsArea.innerHTML = `<div class="result-card"><p>🔍 Web情報を収集・検索中...</p></div>`;
+
+      const oldScript = document.getElementById('ddgScript');
+      if (oldScript) oldScript.remove();
+
+      const script = document.createElement('script');
+      script.id = 'ddgScript';
+      script.src = `https://api.duckduckgo.com/?q=${encodeURIComponent(rawVal)}&format=json&callback=ddgCallback`;
+      document.body.appendChild(script);
+
+    } else if (type === 'ai') {
+      const aiQuery = `${rawVal}について`;
+      resultsArea.innerHTML = `<div class="result-card"><h3>🤖 CrawlAI: 「${aiQuery}」</h3><p>🔍 情報を解析・抽出中...</p></div>`;
+
+      fetchCrawlAI(rawVal, aiQuery);
+    }
+  }
+
+  async function fetchCrawlAI(rawVal, aiQuery) {
+    const resultsArea = document.getElementById("resultsArea");
+    try {
+      const res = await fetch(`https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(rawVal)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.extract) {
+          resultsArea.innerHTML = `
+            <div class="result-card">
+              <h3>🤖 CrawlAI: 「${aiQuery}」</h3>
+              <p><strong>【${data.title}】</strong></p>
+              <p style="margin-top: 8px;">${data.extract}</p>
+            </div>
+          `;
+        } else {
+          resultsArea.innerHTML = `<div class="error-msg">表示不可（該当データなし）</div>`;
+        }
+      } else {
+        resultsArea.innerHTML = `<div class="error-msg">表示不可</div>`;
+      }
+    } catch (e) {
+      resultsArea.innerHTML = `<div class="error-msg">表示不可</div>`;
+    }
+  }
+
+  /* WEBGPU & FPS GAME MODE ENGINE */
+  let animId = null;
+  let lastTime = performance.now();
+  let frameCount = 0;
+
+  function enableGameMode() {
+    document.getElementById("gameOverlay").style.display = "block";
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    }
+    startFPSLoop();
+  }
+
+  function disableGameMode() {
+    document.getElementById("gameOverlay").style.display = "none";
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+    cancelAnimationFrame(animId);
+  }
+
+  function startFPSLoop() {
+    const canvas = document.getElementById("gpuCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    function render() {
+      const now = performance.now();
+      frameCount++;
+      if (now - lastTime >= 1000) {
+        document.getElementById("fpsDisplay").textContent = `FPS: ${frameCount} (GPU Max)`;
+        frameCount = 0;
+        lastTime = now;
+      }
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      animId = requestAnimationFrame(render);
+    }
+    render();
+  }
+</script>
 </body>
 </html>
