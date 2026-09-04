@@ -60,7 +60,7 @@
     /* SEARCH BAR & FIXED SUFFIX */
     .search-box {
       width: 100%;
-      max-width: 650px;
+      max-width: 700px;
       background: rgba(15, 23, 42, 0.6);
       border: 1px solid var(--border);
       border-radius: 30px;
@@ -114,31 +114,12 @@
     .btn-ai { background: linear-gradient(135deg, #38bdf8, #818cf8); color: #000; border: none; }
     .game-mode-btn { background: rgba(56, 189, 248, 0.2); border-color: var(--accent); color: var(--accent); display: none; }
 
-    /* SHORTCUTS */
-    .shortcuts {
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
-      width: 100%;
-      max-width: 650px;
-      justify-content: center;
-    }
-
-    .shortcut-btn {
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      font-size: 0.8rem;
-      cursor: pointer;
-      text-decoration: underline;
-    }
-
-    /* MAIN CONTENT VIEW (IFRAME & CrawlAI) */
+    /* CONTENT VIEW */
     .content-viewport {
       flex: 1;
       width: 100%;
       position: relative;
-      background: #000;
+      background: #0f172a;
     }
 
     iframe#webFrame {
@@ -205,31 +186,22 @@
     <!-- SEARCH BAR -->
     <div class="search-box">
       <div class="input-wrapper">
-        <input type="text" class="search-input" id="searchInput" placeholder="単語を入力" onkeydown="if(event.key==='Enter') execSearch('duck')">
+        <input type="text" class="search-input" id="searchInput" placeholder="単語を入力" onkeydown="if(event.key==='Enter') execSearch('wiki')">
         <span class="fixed-suffix">について</span>
       </div>
-      <button class="btn" onclick="execSearch('duck')">検索</button>
+      <button class="btn" onclick="execSearch('wiki')">Web検索</button>
       <button class="btn btn-ai" onclick="execSearch('ai')">CrawlAI検索</button>
       <button class="btn game-mode-btn" id="gameBtn" onclick="enableGameMode()">🎮 ゲームモード</button>
     </div>
-
-    <!-- FAMOUS SITES -->
-    <div class="shortcuts">
-      <button class="shortcut-btn" onclick="openUrl('https://www.wikipedia.org')">Wikipedia</button>
-      <button class="shortcut-btn" onclick="openUrl('https://www.youtube.com')">YouTube</button>
-      <button class="shortcut-btn" onclick="openUrl('https://x.com')">𝕏</button>
-      <button class="shortcut-btn" onclick="openUrl('https://www.google.com')">Google</button>
-      <button class="shortcut-btn" onclick="openUrl('https://github.com')">GitHub</button>
-    </div>
   </header>
 
-  <!-- CONTENT VIEW (In-Site Browser / CrawlAI) -->
+  <!-- CONTENT VIEW -->
   <div class="content-viewport">
     <iframe id="webFrame"></iframe>
     <div class="ai-result-panel" id="aiPanel">
       <div class="ai-card">
         <h3 id="aiTitle">🤖 CrawlAI 検索</h3>
-        <div id="aiBody">単語を入力して「CrawlAI検索」を押すと、Wikipediaから情報を収集して要約表示します。</div>
+        <div id="aiBody">単語を入力して「Web検索」または「CrawlAI検索」を実行してください。</div>
       </div>
     </div>
   </div>
@@ -244,7 +216,6 @@
   </div>
 
 <script>
-  /* SEARCH & IN-SITE DISPLAY */
   function getFullQuery() {
     const keyword = document.getElementById("searchInput").value.trim();
     if (!keyword) return "";
@@ -255,47 +226,35 @@
     document.getElementById("gameBtn").style.display = "inline-block";
   }
 
-  function openUrl(url) {
-    showGameBtn();
-    document.getElementById("aiPanel").style.display = "none";
-    const iframe = document.getElementById("webFrame");
-    iframe.style.display = "block";
-    iframe.src = url;
-  }
-
   function execSearch(type) {
+    const rawWord = document.getElementById("searchInput").value.trim();
     const fullQuery = getFullQuery();
-    if (!fullQuery) return;
+    if (!rawWord) return;
 
-    showGameBtn(); // 検索したらゲームボタンを表示
+    showGameBtn();
 
-    if (type === 'duck') {
-      const searchUrl = `https://duckduckgo.com/?q=${encodeURIComponent(fullQuery)}`;
-      openUrl(searchUrl);
+    if (type === 'wiki') {
+      // Wikipediaのモバイル表示ページ（iframe埋め込み許可）を使用
+      document.getElementById("aiPanel").style.display = "none";
+      const iframe = document.getElementById("webFrame");
+      iframe.style.display = "block";
+      iframe.src = `https://ja.m.wikipedia.org/wiki/${encodeURIComponent(rawWord)}`;
     } else if (type === 'ai') {
       document.getElementById("webFrame").style.display = "none";
       document.getElementById("aiPanel").style.display = "flex";
-      fetchCrawlAI();
+      fetchCrawlAI(rawWord, fullQuery);
     }
   }
 
   /* CrawlAI SEARCH (Wikipedia API) */
-  async function fetchCrawlAI() {
-    const rawWord = document.getElementById("searchInput").value.trim();
-    const fullQuery = getFullQuery();
+  async function fetchCrawlAI(rawWord, fullQuery) {
     const titleEl = document.getElementById("aiTitle");
     const bodyEl = document.getElementById("aiBody");
 
     titleEl.textContent = `🤖 CrawlAI: 「${fullQuery}」`;
     bodyEl.textContent = "🔍 Wikipediaから情報を収集・生成中...";
 
-    if (!rawWord) {
-      bodyEl.textContent = "表示不可";
-      return;
-    }
-
     try {
-      // Wikipedia REST API
       const res = await fetch(`https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(rawWord)}`);
       if (res.ok) {
         const data = await res.json();
