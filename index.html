@@ -64,7 +64,6 @@
     .full-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 500; display: none; flex-direction: column; }
     .modal-header { background: #ffffff; border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
     .btn-cancel-survey { background: #f1f5f9; border: 1px solid var(--border); color: var(--text-main); font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
-    .btn-complete-survey { background: var(--accent); color: #fff; border: none; font-weight: 800; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
 
     .modal-survey-info { text-align: center; flex: 1; margin: 0 12px; }
     .modal-survey-info .title { font-size: 0.85rem; font-weight: 800; color: var(--primary); }
@@ -74,7 +73,7 @@
     .iframe-wrapper { flex: 1; width: 100%; height: 100%; position: relative; }
     .iframe-wrapper iframe { width: 100%; height: 100%; border: none; }
 
-    /* オーバーレイ・ダイアログ */
+    /* ダイアログ & ドロワー */
     .drawer-overlay, .dialog-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; z-index: 600; }
     .drawer { position: fixed; top:0; right:-340px; width:340px; height:100vh; background: #ffffff; border-left: 1px solid var(--border); z-index: 601; transition: right 0.3s ease; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
     .drawer.open { right: 0; }
@@ -93,8 +92,10 @@
     .btn-dialog-yes { background: var(--accent); color: #fff; }
     .btn-dialog-no { background: #e2e8f0; color: var(--text-sub); }
 
-    /* ローディングスピナー */
-    .spinner { width: 36px; height: 36px; border: 4px solid #e2e8f0; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 16px auto; }
+    .exchange-option-btn { width: 100%; text-align: left; padding: 12px; margin-bottom: 8px; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .exchange-option-btn.disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .spinner { width: 28px; height: 28px; border: 3px solid #e2e8f0; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .init-survey-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow); }
@@ -169,10 +170,10 @@
       <div class="modal-survey-info">
         <div class="title" id="modalSurveyTitle">アンケート回答</div>
       </div>
-      <button class="btn-complete-survey" onclick="onCompleteClick()">回答完了（判定へ）</button>
+      <div style="width: 80px;"></div>
     </div>
     <div class="survey-banner" id="modalSurveyBanner">
-      回答完了で <span id="modalSurveyPoint">0</span> pt 入ります
+      送信完了で <span id="modalSurveyPoint">0</span> pt 入ります
     </div>
     <div class="iframe-wrapper">
       <iframe id="surveyIframe" src="about:blank"></iframe>
@@ -193,9 +194,7 @@
 
   <!-- 判定・通知モーダル -->
   <div class="dialog-overlay" id="statusModalOverlay">
-    <div class="dialog" id="statusModalContent">
-      <!-- スクリプトで動的生成 -->
-    </div>
+    <div class="dialog" id="statusModalContent"></div>
   </div>
 
   <!-- マイページドロワー -->
@@ -221,7 +220,11 @@
   </div>
 
 <script>
-  const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyTAYsfiGOhOmz1S_9QZVFldbL0DghQ4CTsl0Gygv_E27PALgdioVXU0QbR1GbmH3QG/exec';
+  // ★ ここにあなたのスプレッドシートIDを設定してください ★
+  const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
+  
+  // sheetMonitorシートからデータ（GViz API）を取得するURL
+  const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=sheetMonitor`;
 
   let userData = JSON.parse(localStorage.getItem('crawl_user_data')) || null;
   let answeredState = JSON.parse(localStorage.getItem('crawl_answered_state')) || {}; 
@@ -232,6 +235,8 @@
   let targetSurveyPointStr = '';
   let targetSurveyPointVal = 0;
   let targetSurveyType = '';
+  
+  let isFrameLoaded = false;
 
   function getOrGenerateID() {
     let savedId = localStorage.getItem('crawl_user_id');
@@ -251,7 +256,19 @@
   window.addEventListener('DOMContentLoaded', () => {
     checkRegistration();
     fetchSurveys();
-    setInterval(fetchSurveys, 5000);
+    setInterval(fetchSurveys, 10000);
+
+    // GoogleフォームのSubmit（自動送信完了）検知
+    const iframe = document.getElementById('surveyIframe');
+    iframe.addEventListener('load', () => {
+      if (isFrameLoaded) {
+        // ユーザーが送信を押して2回目のロードが発生した瞬間
+        onSurveyFormSubmitted();
+      } else if (iframe.src !== 'about:blank') {
+        // 最初のフォーム画面の読み込み完了
+        isFrameLoaded = true;
+      }
+    });
   });
 
   function checkRegistration() {
@@ -305,16 +322,31 @@
     document.getElementById('drawerOverlay').style.display = open ? 'block' : 'none';
   }
 
+  // GASを使わずにGoogleスプレッドシートから直接取得
   async function fetchSurveys() {
     try {
-      const response = await fetch(GAS_WEB_APP_URL, { method: 'GET' });
-      const data = await response.json();
+      const res = await fetch(SHEET_URL);
+      const text = await res.text();
+      
+      // GVizのレスポンス形式 `/*O_o*/\ngoogle.visualization.Query.setResponse({...});` をJSON化
+      const jsonStr = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/)[1];
+      const data = JSON.parse(jsonStr);
+      
+      const rows = data.table.rows.map(row => {
+        return {
+          name: row.c[0]?.v || '',         // A列: アンケート名
+          point: row.c[1]?.v || '0',       // B列: ポイント
+          type: row.c[2]?.v || '',        // C列: タイプ (事前 / 本)
+          link: row.c[3]?.v || '',        // D列: Googleフォームリンク
+          earnedUsers: row.c[4]?.v || '', // E列: 獲得済みID（カンマ区切り）
+          targetUsers: row.c[5]?.v || '', // F列: 本アンケート対象ID（カンマ区切り）
+          limit: row.c[6]?.v || ''         // G列: 期限/条件
+        };
+      });
 
-      if (Array.isArray(data)) {
-        renderSurveys(data);
-      }
+      renderSurveys(rows);
     } catch (e) {
-      console.error("Fetch Failure:", e);
+      console.error("スプレッドシート取得エラー:", e);
     }
   }
 
@@ -331,15 +363,17 @@
     let mainCount = 0;
 
     rows.forEach((row, index) => {
-      const surveyNum = String(index + 1).padStart(2, '0'); // 番号 (例: 01)
-      const name = row.name;
+      if (!row.name) return;
+
+      const surveyNum = String(index + 1).padStart(2, '0');
+      const name = String(row.name);
       const pointRaw = String(row.point || '0'); 
       const pointVal = parseInt(pointRaw.replace(/[^0-9]/g, '')) || 0;
-      const type = row.type;
-      const link = row.link;
-      const earnedUsers = row.earnedUsers || '';
-      const targetUsers = row.targetUsers || '';
-      const limitInfo = row.limit || row.gColumn || ''; // ジー欄（期限/人数）
+      const type = String(row.type);
+      const link = String(row.link);
+      const earnedUsers = String(row.earnedUsers || '');
+      const targetUsers = String(row.targetUsers || '');
+      const limitInfo = String(row.limit || '');
 
       const isEarnedInSheet = earnedUsers.split(/[、,]/).map(s => s.trim()).includes(userId);
       if (isEarnedInSheet) {
@@ -377,9 +411,7 @@
         <div class="survey-info">
           <div class="survey-num">No.${surveyNum}</div>
           <div class="survey-name">${name}</div>
-          <div class="survey-meta">
-            ${limitDisplay}
-          </div>
+          <div class="survey-meta">${limitDisplay}</div>
           <div class="survey-point">+${pointRaw} pt</div>
         </div>
         <div class="survey-action">${btnHTML}</div>
@@ -429,6 +461,7 @@
     document.getElementById('modalSurveyTitle').textContent = `No.${targetSurveyNum} ${targetSurveyName}`;
     document.getElementById('modalSurveyPoint').textContent = targetSurveyPointStr;
 
+    isFrameLoaded = false;
     const iframe = document.getElementById('surveyIframe');
     iframe.src = targetSurveyLink;
 
@@ -438,19 +471,19 @@
   function closeAnswerModal() {
     document.getElementById('answerModal').style.display = 'none';
     document.getElementById('surveyIframe').src = 'about:blank';
+    isFrameLoaded = false;
   }
 
-  // 回答完了ボタン押下時の判定ロジック
-  function onCompleteClick() {
+  // フォーム送信の自動検知完了後の処理
+  function onSurveyFormSubmitted() {
     closeAnswerModal();
 
     const isInstant = targetSurveyType === '事前' && targetSurveyPointStr.startsWith('即');
 
     if (isInstant) {
-      // 事前アンケートで「即」が付く場合：自動判定中🌀2.5秒後に獲得
       showStatusModal(`
-        <h3>自動判定中 <span class="spinner" style="display:inline-block; vertical-align:middle; width:20px; height:20px;"></span></h3>
-        <p>回答内容の照合を行なっています...</p>
+        <h3>自動判定中 <span class="spinner"></span></h3>
+        <p>回答の送信を確認しました。<br>照合を行なっています...</p>
       `);
 
       setTimeout(() => {
@@ -459,20 +492,19 @@
         
         showStatusModal(`
           <h3 style="color:var(--accent);">反映完了！</h3>
-          <p>保有ポイントに <b>+${targetSurveyPointVal} pt</b> 反映されました！</p>
+          <p>保有ポイントに <b>+${targetSurveyPointVal} pt</b> が自動反映されました！</p>
           <button class="btn-dialog-yes" style="width:100%; margin-top:12px;" onclick="closeStatusModal()">閉じる</button>
         `);
         fetchSurveys();
       }, 2500);
 
     } else {
-      // 事前の「即」なし、または本アンケート：判定中に移行
       answeredState[targetSurveyName] = 'pending';
       localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
 
       showStatusModal(`
-        <h3>回答を受け付けました</h3>
-        <p>ステータスを「<b>判定中</b>」へ移行しました。<br>確認完了後、獲得ポイントへ反映されます。</p>
+        <h3>回答送信完了</h3>
+        <p>回答を確認しました。<br>ステータスを「<b>判定中</b>」へ更新しました。</p>
         <button class="btn-dialog-yes" style="width:100%; margin-top:12px;" onclick="closeStatusModal()">OK</button>
       `);
       fetchSurveys();
@@ -488,21 +520,30 @@
     document.getElementById('statusModalOverlay').style.display = 'none';
   }
 
-  // ポイント交換モーダル
+  // ポイント交換申請（sixyami67@gmail.com への自動メール作成）
   function openExchangeModal() {
     showStatusModal(`
-      <h3>ポイント交換</h3>
-      <p style="text-align:left; font-size:0.8rem; line-height:1.8;">
-        <b>交換可能ライン:</b><br>
-        ・AmazonGift（受付中）<br>
-        ・PayPal（受付中）<br>
-        ・PayPay（受付中）<br>
-        ・自動販売機券（現在対象外・10月解禁）<br>
-        ・ローソン買い物券（現在対象外）<br>
-        ・ファミリーマート買い物券（現在対象外）
-      </p>
-      <button class="btn-dialog-no" style="width:100%; margin-top:16px;" onclick="closeStatusModal()">閉じる</button>
+      <h3>ポイント交換申請</h3>
+      <p style="text-align:center; font-size:0.8rem; margin-bottom:12px;">ご希望の交換方法を選択してください。</p>
+      
+      <button class="exchange-option-btn" onclick="sendExchangeEmail('AmazonGift')">・AmazonGift（受付中）</button>
+      <button class="exchange-option-btn" onclick="sendExchangeEmail('PayPal')">・PayPal（受付中）</button>
+      <button class="exchange-option-btn" onclick="sendExchangeEmail('PayPay')">・PayPay（受付中）</button>
+      <button class="exchange-option-btn disabled" disabled>・自動販売機券（10月解禁）</button>
+      <button class="exchange-option-btn disabled" disabled>・ローソン買い物券（対象外）</button>
+      <button class="exchange-option-btn disabled" disabled>・ファミリーマート買い物券（対象外）</button>
+
+      <button class="btn-dialog-no" style="width:100%; margin-top:12px;" onclick="closeStatusModal()">キャンセル</button>
     `);
+  }
+
+  function sendExchangeEmail(method) {
+    const earnedPt = document.getElementById('earnedPoint').textContent;
+    const subject = encodeURIComponent(`【クロワルモニター】ポイント交換申請 (${method})`);
+    const body = encodeURIComponent(`クロワルモニター運営御中\n\nポイント交換を申請します。\n\n・モニター番号：${userId}\n・希望交換先：${method}\n・現在の保有ポイント：${earnedPt}\n\nご確認のほどよろしくお願いいたします。`);
+    
+    window.location.href = `mailto:sixyami67@gmail.com?subject=${subject}&body=${body}`;
+    closeStatusModal();
   }
 </script>
 </body>
