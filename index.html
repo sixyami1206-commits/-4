@@ -6,167 +6,134 @@
   <title>CrawlMonita</title>
   <style>
     :root {
-      --bg: #f4f6f9;
+      --bg: #f8fafc;
       --card-bg: #ffffff;
-      --card-border: #e2e8f0;
-      --primary: #0284c7;
-      --accent: #d97706;
-      --stamp-red: #e11d48;
-      --text: #1e293b;
+      --border: #e2e8f0;
+      --primary: #0f172a; /* 企業感のあるダークネイビー */
+      --accent: #2563eb;  /* スタイリッシュなブルー */
+      --point-color: #d97706;
+      --text-main: #0f172a;
       --text-sub: #64748b;
       --danger: #ef4444;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+      --radius: 12px;
+      --shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
 
+    /* ヘッダー */
     header {
-      background: #ffffff; border-bottom: 1px solid var(--card-border); padding: 14px 20px;
-      display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow);
+      background: #ffffff; border-bottom: 1px solid var(--border); padding: 16px 24px;
+      display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
-    .logo-title { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
-    .menu-btn { background: #f1f5f9; border: 1px solid var(--card-border); color: var(--text); font-size: 1.2rem; cursor: pointer; padding: 6px 12px; border-radius: 8px; }
+    .logo-title { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; color: var(--primary); }
+    .menu-btn { background: #f1f5f9; border: 1px solid var(--border); color: var(--text-main); font-weight: 700; font-size: 0.9rem; cursor: pointer; padding: 8px 14px; border-radius: 8px; transition: 0.2s; }
+    .menu-btn:hover { background: #e2e8f0; }
 
-    main { flex: 1; padding: 20px 16px; max-width: 640px; margin: 0 auto; width: 100%; }
+    main { flex: 1; padding: 24px 16px; max-width: 600px; margin: 0 auto; width: 100%; }
 
+    /* ポイントボード */
     .point-board {
-      background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 20px;
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 24px;
     }
-    .point-values { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-    .point-box { background: #f8fafc; border: 1px solid var(--card-border); padding: 14px; border-radius: 12px; text-align: center; }
-    .point-box .label { font-size: 0.75rem; color: var(--text-sub); font-weight: 700; margin-bottom: 6px; }
-    .point-box .value { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
-    .point-box .value.pending { color: var(--accent); }
+    .point-rate-notice { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; text-align: right; margin-bottom: 12px; }
+    .point-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .point-card { background: #f8fafc; border: 1px solid var(--border); padding: 16px; border-radius: 10px; text-align: center; }
+    .point-card .label { font-size: 0.75rem; color: var(--text-sub); font-weight: 700; margin-bottom: 6px; }
+    .point-card .value { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+    .point-card .value.pending { color: var(--point-color); }
+    .point-card .yen-sub { font-size: 0.75rem; color: var(--text-sub); margin-top: 4px; font-weight: 600; }
 
-    /* スタンプカードエリア */
-    .stamp-card-area {
-      background: #fff; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 16px; margin-bottom: 24px; text-align: center;
-    }
-    .stamp-title { font-size: 0.9rem; font-weight: 800; color: var(--text); margin-bottom: 6px; }
-    .stamp-progress-text { font-size: 0.8rem; color: var(--accent); font-weight: 700; margin-bottom: 12px; }
-    .stamp-grid { display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; }
-    .stamp-slot {
-      width: 48px; height: 48px; border-radius: 50%; border: 2px solid #cbd5e1;
-      display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: #94a3b8; background: #f8fafc;
-      position: relative; transition: all 0.3s;
-    }
-    .stamp-slot.active {
-      border-color: var(--stamp-red); background: #fff1f2; color: var(--stamp-red);
-    }
-    .stamp-slot.active::after {
-      content: "済"; font-size: 1.2rem; font-weight: 900; color: var(--stamp-red);
-      transform: rotate(-15deg);
-    }
+    /* セクションタイトル */
+    .section-title { font-size: 0.95rem; font-weight: 800; color: var(--primary); margin: 28px 0 14px; display: flex; align-items: center; gap: 8px; }
+    .section-title::before { content: ""; display: inline-block; width: 4px; height: 16px; background: var(--accent); border-radius: 2px; }
 
-    .exchange-trigger-btn {
-      width: 100%; padding: 12px; background: #10b981; color: #fff; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem;
-      transition: opacity 0.2s;
-    }
-    .exchange-trigger-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
-
-    .drawer-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; z-index: 200; }
-    .drawer { position: fixed; top:0; right:-300px; width:300px; height:100vh; background: #ffffff; border-left: 1px solid var(--card-border); z-index: 201; transition: right 0.3s ease; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; }
-    .drawer.open { right: 0; }
-    .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 14px; }
-    .close-btn { background: none; border: none; font-size: 1.4rem; color: var(--text-sub); cursor: pointer; }
-    .user-info-card { background: #f8fafc; border: 1px solid var(--card-border); padding: 16px; border-radius: 12px; font-size: 0.85rem; line-height: 1.8; }
-    .drawer-btn { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; text-align: center; }
-    .drawer-btn.delete-btn { background: var(--danger); margin-top: auto; }
-
-    .init-survey-card { background: var(--card-bg); border: 2px solid var(--primary); border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-lg); }
-    .init-survey-card h2 { font-size: 1.2rem; color: var(--primary); margin-bottom: 16px; text-align: center; }
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; }
-    .form-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--card-border); border-radius: 8px; }
-
-    .submit-btn { width: 100%; background: var(--primary); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 800; cursor: pointer; }
-
-    .section-title { font-size: 1rem; font-weight: 800; color: var(--text); margin: 24px 0 12px; padding-left: 10px; border-left: 4px solid var(--primary); }
+    /* アンケートリスト */
     .survey-list { display: flex; flex-direction: column; gap: 12px; }
-    .survey-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .survey-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
     .survey-info { flex: 1; padding-right: 12px; }
-    .survey-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
-    .survey-point { font-size: 0.9rem; color: var(--primary); font-weight: 800; }
-    .survey-action .btn { background: var(--primary); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
-    .survey-action .btn.done { background: #94a3b8; cursor: not-allowed; }
-    .survey-action .btn.pending-btn { background: var(--accent); cursor: not-allowed; }
+    .survey-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
+    .survey-point { font-size: 0.9rem; color: var(--accent); font-weight: 800; }
+    .survey-action .btn { background: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .survey-action .btn:hover { opacity: 0.9; }
+    .survey-action .btn.done { background: #cbd5e1; cursor: not-allowed; }
+    .survey-action .btn.pending-btn { background: var(--point-color); cursor: not-allowed; }
 
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; justify-content: center; align-items: center; z-index: 300; padding: 16px; }
-    .modal { background: #ffffff; border-radius: 16px; padding: 20px; max-width: 500px; width: 100%; text-align: center; box-shadow: var(--shadow-lg); border: 1px solid var(--card-border); }
-    .survey-iframe-container { width: 100%; height: 50vh; border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden; margin-bottom: 12px; }
-    .survey-iframe-container iframe { width: 100%; height: 100%; border: none; }
-
-    .submit-check-area {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      margin-bottom: 12px; font-size: 0.85rem; font-weight: 700; color: var(--text);
+    /* フルスクリーン回答モーダル */
+    .full-modal {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 500; display: none; flex-direction: column;
     }
-    .submit-check-area input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
-
-    .modal-btn-group { display: flex; gap: 10px; }
-    .modal-btn-group button { flex: 1; padding: 12px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer; }
-    .btn-submit-done { background: var(--primary); color: #fff; transition: all 0.2s; }
-    .btn-submit-done:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
-    .btn-cancel { background: #e2e8f0; color: var(--text-sub); }
-
-    /* スタンプ押印アニメーション */
-    .stamp-anim-box {
-      width: 100px; height: 100px; margin: 20px auto; border-radius: 50%; border: 4px solid var(--stamp-red);
-      display: flex; align-items: center; justify-content: center; color: var(--stamp-red); font-size: 1.8rem; font-weight: 900;
-      transform: scale(3) rotate(-30deg); opacity: 0; animation: stampDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    .modal-header {
+      background: #ffffff; border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
     }
-    @keyframes stampDown {
-      0% { transform: scale(3) rotate(-30deg); opacity: 0; }
-      100% { transform: scale(1) rotate(-12deg); opacity: 1; }
+    .btn-back {
+      background: #f1f5f9; border: 1px solid var(--border); color: var(--text-main); font-weight: 700; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
+    }
+    .modal-survey-info { text-align: center; flex: 1; margin: 0 12px; }
+    .modal-survey-info .title { font-size: 0.85rem; font-weight: 800; color: var(--primary); }
+    .modal-survey-info .point-tag { font-size: 0.75rem; color: var(--accent); font-weight: 700; }
+
+    /* マクロミル風 装飾ヘッダー */
+    .survey-banner {
+      background: #eff6ff; border-bottom: 1px solid #dbeafe; padding: 12px 16px; text-align: center; font-size: 0.85rem; font-weight: 700; color: #1e40af;
     }
 
-    /* 通知ダイアログアニメーション */
-    .toast-msg {
-      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-      background: #1e293b; color: #fff; padding: 12px 20px; border-radius: 30px; font-size: 0.85rem; font-weight: 700;
-      z-index: 400; box-shadow: var(--shadow-lg); display: none; text-align: center; width: 90%; max-width: 400px;
-    }
+    .iframe-wrapper { flex: 1; width: 100%; height: 100%; position: relative; }
+    .iframe-wrapper iframe { width: 100%; height: 100%; border: none; }
+
+    /* ドロワー・確認ダイアログ */
+    .drawer-overlay, .dialog-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; z-index: 600; }
+    .drawer { position: fixed; top:0; right:-300px; width:300px; height:100vh; background: #ffffff; border-left: 1px solid var(--border); z-index: 601; transition: right 0.3s ease; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; }
+    .drawer.open { right: 0; }
+    .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; }
+    .close-btn { background: none; border: none; font-size: 1.4rem; color: var(--text-sub); cursor: pointer; }
+    .user-info-card { background: #f8fafc; border: 1px solid var(--border); padding: 16px; border-radius: 10px; font-size: 0.85rem; line-height: 1.8; }
+    .drawer-btn.delete-btn { background: var(--danger); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: auto; }
+
+    .dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: var(--radius); padding: 24px; max-width: 400px; width: 90%; z-index: 601; text-align: center; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .dialog h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 12px; color: var(--primary); }
+    .dialog p { font-size: 0.85rem; color: var(--text-sub); line-height: 1.6; margin-bottom: 20px; }
+    .dialog-btns { display: flex; gap: 10px; }
+    .dialog-btns button { flex: 1; padding: 12px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer; }
+    .btn-dialog-yes { background: var(--accent); color: #fff; }
+    .btn-dialog-no { background: #e2e8f0; color: var(--text-sub); }
+
+    .init-survey-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow); }
+    .init-survey-card h2 { font-size: 1.1rem; color: var(--primary); margin-bottom: 16px; text-align: center; }
+    .form-group { margin-bottom: 14px; text-align: left; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; }
+    .form-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; }
+    .submit-btn { width: 100%; background: var(--primary); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 800; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <div class="toast-msg" id="toastMsg"></div>
-
   <header>
     <span class="logo-title">CrawlMonita</span>
-    <button class="menu-btn" onclick="toggleDrawer(true)">☰</button>
+    <button class="menu-btn" onclick="toggleDrawer(true)">マイページ</button>
   </header>
 
   <main>
     <div class="point-board">
-      <div class="point-values">
-        <div class="point-box">
-          <div class="label">獲得Point</div>
+      <div class="point-rate-notice">※ 10 ポイント ＝ 1 円 換算</div>
+      <div class="point-grid">
+        <div class="point-card">
+          <div class="label">保有ポイント</div>
           <div class="value" id="earnedPoint">0 pt</div>
+          <div class="yen-sub" id="earnedYen">（0 円相当）</div>
         </div>
-        <div class="point-box">
-          <div class="label">予定獲得金額（判定中）</div>
-          <div class="value pending" id="pendingAmount">0 円</div>
+        <div class="point-card">
+          <div class="label">判定中ポイント</div>
+          <div class="value pending" id="pendingPoint">0 pt</div>
+          <div class="yen-sub" id="pendingYen">（0 円相当）</div>
         </div>
       </div>
-    </div>
-
-    <div class="stamp-card-area">
-      <div class="stamp-title">スタンプカード (50pt = スタンプ1個)</div>
-      <div class="stamp-progress-text" id="stampProgressText">あと 50pt でスタンプが貯まります！</div>
-      <div class="stamp-grid" id="stampGrid">
-        <div class="stamp-slot" id="slot1">1</div>
-        <div class="stamp-slot" id="slot2">2</div>
-        <div class="stamp-slot" id="slot3">3</div>
-        <div class="stamp-slot" id="slot4">4</div>
-        <div class="stamp-slot" id="slot5">5</div>
-      </div>
-      <button class="exchange-trigger-btn" id="lotteryBtn" disabled onclick="startLottery()">スタンプ5個で抽選（10〜30円）</button>
     </div>
 
     <div class="init-survey-card" id="initSurveyCard" style="display: none;">
-      <h2>初回登録</h2>
+      <h2>初回モニター登録</h2>
       <div class="form-group">
         <label>モニター番号（ID）</label>
         <input type="text" id="regId" readonly>
@@ -183,35 +150,58 @@
         <label>都道府県</label>
         <input type="text" id="regPref" placeholder="例: 東京都">
       </div>
-      <button class="submit-btn" onclick="submitInitSurvey()">登録してはじめる</button>
+      <button class="submit-btn" onclick="submitInitSurvey()">登録を完了する</button>
     </div>
 
     <div class="section-title">事前アンケート</div>
     <div class="survey-list" id="preliminaryList">
-      <div style="text-align:center; padding:12px; color:var(--text-sub);">読み込み中...</div>
+      <div style="text-align:center; padding:16px; color:var(--text-sub);">アンケートを読み込み中...</div>
     </div>
 
     <div class="section-title">本アンケート</div>
     <div class="survey-list" id="mainList">
-      <div style="text-align:center; padding:12px; color:var(--text-sub);">読み込み中...</div>
+      <div style="text-align:center; padding:16px; color:var(--text-sub);">アンケートを読み込み中...</div>
     </div>
   </main>
 
+  <!-- 回答画面（フルスクリーン） -->
+  <div class="full-modal" id="answerModal">
+    <div class="modal-header">
+      <button class="btn-back" onclick="closeAnswerModal()">← 戻る</button>
+      <div class="modal-survey-info">
+        <div class="title" id="modalSurveyTitle">アンケート回答</div>
+      </div>
+      <div style="width: 60px;"></div>
+    </div>
+    <div class="survey-banner" id="modalSurveyBanner">
+      回答完了で <span id="modalSurveyPoint">0</span> pt（<span id="modalSurveyYen">0</span>円相当）が入ります
+    </div>
+    <div class="iframe-wrapper">
+      <iframe id="surveyIframe" src="about:blank"></iframe>
+    </div>
+  </div>
+
+  <!-- 注意事項確認ダイアログ -->
+  <div class="dialog-overlay" id="alertDialogOverlay">
+    <div class="dialog">
+      <h3>回答前のご注意</h3>
+      <p>アンケート内に<b>モニター番号入力欄</b>があります。<br>あなたのモニター番号：<b id="dialogUserId" style="color:var(--accent); font-size:1.1rem;">---</b><br><br>間違えて入力するとポイントが正常に加算されません。お間違えのないようご回答ください。</p>
+      <div class="dialog-btns">
+        <button class="btn-dialog-no" onclick="closeAlertDialog()">キャンセル</button>
+        <button class="btn-dialog-yes" onclick="startSurvey()">理解しました（回答へ）</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- マイページドロワー -->
   <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
   <div class="drawer" id="drawer">
     <div class="drawer-header">
-      <strong>メニュー</strong>
+      <strong>マイページ</strong>
       <button class="close-btn" onclick="toggleDrawer(false)">✕</button>
     </div>
     <div class="user-info-card" id="userInfoDisplay">未登録です</div>
-    <button class="drawer-btn delete-btn" onclick="clearUserData()">モニター情報初期化</button>
-  </div>
-
-  <div class="modal-overlay" id="confirmModal">
-    <div class="modal">
-      <h3 id="modalTitle">アンケート回答</h3>
-      <div id="modalBody"></div>
-    </div>
+    <button class="drawer-btn delete-btn" onclick="clearUserData()">登録情報の初期化</button>
   </div>
 
 <script>
@@ -219,8 +209,10 @@
 
   let userData = JSON.parse(localStorage.getItem('crawl_user_data')) || null;
   let answeredState = JSON.parse(localStorage.getItem('crawl_answered_state')) || {}; 
-  let currentEarnedPoints = 0;
-  let prevEarnedPoints = Number(localStorage.getItem('crawl_prev_points')) || 0;
+  let targetSurveyName = '';
+  let targetSurveyLink = '';
+  let targetSurveyPoint = 0;
+  let isSubmitting = false;
 
   function getOrGenerateID() {
     let savedId = localStorage.getItem('crawl_user_id');
@@ -241,6 +233,15 @@
     checkRegistration();
     fetchSurveys();
     setInterval(fetchSurveys, 5000);
+
+    // フォーム送信検知（iframeのloadイベント監視）
+    const iframe = document.getElementById('surveyIframe');
+    iframe.addEventListener('load', () => {
+      if (isSubmitting) {
+        // 送信完了後に画面を自動クローズ
+        completeSurveyAuto();
+      }
+    });
   });
 
   function checkRegistration() {
@@ -273,16 +274,15 @@
     if (userData) {
       display.innerHTML = `
         <div><strong>モニター番号:</strong> ${userData.id}</div>
-        <div><strong>名前:</strong> ${userData.name}</div>
+        <div><strong>お名前:</strong> ${userData.name} 様</div>
         <div><strong>年齢:</strong> ${userData.age} 歳</div>
-        <div><strong>地域:</strong> ${userData.pref}</div>
+        <div><strong>居住地:</strong> ${userData.pref}</div>
       `;
     }
   }
 
-  // 番号(ID)は消さずに残す初期化処理
   function clearUserData() {
-    if (confirm('名前・年齢などの登録情報を初期化しますか？（モニター番号は変更されません）')) {
+    if (confirm('登録情報を初期化しますか？（※モニター番号は保持されます）')) {
       const currentId = localStorage.getItem('crawl_user_id');
       localStorage.clear();
       if (currentId) localStorage.setItem('crawl_user_id', currentId);
@@ -316,7 +316,7 @@
     mainContainer.innerHTML = '';
 
     let totalEarned = 0;
-    let totalPendingAmount = 0;
+    let totalPending = 0;
     let preCount = 0;
     let mainCount = 0;
 
@@ -335,12 +335,8 @@
 
       const currentState = answeredState[name];
 
-      if (currentState === 'earned') {
-        totalEarned += point;
-      } else if (currentState === 'pending') {
-        // 判定中は10pt=1円換算で概算表示
-        totalPendingAmount += Math.ceil(point / 10);
-      }
+      if (currentState === 'earned') totalEarned += point;
+      else if (currentState === 'pending') totalPending += point;
 
       if (type === '本') {
         const isTarget = targetUsers.split(/[、,]/).map(s => s.trim()).includes(userId);
@@ -356,13 +352,13 @@
       } else if (currentState === 'pending') {
         btnHTML = `<button class="btn pending-btn" disabled>判定中</button>`;
       } else {
-        btnHTML = `<button class="btn" onclick="openSurveyModal('${encodeURIComponent(name)}', '${encodeURIComponent(link)}')">回答する</button>`;
+        btnHTML = `<button class="btn" onclick="confirmStartSurvey('${encodeURIComponent(name)}', '${encodeURIComponent(link)}', ${point})">回答する</button>`;
       }
 
       card.innerHTML = `
         <div class="survey-info">
           <div class="survey-name">${name}</div>
-          <div class="survey-point">+${point} pt</div>
+          <div class="survey-point">+${point} pt <span style="font-size:0.75rem; color:var(--text-sub); font-weight:normal;">（${(point/10).toFixed(1)}円相当）</span></div>
         </div>
         <div class="survey-action">${btnHTML}</div>
       `;
@@ -376,149 +372,72 @@
       }
     });
 
-    if (preCount === 0) preContainer.innerHTML = '<div style="text-align:center; padding:12px; color:var(--text-sub);">対象の事前アンケートはありません</div>';
-    if (mainCount === 0) mainContainer.innerHTML = '<div style="text-align:center; padding:12px; color:var(--text-sub);">対象の本アンケートはありません</div>';
+    if (preCount === 0) preContainer.innerHTML = '<div style="text-align:center; padding:16px; color:var(--text-sub);">現在回答可能な事前アンケートはありません</div>';
+    if (mainCount === 0) mainContainer.innerHTML = '<div style="text-align:center; padding:16px; color:var(--text-sub);">現在対象の本アンケートはありません</div>';
 
-    // ポイント＆スタンプ状態の更新
-    currentEarnedPoints = totalEarned;
     document.getElementById('earnedPoint').textContent = `${totalEarned} pt`;
-    document.getElementById('pendingAmount').textContent = `${totalPendingAmount} 円`;
-
-    updateStampCard(totalEarned);
+    document.getElementById('earnedYen').textContent = `（${(totalEarned / 10).toLocaleString()} 円相当）`;
+    document.getElementById('pendingPoint').textContent = `${totalPending} pt`;
+    document.getElementById('pendingYen').textContent = `（${(totalPending / 10).toLocaleString()} 円相当）`;
   }
 
-  // スタンプカード表示更新＆アニメーション判定
-  function updateStampCard(points) {
-    const stampCount = Math.floor(points / 50);
-    const displayedStamps = Math.min(stampCount, 5);
-    const remPoints = 50 - (points % 50);
-
-    for (let i = 1; i <= 5; i++) {
-      const slot = document.getElementById(`slot${i}`);
-      if (i <= displayedStamps) {
-        slot.classList.add('active');
-      } else {
-        slot.classList.remove('active');
-      }
-    }
-
-    if (displayedStamps >= 5) {
-      document.getElementById('stampProgressText').textContent = "スタンプが5個貯まりました！抽選を行ってください。";
-      document.getElementById('lotteryBtn').disabled = false;
-    } else {
-      document.getElementById('stampProgressText').textContent = `あと ${remPoints} pt でスタンプが貯まります！`;
-      document.getElementById('lotteryBtn').disabled = true;
-    }
-
-    // 新たにスタンプが獲得された場合のアニメーション発生
-    if (points >= prevEarnedPoints + 50) {
-      showStampAnimation(displayedStamps);
-      localStorage.setItem('crawl_prev_points', points);
-    }
-  }
-
-  function showStampAnimation(slotNum) {
-    document.getElementById('modalTitle').textContent = "スタンプ獲得！";
-    document.getElementById('modalBody').innerHTML = `
-      <div class="stamp-anim-box">済</div>
-      <p style="font-weight: bold; font-size: 1.1rem; color: var(--primary);">スタンプGET！</p>
-      <p style="font-size: 0.85rem; color: var(--text-sub); margin-top: 8px;">50pt獲得ごとにスタンプが押されます！</p>
-      <button class="btn-submit-done" style="margin-top: 16px; width: 100%;" onclick="closeModal()">確認</button>
-    `;
-    document.getElementById('confirmModal').style.display = 'flex';
-  }
-
-  function openSurveyModal(encName, encLink) {
+  // 1. 回答確認ダイアログの表示
+  function confirmStartSurvey(encName, encLink, point) {
     if (!userData) {
       alert('先に初回登録を完了してください。');
       return;
     }
-    const name = decodeURIComponent(encName);
-    const link = decodeURIComponent(encLink);
+    targetSurveyName = decodeURIComponent(encName);
+    targetSurveyLink = decodeURIComponent(encLink);
+    targetSurveyPoint = point;
 
-    document.getElementById('modalTitle').textContent = name;
-    document.getElementById('modalBody').innerHTML = `
-      <div class="survey-iframe-container">
-        <iframe src="${link}"></iframe>
-      </div>
-      <div class="submit-check-area">
-        <input type="checkbox" id="submitCheck" onchange="toggleDoneButton()">
-        <label for="submitCheck">フォームで送信（Submit）を完了しました</label>
-      </div>
-      <div class="modal-btn-group">
-        <button class="btn-cancel" onclick="closeModal()">回答をやめる</button>
-        <button class="btn-submit-done" id="btnDone" disabled onclick="finishSurvey('${encodeURIComponent(name)}')">回答完了</button>
-      </div>
-    `;
-    document.getElementById('confirmModal').style.display = 'flex';
+    document.getElementById('dialogUserId').textContent = userId;
+    document.getElementById('alertDialogOverlay').style.display = 'block';
   }
 
-  function toggleDoneButton() {
-    const isChecked = document.getElementById('submitCheck').checked;
-    document.getElementById('btnDone').disabled = !isChecked;
+  function closeAlertDialog() {
+    document.getElementById('alertDialogOverlay').style.display = 'none';
   }
 
-  function closeModal() {
-    document.getElementById('confirmModal').style.display = 'none';
+  // 2. 理解してアンケート画面を開く
+  function startSurvey() {
+    closeAlertDialog();
+
+    document.getElementById('modalSurveyTitle').textContent = targetSurveyName;
+    document.getElementById('modalSurveyPoint').textContent = targetSurveyPoint;
+    document.getElementById('modalSurveyYen').textContent = (targetSurveyPoint / 10).toFixed(1);
+
+    const iframe = document.getElementById('surveyIframe');
+    isSubmitting = false;
+    iframe.src = targetSurveyLink;
+
+    // 初回読み込み完了後に送信フラグを準備
+    iframe.onload = () => {
+      isSubmitting = true;
+    };
+
+    document.getElementById('answerModal').style.display = 'flex';
   }
 
-  // 回答完了：画面を閉じて判定中に移行＆メッセージ通知
-  function finishSurvey(encName) {
-    const name = decodeURIComponent(encName);
-    
-    answeredState[name] = 'pending';
+  function closeAnswerModal() {
+    document.getElementById('answerModal').style.display = 'none';
+    document.getElementById('surveyIframe').src = 'about:blank';
+    isSubmitting = false;
+  }
+
+  // 3. フォーム送信検知時の自動完了処理
+  function completeSurveyAuto() {
+    answeredState[targetSurveyName] = 'pending';
     localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
 
     fetch(GAS_WEB_APP_URL, {
       method: 'POST',
       mode: 'no-cors',
-      body: JSON.stringify({ userId: userId, surveyName: name })
+      body: JSON.stringify({ userId: userId, surveyName: targetSurveyName })
     });
 
-    closeModal();
+    closeAnswerModal();
     fetchSurveys();
-
-    const remPoints = 50 - (currentEarnedPoints % 50);
-    showToast(`判定中ポイントに移行しました！\nあと ${remPoints} pt でスタンプが貯まります！`);
-  }
-
-  // 抽選＆獲得金額申請
-  function startLottery() {
-    const reward = Math.floor(Math.random() * (30 - 10 + 1)) + 10;
-
-    document.getElementById('modalTitle').textContent = "スタンプ特典 抽選結果";
-    document.getElementById('modalBody').innerHTML = `
-      <div style="padding: 20px 0;">
-        <div style="font-size: 2.5rem; font-weight: 900; color: var(--stamp-red); margin-bottom: 10px;">${reward} 円</div>
-        <p style="font-size: 0.9rem; font-weight: bold; color: var(--text);">獲得おめでとうございます！</p>
-        <p style="font-size: 0.8rem; color: var(--text-sub); margin-top: 14px; line-height: 1.5; background: #f8fafc; padding: 10px; border-radius: 8px;">
-          10分程で獲得金額に反映いたします。<br>
-          ※最大で30分程かかる場合があります。<br>（平日の12-13時は30分程度）
-        </p>
-      </div>
-      <button class="btn-submit-done" style="width: 100%;" onclick="confirmLottery(${reward})">確認（予定獲得金額へ追加）</button>
-    `;
-    document.getElementById('confirmModal').style.display = 'flex';
-  }
-
-  function confirmLottery(rewardAmount) {
-    fetch(GAS_WEB_APP_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify({ action: 'exchange', userId: userId, points: rewardAmount })
-    });
-
-    closeModal();
-    showToast(`${rewardAmount}円が「予定獲得金額」に追加されました。（約10〜30分後に口座反映）`);
-  }
-
-  function showToast(text) {
-    const toast = document.getElementById('toastMsg');
-    toast.innerText = text;
-    toast.style.display = 'block';
-    setTimeout(() => {
-      toast.style.display = 'none';
-    }, 4500);
   }
 </script>
 </body>
