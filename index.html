@@ -184,7 +184,7 @@
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; justify-content: center; align-items: center; z-index: 300; padding: 16px;
     }
     .modal {
-      background: #ffffff; border-radius: 16px; padding: 24px; max-width: 440px; width: 100%; text-align: center;
+      background: #ffffff; border-radius: 16px; padding: 24px; max-width: 460px; width: 100%; text-align: center;
       box-shadow: var(--shadow-lg); border: 1px solid var(--card-border); position: relative;
     }
     .modal h3 { font-size: 1.15rem; margin-bottom: 14px; color: var(--primary); font-weight: 800; }
@@ -197,16 +197,33 @@
     /* IN-APP SURVEY CONTAINER (IFRAME) */
     .survey-iframe-container {
       width: 100%;
-      height: 65vh;
+      height: 60vh;
       border: 1px solid var(--card-border);
       border-radius: 12px;
       overflow: hidden;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     .survey-iframe-container iframe {
       width: 100%;
       height: 100%;
       border: none;
+    }
+
+    .survey-finish-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: background-color 0.2s;
+    }
+    .survey-finish-btn:hover {
+      background-color: #0369a1;
     }
 
     /* SPINNER */
@@ -251,7 +268,7 @@
     <div class="init-survey-card" id="initSurveyCard" style="display: none;">
       <h2>初回登録アンケート</h2>
       <div class="form-group">
-        <label>個人番号（ID）</label>
+        <label>個人番号（ID） - 3桁半角数字</label>
         <input type="text" id="regId" readonly>
       </div>
       <div class="form-group">
@@ -333,7 +350,8 @@
   </div>
 
 <script>
-  const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1bfvvx6bgTkHYvFyZxpSFS-HsuqhOThr5RAsJ39Bgxvo/export?format=csv';
+  // GAS Web App API URL組み込み
+  const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx-et9u5SjiqN30mr2GZ4ftmXviw4eaU-Kl3NhpxcfkH126gDWyoEzYaX3GGpU4VFrN/exec';
 
   let userData = JSON.parse(localStorage.getItem('crawl_user_data')) || null;
   let answeredState = JSON.parse(localStorage.getItem('crawl_answered_state')) || {}; 
@@ -341,10 +359,9 @@
 
   let currentEarnedPoint = 0;
   let rawEarnedPoint = 0;
-  let isFormLoaded = false;
 
   function getOrGenerateID() {
-    if (userData && userData.id) return userData.id;
+    if (userData && userData.id) return String(userData.id).padStart(3, '0');
     let savedId = localStorage.getItem('crawl_user_id');
     if (!savedId) {
       savedId = String(Math.floor(100 + Math.random() * 900));
@@ -357,8 +374,8 @@
 
   window.addEventListener('DOMContentLoaded', () => {
     checkRegistration();
-    fetchSpreadsheetData();
-    setInterval(fetchSpreadsheetData, 10000);
+    fetchSurveysFromGAS();
+    setInterval(fetchSurveysFromGAS, 10000);
   });
 
   function checkRegistration() {
@@ -430,34 +447,19 @@
     }
   }
 
-  function parseCSV(text) {
-    const lines = text.split('\n');
-    return lines.map(line => {
-      const result = [];
-      let cell = '';
-      let inQuotes = false;
-      for (let i = 0; i < line.length; i++) {
-        const c = line[i];
-        if (c === '"') { inQuotes = !inQuotes; }
-        else if (c === ',' && !inQuotes) {
-          result.push(cell.trim());
-          cell = '';
-        } else { cell += c; }
-      }
-      result.push(cell.trim());
-      return result;
-    });
-  }
-
-  async function fetchSpreadsheetData() {
+  // GAS Web Appからのアンケートデータ通信取得
+  async function fetchSurveysFromGAS() {
     try {
-      const res = await fetch(SHEET_CSV_URL + '&t=' + new Date().getTime());
-      const text = await res.text();
-      const rows = parseCSV(text);
-      const dataRows = rows.slice(1);
-      renderSurveys(dataRows);
+      const res = await fetch(`${GAS_WEB_APP_URL}?userId=${userId}&t=${new Date().getTime()}`);
+      const data = await res.json();
+      
+      if (Array.isArray(data)) {
+        renderSurveys(data);
+      } else if (data.rows && Array.isArray(data.rows)) {
+        renderSurveys(data.rows);
+      }
     } catch (e) {
-      console.error('Data update error:', e);
+      console.error('GAS API fetch error:', e);
     }
   }
 
@@ -475,14 +477,15 @@
     let mainCount = 0;
 
     rows.forEach(row => {
-      if (!row[0]) return;
+      // JSON形式または配列形式双方に対応
+      const name = row.name || row[0];
+      const point = parseInt(row.point || row[1]) || 0;
+      const type = row.type || row[2];
+      const link = row.link || row[3];
+      const eColumn = row.earnedUsers || row[4] || '';
+      const fColumn = row.targetUsers || row[5] || '';
 
-      const name = row[0];
-      const point = parseInt(row[1]) || 0;
-      const type = row[2];
-      const link = row[3];
-      const eColumn = row[4] || '';
-      const fColumn = row[5] || '';
+      if (!name) return;
 
       const checkIDInString = (str, targetId) => {
         if (!str) return false;
@@ -562,7 +565,7 @@
 
     document.getElementById('modalTitle').textContent = "アンケート回答確認";
     document.getElementById('modalBody').innerHTML = `
-      <p>個人番号（<strong>${userId}</strong>）を確認してからアンケートを行ってください。</p>
+      <p>モニター番号（<strong>${userId}</strong>）を確認・コピーしてからアンケートに進んでください。</p>
       <div class="modal-btn-group">
         <button class="modal-btn cancel" onclick="closeModal()">キャンセル</button>
         <button class="modal-btn go" onclick="startSurveyInApp('${encodeURIComponent(name)}', '${encodeURIComponent(link)}')">アンケートへ進む</button>
@@ -576,51 +579,53 @@
     const name = decodeURIComponent(encName);
     const link = decodeURIComponent(encLink);
 
-    answeredState[name] = 'pending';
-    localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
-
-    isFormLoaded = false;
-
-    // タブ内（iframe）でGoogleフォームを表示
     document.getElementById('modalTitle').textContent = name;
     document.getElementById('modalBody').innerHTML = `
       <div class="survey-iframe-container">
-        <iframe src="${link}" onload="handleIframeLoad('${encodeURIComponent(name)}')"></iframe>
+        <iframe src="${link}"></iframe>
       </div>
-      <button class="modal-btn cancel" onclick="handleSurveyFinished()">回答完了（画面に戻る）</button>
+      <button class="survey-finish-btn" onclick="handleSurveyFinished('${encodeURIComponent(name)}')">回答完了（送信後にクリック）</button>
     `;
   }
 
-  function handleIframeLoad(encName) {
-    // 初回読み込み完了フラグ
-    if (!isFormLoaded) {
-      isFormLoaded = true;
-    } else {
-      // ユーザーがGoogleフォーム送信ボタンを押してリダイレクト（完了画面移行）したことを検知
-      handleSurveyFinished();
-    }
-  }
+  // 回答完了ボタン押下時のGAS連携通知・画面切り替え処理
+  function handleSurveyFinished(encName) {
+    const name = decodeURIComponent(encName);
 
-  function handleSurveyFinished() {
-    // 処理・ローディング画面に切り替え
-    document.getElementById('modalTitle').textContent = "データ送信・確認中";
+    // 回答状態を判定中に更新
+    answeredState[name] = 'pending';
+    localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
+
+    // GAS Web Appへ判定中通知を送信 (POST)
+    fetch(GAS_WEB_APP_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'submitSurvey',
+        userId: userId,
+        surveyName: name
+      })
+    }).catch(e => console.error("GAS通知エラー:", e));
+
+    // ローディングアニメーション表示
+    document.getElementById('modalTitle').textContent = "回答データの送信確認中";
     document.getElementById('modalBody').innerHTML = `
       <div class="spinner"></div>
-      <p style="color: var(--primary); font-weight: bold;">アンケート状況を処理中...</p>
+      <p style="color: var(--primary); font-weight: bold;">自動判定ロジックを実行中...</p>
     `;
 
-    // 2秒間🌀アニメーション
+    // 2秒後「判定中ポイントに移行しました！」メッセージ表示へ自動切替
     setTimeout(() => {
-      document.getElementById('modalTitle').textContent = "完了！";
+      document.getElementById('modalTitle').textContent = "送信完了！";
       document.getElementById('modalBody').innerHTML = `
         <p style="color: var(--accent); font-weight: bold; font-size: 1.05rem; margin: 16px 0;">
-          判定中Pointに反映されました！
+          判定中ポイントに移行しました！
         </p>
       `;
 
-      fetchSpreadsheetData();
+      fetchSurveysFromGAS();
 
-      // 0.9秒後に自動でモーダルを閉じて画面へ復帰
       setTimeout(() => {
         closeModal();
       }, 900);
@@ -659,7 +664,6 @@
       return;
     }
 
-    // ポイントを減算してローカルストレージへ保存
     exchangedDeduction += pts;
     localStorage.setItem('crawl_exchanged_pts', exchangedDeduction);
     currentEarnedPoint = Math.max(0, rawEarnedPoint - exchangedDeduction);
