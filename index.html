@@ -9,8 +9,8 @@
       --bg: #f8fafc;
       --card-bg: #ffffff;
       --border: #e2e8f0;
-      --primary: #0f172a; /* 企業感のあるダークネイビー */
-      --accent: #2563eb;  /* スタイリッシュなブルー */
+      --primary: #0f172a;
+      --accent: #2563eb;
       --point-color: #d97706;
       --text-main: #0f172a;
       --text-sub: #64748b;
@@ -22,75 +22,68 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* ヘッダー */
     header {
       background: #ffffff; border-bottom: 1px solid var(--border); padding: 16px 24px;
-      display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
-    .logo-title { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; color: var(--primary); }
-    .menu-btn { background: #f1f5f9; border: 1px solid var(--border); color: var(--text-main); font-weight: 700; font-size: 0.9rem; cursor: pointer; padding: 8px 14px; border-radius: 8px; transition: 0.2s; }
-    .menu-btn:hover { background: #e2e8f0; }
+    .logo-title { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+    .menu-btn { background: #f1f5f9; border: 1px solid var(--border); color: var(--text-main); font-weight: 700; font-size: 0.9rem; cursor: pointer; padding: 8px 14px; border-radius: 8px; }
 
     main { flex: 1; padding: 24px 16px; max-width: 600px; margin: 0 auto; width: 100%; }
 
-    /* ポイントボード */
     .point-board {
       background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 24px;
     }
     .point-rate-notice { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; text-align: right; margin-bottom: 12px; }
-    .point-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .point-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
     .point-card { background: #f8fafc; border: 1px solid var(--border); padding: 16px; border-radius: 10px; text-align: center; }
     .point-card .label { font-size: 0.75rem; color: var(--text-sub); font-weight: 700; margin-bottom: 6px; }
     .point-card .value { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
     .point-card .value.pending { color: var(--point-color); }
     .point-card .yen-sub { font-size: 0.75rem; color: var(--text-sub); margin-top: 4px; font-weight: 600; }
 
-    /* セクションタイトル */
+    .exchange-btn {
+      width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.9rem;
+    }
+
     .section-title { font-size: 0.95rem; font-weight: 800; color: var(--primary); margin: 28px 0 14px; display: flex; align-items: center; gap: 8px; }
     .section-title::before { content: ""; display: inline-block; width: 4px; height: 16px; background: var(--accent); border-radius: 2px; }
 
-    /* アンケートリスト */
     .survey-list { display: flex; flex-direction: column; gap: 12px; }
     .survey-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
     .survey-info { flex: 1; padding-right: 12px; }
+    .survey-num { font-size: 0.75rem; font-weight: 800; color: var(--accent); margin-bottom: 2px; }
     .survey-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
-    .survey-point { font-size: 0.9rem; color: var(--accent); font-weight: 800; }
-    .survey-action .btn { background: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
-    .survey-action .btn:hover { opacity: 0.9; }
+    .survey-meta { display: flex; gap: 10px; font-size: 0.75rem; color: var(--text-sub); }
+    .survey-point { font-size: 0.9rem; color: var(--accent); font-weight: 800; margin-top: 4px; }
+    .survey-action .btn { background: var(--primary); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
     .survey-action .btn.done { background: #cbd5e1; cursor: not-allowed; }
     .survey-action .btn.pending-btn { background: var(--point-color); cursor: not-allowed; }
 
     /* フルスクリーン回答モーダル */
-    .full-modal {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 500; display: none; flex-direction: column;
-    }
-    .modal-header {
-      background: #ffffff; border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
-    }
-    .btn-back {
-      background: #f1f5f9; border: 1px solid var(--border); color: var(--text-main); font-weight: 700; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
-    }
+    .full-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 500; display: none; flex-direction: column; }
+    .modal-header { background: #ffffff; border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+    .btn-cancel-survey { background: #f1f5f9; border: 1px solid var(--border); color: var(--text-main); font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+    .btn-complete-survey { background: var(--accent); color: #fff; border: none; font-weight: 800; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+
     .modal-survey-info { text-align: center; flex: 1; margin: 0 12px; }
     .modal-survey-info .title { font-size: 0.85rem; font-weight: 800; color: var(--primary); }
-    .modal-survey-info .point-tag { font-size: 0.75rem; color: var(--accent); font-weight: 700; }
 
-    /* マクロミル風 装飾ヘッダー */
-    .survey-banner {
-      background: #eff6ff; border-bottom: 1px solid #dbeafe; padding: 12px 16px; text-align: center; font-size: 0.85rem; font-weight: 700; color: #1e40af;
-    }
+    .survey-banner { background: #eff6ff; border-bottom: 1px solid #dbeafe; padding: 10px 16px; text-align: center; font-size: 0.85rem; font-weight: 700; color: #1e40af; }
 
     .iframe-wrapper { flex: 1; width: 100%; height: 100%; position: relative; }
     .iframe-wrapper iframe { width: 100%; height: 100%; border: none; }
 
-    /* ドロワー・確認ダイアログ */
+    /* オーバーレイ・ダイアログ */
     .drawer-overlay, .dialog-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; z-index: 600; }
-    .drawer { position: fixed; top:0; right:-300px; width:300px; height:100vh; background: #ffffff; border-left: 1px solid var(--border); z-index: 601; transition: right 0.3s ease; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; }
+    .drawer { position: fixed; top:0; right:-340px; width:340px; height:100vh; background: #ffffff; border-left: 1px solid var(--border); z-index: 601; transition: right 0.3s ease; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
     .drawer.open { right: 0; }
     .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; }
     .close-btn { background: none; border: none; font-size: 1.4rem; color: var(--text-sub); cursor: pointer; }
+
     .user-info-card { background: #f8fafc; border: 1px solid var(--border); padding: 16px; border-radius: 10px; font-size: 0.85rem; line-height: 1.8; }
-    .drawer-btn.delete-btn { background: var(--danger); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: auto; }
+    .about-card { background: #ffffff; border: 1px solid var(--border); padding: 16px; border-radius: 10px; font-size: 0.8rem; line-height: 1.7; color: var(--text-main); }
+    .about-card h4 { font-size: 0.85rem; font-weight: 800; color: var(--primary); margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
 
     .dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: var(--radius); padding: 24px; max-width: 400px; width: 90%; z-index: 601; text-align: center; box-shadow: var(--shadow); border: 1px solid var(--border); }
     .dialog h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 12px; color: var(--primary); }
@@ -99,6 +92,10 @@
     .dialog-btns button { flex: 1; padding: 12px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer; }
     .btn-dialog-yes { background: var(--accent); color: #fff; }
     .btn-dialog-no { background: #e2e8f0; color: var(--text-sub); }
+
+    /* ローディングスピナー */
+    .spinner { width: 36px; height: 36px; border: 4px solid #e2e8f0; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 16px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     .init-survey-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow); }
     .init-survey-card h2 { font-size: 1.1rem; color: var(--primary); margin-bottom: 16px; text-align: center; }
@@ -130,6 +127,7 @@
           <div class="yen-sub" id="pendingYen">（0 円相当）</div>
         </div>
       </div>
+      <button class="exchange-btn" onclick="openExchangeModal()">ポイント交換申請</button>
     </div>
 
     <div class="init-survey-card" id="initSurveyCard" style="display: none;">
@@ -167,14 +165,14 @@
   <!-- 回答画面（フルスクリーン） -->
   <div class="full-modal" id="answerModal">
     <div class="modal-header">
-      <button class="btn-back" onclick="closeAnswerModal()">← 戻る</button>
+      <button class="btn-cancel-survey" onclick="closeAnswerModal()">回答をやめる</button>
       <div class="modal-survey-info">
         <div class="title" id="modalSurveyTitle">アンケート回答</div>
       </div>
-      <div style="width: 60px;"></div>
+      <button class="btn-complete-survey" onclick="onCompleteClick()">回答完了（判定へ）</button>
     </div>
     <div class="survey-banner" id="modalSurveyBanner">
-      回答完了で <span id="modalSurveyPoint">0</span> pt（<span id="modalSurveyYen">0</span>円相当）が入ります
+      回答完了で <span id="modalSurveyPoint">0</span> pt 入ります
     </div>
     <div class="iframe-wrapper">
       <iframe id="surveyIframe" src="about:blank"></iframe>
@@ -185,11 +183,18 @@
   <div class="dialog-overlay" id="alertDialogOverlay">
     <div class="dialog">
       <h3>回答前のご注意</h3>
-      <p>アンケート内に<b>モニター番号入力欄</b>があります。<br>あなたのモニター番号：<b id="dialogUserId" style="color:var(--accent); font-size:1.1rem;">---</b><br><br>間違えて入力するとポイントが正常に加算されません。お間違えのないようご回答ください。</p>
+      <p>アンケート回答画面にて<b>モニター番号</b>の入力画面があります。<br><br>あなたのモニター番号：<b id="dialogUserId" style="color:var(--accent); font-size:1.2rem;">---</b><br><br>間違えると報酬が入りませんのでご注意ください。</p>
       <div class="dialog-btns">
         <button class="btn-dialog-no" onclick="closeAlertDialog()">キャンセル</button>
-        <button class="btn-dialog-yes" onclick="startSurvey()">理解しました（回答へ）</button>
+        <button class="btn-dialog-yes" onclick="startSurvey()">はい（回答へ）</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 判定・通知モーダル -->
+  <div class="dialog-overlay" id="statusModalOverlay">
+    <div class="dialog" id="statusModalContent">
+      <!-- スクリプトで動的生成 -->
     </div>
   </div>
 
@@ -201,7 +206,18 @@
       <button class="close-btn" onclick="toggleDrawer(false)">✕</button>
     </div>
     <div class="user-info-card" id="userInfoDisplay">未登録です</div>
-    <button class="drawer-btn delete-btn" onclick="clearUserData()">登録情報の初期化</button>
+
+    <div class="about-card">
+      <h4>クロワルモニターとは</h4>
+      <p>クロワルモニターはポイ活の一部です。アンケート内容は当社のみで使用し、他の企業には送受いたしませんのでご安心ください。</p>
+      <p style="margin-top: 6px;">なぜ稼げるのか、当社に利益はございませんが、お客様の生活の助けになるような、サービスでございます。</p>
+      
+      <h4 style="margin-top: 12px;">判定中ポイントに関しまして</h4>
+      <p><b>【事前アンケートの場合】</b><br>即反映表記がある場合、即時反映されます。その他の事前アンケートの場合、回答完了から最短1時間程で獲得ポイントに反映いたしますが、最短で7日程かかる場合がございます。ご了承ください。</p>
+      <p style="margin-top: 6px;"><b>【本アンケートの場合】</b><br>最短1日〜最大10日かかる場合がございます。ご注意ください。</p>
+    </div>
+
+    <button class="submit-btn" style="background: var(--danger); margin-top: auto;" onclick="clearUserData()">登録情報の初期化</button>
   </div>
 
 <script>
@@ -209,10 +225,13 @@
 
   let userData = JSON.parse(localStorage.getItem('crawl_user_data')) || null;
   let answeredState = JSON.parse(localStorage.getItem('crawl_answered_state')) || {}; 
+  
+  let targetSurveyNum = '';
   let targetSurveyName = '';
   let targetSurveyLink = '';
-  let targetSurveyPoint = 0;
-  let isSubmitting = false;
+  let targetSurveyPointStr = '';
+  let targetSurveyPointVal = 0;
+  let targetSurveyType = '';
 
   function getOrGenerateID() {
     let savedId = localStorage.getItem('crawl_user_id');
@@ -233,15 +252,6 @@
     checkRegistration();
     fetchSurveys();
     setInterval(fetchSurveys, 5000);
-
-    // フォーム送信検知（iframeのloadイベント監視）
-    const iframe = document.getElementById('surveyIframe');
-    iframe.addEventListener('load', () => {
-      if (isSubmitting) {
-        // 送信完了後に画面を自動クローズ
-        completeSurveyAuto();
-      }
-    });
   });
 
   function checkRegistration() {
@@ -320,23 +330,29 @@
     let preCount = 0;
     let mainCount = 0;
 
-    rows.forEach(row => {
+    rows.forEach((row, index) => {
+      const surveyNum = String(index + 1).padStart(2, '0'); // 番号 (例: 01)
       const name = row.name;
-      const point = Number(row.point || 0);
+      const pointRaw = String(row.point || '0'); 
+      const pointVal = parseInt(pointRaw.replace(/[^0-9]/g, '')) || 0;
       const type = row.type;
       const link = row.link;
       const earnedUsers = row.earnedUsers || '';
       const targetUsers = row.targetUsers || '';
+      const limitInfo = row.limit || row.gColumn || ''; // ジー欄（期限/人数）
 
-      const isEarned = earnedUsers.split(/[、,]/).map(s => s.trim()).includes(userId);
-      if (isEarned) {
+      const isEarnedInSheet = earnedUsers.split(/[、,]/).map(s => s.trim()).includes(userId);
+      if (isEarnedInSheet) {
         answeredState[name] = 'earned';
       }
 
       const currentState = answeredState[name];
 
-      if (currentState === 'earned') totalEarned += point;
-      else if (currentState === 'pending') totalPending += point;
+      if (currentState === 'earned') {
+        totalEarned += pointVal;
+      } else if (currentState === 'pending') {
+        totalPending += pointVal;
+      }
 
       if (type === '本') {
         const isTarget = targetUsers.split(/[、,]/).map(s => s.trim()).includes(userId);
@@ -352,13 +368,19 @@
       } else if (currentState === 'pending') {
         btnHTML = `<button class="btn pending-btn" disabled>判定中</button>`;
       } else {
-        btnHTML = `<button class="btn" onclick="confirmStartSurvey('${encodeURIComponent(name)}', '${encodeURIComponent(link)}', ${point})">回答する</button>`;
+        btnHTML = `<button class="btn" onclick="confirmStartSurvey('${surveyNum}', '${encodeURIComponent(name)}', '${encodeURIComponent(link)}', '${pointRaw}', ${pointVal}, '${type}')">回答する</button>`;
       }
+
+      const limitDisplay = limitInfo ? `<span>期限/条件: ${limitInfo}</span>` : '';
 
       card.innerHTML = `
         <div class="survey-info">
+          <div class="survey-num">No.${surveyNum}</div>
           <div class="survey-name">${name}</div>
-          <div class="survey-point">+${point} pt <span style="font-size:0.75rem; color:var(--text-sub); font-weight:normal;">（${(point/10).toFixed(1)}円相当）</span></div>
+          <div class="survey-meta">
+            ${limitDisplay}
+          </div>
+          <div class="survey-point">+${pointRaw} pt</div>
         </div>
         <div class="survey-action">${btnHTML}</div>
       `;
@@ -381,15 +403,17 @@
     document.getElementById('pendingYen').textContent = `（${(totalPending / 10).toLocaleString()} 円相当）`;
   }
 
-  // 1. 回答確認ダイアログの表示
-  function confirmStartSurvey(encName, encLink, point) {
+  function confirmStartSurvey(num, encName, encLink, pointStr, pointVal, type) {
     if (!userData) {
       alert('先に初回登録を完了してください。');
       return;
     }
+    targetSurveyNum = num;
     targetSurveyName = decodeURIComponent(encName);
     targetSurveyLink = decodeURIComponent(encLink);
-    targetSurveyPoint = point;
+    targetSurveyPointStr = pointStr;
+    targetSurveyPointVal = pointVal;
+    targetSurveyType = type;
 
     document.getElementById('dialogUserId').textContent = userId;
     document.getElementById('alertDialogOverlay').style.display = 'block';
@@ -399,22 +423,14 @@
     document.getElementById('alertDialogOverlay').style.display = 'none';
   }
 
-  // 2. 理解してアンケート画面を開く
   function startSurvey() {
     closeAlertDialog();
 
-    document.getElementById('modalSurveyTitle').textContent = targetSurveyName;
-    document.getElementById('modalSurveyPoint').textContent = targetSurveyPoint;
-    document.getElementById('modalSurveyYen').textContent = (targetSurveyPoint / 10).toFixed(1);
+    document.getElementById('modalSurveyTitle').textContent = `No.${targetSurveyNum} ${targetSurveyName}`;
+    document.getElementById('modalSurveyPoint').textContent = targetSurveyPointStr;
 
     const iframe = document.getElementById('surveyIframe');
-    isSubmitting = false;
     iframe.src = targetSurveyLink;
-
-    // 初回読み込み完了後に送信フラグを準備
-    iframe.onload = () => {
-      isSubmitting = true;
-    };
 
     document.getElementById('answerModal').style.display = 'flex';
   }
@@ -422,22 +438,71 @@
   function closeAnswerModal() {
     document.getElementById('answerModal').style.display = 'none';
     document.getElementById('surveyIframe').src = 'about:blank';
-    isSubmitting = false;
   }
 
-  // 3. フォーム送信検知時の自動完了処理
-  function completeSurveyAuto() {
-    answeredState[targetSurveyName] = 'pending';
-    localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
-
-    fetch(GAS_WEB_APP_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify({ userId: userId, surveyName: targetSurveyName })
-    });
-
+  // 回答完了ボタン押下時の判定ロジック
+  function onCompleteClick() {
     closeAnswerModal();
-    fetchSurveys();
+
+    const isInstant = targetSurveyType === '事前' && targetSurveyPointStr.startsWith('即');
+
+    if (isInstant) {
+      // 事前アンケートで「即」が付く場合：自動判定中🌀2.5秒後に獲得
+      showStatusModal(`
+        <h3>自動判定中 <span class="spinner" style="display:inline-block; vertical-align:middle; width:20px; height:20px;"></span></h3>
+        <p>回答内容の照合を行なっています...</p>
+      `);
+
+      setTimeout(() => {
+        answeredState[targetSurveyName] = 'earned';
+        localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
+        
+        showStatusModal(`
+          <h3 style="color:var(--accent);">反映完了！</h3>
+          <p>保有ポイントに <b>+${targetSurveyPointVal} pt</b> 反映されました！</p>
+          <button class="btn-dialog-yes" style="width:100%; margin-top:12px;" onclick="closeStatusModal()">閉じる</button>
+        `);
+        fetchSurveys();
+      }, 2500);
+
+    } else {
+      // 事前の「即」なし、または本アンケート：判定中に移行
+      answeredState[targetSurveyName] = 'pending';
+      localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
+
+      showStatusModal(`
+        <h3>回答を受け付けました</h3>
+        <p>ステータスを「<b>判定中</b>」へ移行しました。<br>確認完了後、獲得ポイントへ反映されます。</p>
+        <button class="btn-dialog-yes" style="width:100%; margin-top:12px;" onclick="closeStatusModal()">OK</button>
+      `);
+      fetchSurveys();
+    }
+  }
+
+  function showStatusModal(htmlContent) {
+    document.getElementById('statusModalContent').innerHTML = htmlContent;
+    document.getElementById('statusModalOverlay').style.display = 'block';
+  }
+
+  function closeStatusModal() {
+    document.getElementById('statusModalOverlay').style.display = 'none';
+  }
+
+  // ポイント交換モーダル
+  function openExchangeModal() {
+    showStatusModal(`
+      <h3>ポイント交換</h3>
+      <p style="text-align:left; font-size:0.8rem; line-height:1.8;">
+        <b>交換可能ライン:</b><br>
+        ・AmazonGift（受付中）<br>
+        ・PayPal（受付中）<br>
+        ・PayPay（受付中）<br>
+        ・自動販売機券（現在対象外・10月解禁）<br>
+        ・ローソン買い物券（現在対象外）<br>
+        ・ファミリーマート買い物券（現在対象外）
+      </p>
+      <button class="btn-dialog-no" style="width:100%; margin-top:16px;" onclick="closeStatusModal()">閉じる</button>
+    `);
   }
 </script>
 </body>
