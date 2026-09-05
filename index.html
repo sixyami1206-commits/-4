@@ -3,154 +3,84 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Crawlポイ活ナビ</title>
+  <title>Crawlポイ活</title>
   <style>
     :root {
       --bg: #f4f6f9;
       --card-bg: #ffffff;
       --card-border: #e2e8f0;
       --primary: #0284c7;
-      --primary-light: #e0f2fe;
       --accent: #d97706;
-      --accent-light: #fef3c7;
       --text: #1e293b;
       --text-sub: #64748b;
       --danger: #ef4444;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
     header {
-      background: #ffffff;
-      border-bottom: 1px solid var(--card-border);
-      padding: 14px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: var(--shadow);
+      background: #ffffff; border-bottom: 1px solid var(--card-border); padding: 14px 20px;
+      display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow);
     }
-
     .logo-title { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
-
-    .menu-btn {
-      background: #f1f5f9; border: 1px solid var(--card-border); color: var(--text);
-      font-size: 1.2rem; cursor: pointer; padding: 6px 12px; border-radius: 8px;
-    }
+    .menu-btn { background: #f1f5f9; border: 1px solid var(--card-border); color: var(--text); font-size: 1.2rem; cursor: pointer; padding: 6px 12px; border-radius: 8px; }
 
     main { flex: 1; padding: 20px 16px; max-width: 640px; margin: 0 auto; width: 100%; }
 
     .point-board {
-      background: var(--card-bg); border: 1px solid var(--card-border);
-      padding: 20px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 24px;
+      background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 24px;
     }
-
-    .point-values { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-    .point-box {
-      background: #f8fafc; border: 1px solid var(--card-border);
-      padding: 14px; border-radius: 12px; text-align: center;
-    }
-
+    .point-values { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .point-box { background: #f8fafc; border: 1px solid var(--card-border); padding: 14px; border-radius: 12px; text-align: center; }
     .point-box .label { font-size: 0.75rem; color: var(--text-sub); font-weight: 700; margin-bottom: 6px; }
     .point-box .value { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
     .point-box .value.pending { color: var(--accent); }
 
-    .drawer-overlay {
-      position: fixed; top:0; left:0; width:100vw; height:100vh;
-      background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; z-index: 200;
+    .exchange-trigger-btn {
+      width: 100%; padding: 12px; background: #10b981; color: #fff; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem;
     }
-    .drawer {
-      position: fixed; top:0; right:-300px; width:300px; height:100vh;
-      background: #ffffff; border-left: 1px solid var(--card-border); z-index: 201; transition: right 0.3s ease;
-      padding: 24px 20px; display: flex; flex-direction: column; gap: 16px;
-    }
+
+    .drawer-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; z-index: 200; }
+    .drawer { position: fixed; top:0; right:-300px; width:300px; height:100vh; background: #ffffff; border-left: 1px solid var(--card-border); z-index: 201; transition: right 0.3s ease; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; }
     .drawer.open { right: 0; }
     .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 14px; }
     .close-btn { background: none; border: none; font-size: 1.4rem; color: var(--text-sub); cursor: pointer; }
-
     .user-info-card { background: #f8fafc; border: 1px solid var(--card-border); padding: 16px; border-radius: 12px; font-size: 0.85rem; line-height: 1.8; }
+    .drawer-btn { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; text-align: center; }
+    .drawer-btn.delete-btn { background: var(--danger); margin-top: auto; }
 
-    .drawer-btn {
-      width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px;
-      font-weight: 700; cursor: pointer; text-align: center; margin-top: 8px;
-    }
-    .drawer-btn.delete-btn { background: var(--danger); }
-
-    .init-survey-card {
-      background: var(--card-bg); border: 2px solid var(--primary); border-radius: 16px;
-      padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-lg);
-    }
+    .init-survey-card { background: var(--card-bg); border: 2px solid var(--primary); border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-lg); }
     .init-survey-card h2 { font-size: 1.2rem; color: var(--primary); margin-bottom: 16px; text-align: center; }
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; }
     .form-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--card-border); border-radius: 8px; }
 
-    .submit-btn {
-      width: 100%; background: var(--primary); color: #fff; border: none; padding: 12px;
-      border-radius: 8px; font-weight: 800; cursor: pointer;
-    }
+    .submit-btn { width: 100%; background: var(--primary); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 800; cursor: pointer; }
 
-    .section-title {
-      font-size: 1rem; font-weight: 800; color: var(--text);
-      margin: 24px 0 12px; padding-left: 10px; border-left: 4px solid var(--primary);
-    }
-
+    .section-title { font-size: 1rem; font-weight: 800; color: var(--text); margin: 24px 0 12px; padding-left: 10px; border-left: 4px solid var(--primary); }
     .survey-list { display: flex; flex-direction: column; gap: 12px; }
-
-    .survey-card {
-      background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center;
-    }
-
+    .survey-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center; }
     .survey-info { flex: 1; padding-right: 12px; }
     .survey-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
     .survey-point { font-size: 0.9rem; color: var(--primary); font-weight: 800; }
-
-    .survey-action .btn {
-      background: var(--primary); color: #fff; border: none; padding: 8px 16px;
-      border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer;
-    }
+    .survey-action .btn { background: var(--primary); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
     .survey-action .btn.done { background: #94a3b8; cursor: not-allowed; }
     .survey-action .btn.pending-btn { background: var(--accent); cursor: not-allowed; }
 
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; justify-content: center; align-items: center; z-index: 300; padding: 16px;
-    }
-    .modal {
-      background: #ffffff; border-radius: 16px; padding: 24px; max-width: 460px; width: 100%; text-align: center;
-      box-shadow: var(--shadow-lg); border: 1px solid var(--card-border);
-    }
-
-    .survey-iframe-container {
-      width: 100%; height: 60vh; border: 1px solid var(--card-border);
-      border-radius: 12px; overflow: hidden; margin-bottom: 14px;
-    }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; justify-content: center; align-items: center; z-index: 300; padding: 16px; }
+    .modal { background: #ffffff; border-radius: 16px; padding: 20px; max-width: 500px; width: 100%; text-align: center; box-shadow: var(--shadow-lg); border: 1px solid var(--card-border); }
+    .survey-iframe-container { width: 100%; height: 55vh; border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
     .survey-iframe-container iframe { width: 100%; height: 100%; border: none; }
 
-    .survey-finish-btn {
-      width: 100%; padding: 12px; background: var(--primary); color: #ffffff;
-      border: none; border-radius: 10px; font-weight: 800; cursor: pointer;
-    }
+    .modal-btn-group { display: flex; gap: 10px; }
+    .modal-btn-group button { flex: 1; padding: 12px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer; }
+    .btn-submit-done { background: var(--primary); color: #fff; }
+    .btn-cancel { background: #e2e8f0; color: var(--text-sub); }
 
-    .spinner {
-      width: 40px; height: 40px; border: 4px solid #e0f2fe;
-      border-top-color: var(--primary); border-radius: 50%;
-      animation: spin 0.8s linear infinite; margin: 20px auto;
-    }
+    .spinner { width: 40px; height: 40px; border: 4px solid #e0f2fe; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
@@ -173,12 +103,13 @@
           <div class="value pending" id="pendingPoint">0 pt</div>
         </div>
       </div>
+      <button class="exchange-trigger-btn" onclick="openExchangeModal()">ポイントを交換する</button>
     </div>
 
     <div class="init-survey-card" id="initSurveyCard" style="display: none;">
-      <h2>初回登録（モニター設定）</h2>
+      <h2>初回登録</h2>
       <div class="form-group">
-        <label>モニターID（自動採番）</label>
+        <label>モニターID</label>
         <input type="text" id="regId" readonly>
       </div>
       <div class="form-group">
@@ -193,7 +124,7 @@
         <label>都道府県</label>
         <input type="text" id="regPref" placeholder="例: 東京都">
       </div>
-      <button class="submit-btn" onclick="submitInitSurvey()">ポイ活を開始する</button>
+      <button class="submit-btn" onclick="submitInitSurvey()">登録してはじめる</button>
     </div>
 
     <div class="section-title">事前アンケート</div>
@@ -214,6 +145,7 @@
       <button class="close-btn" onclick="toggleDrawer(false)">✕</button>
     </div>
     <div class="user-info-card" id="userInfoDisplay">未登録です</div>
+    <button class="drawer-btn" onclick="toggleDrawer(false); openExchangeModal();">ポイント交換申請</button>
     <button class="drawer-btn delete-btn" onclick="clearUserData()">モニター情報初期化</button>
   </div>
 
@@ -225,11 +157,12 @@
   </div>
 
 <script>
-  // 指定いただいたGAS Web App URLを自動組み込み済み
-  const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxUtbxAAfZZidOiyKj3PUtrsgBzRY8Q-gpaMkW5-ASv6FXWf-XgWHcbLh6cUWkufm0/exec';
+  // 最新のGAS Web App URLを組み込み済み
+  const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyTAYsfiGOhOmz1S_9QZVFldbL0DghQ4CTsl0Gygv_E27PALgdioVXU0QbR1GbmH3QG/exec';
 
   let userData = JSON.parse(localStorage.getItem('crawl_user_data')) || null;
   let answeredState = JSON.parse(localStorage.getItem('crawl_answered_state')) || {}; 
+  let currentEarnedPoints = 0;
 
   function getOrGenerateID() {
     if (userData && userData.id) return String(userData.id).padStart(3, '0');
@@ -246,7 +179,7 @@
   window.addEventListener('DOMContentLoaded', () => {
     checkRegistration();
     fetchSurveys();
-    setInterval(fetchSurveys, 10000);
+    setInterval(fetchSurveys, 8000);
   });
 
   function checkRegistration() {
@@ -287,7 +220,7 @@
   }
 
   function clearUserData() {
-    if (confirm('モニター情報を初期化しますか？')) {
+    if (confirm('初期化しますか？')) {
       localStorage.clear();
       location.reload();
     }
@@ -305,8 +238,6 @@
 
       if (Array.isArray(data)) {
         renderSurveys(data);
-      } else {
-        console.error("GAS Error:", data);
       }
     } catch (e) {
       console.error("Fetch Failure:", e);
@@ -333,7 +264,7 @@
       const earnedUsers = row.earnedUsers || '';
       const targetUsers = row.targetUsers || '';
 
-      const isEarned = earnedUsers.split(/[,、]/).map(s => s.trim()).includes(userId);
+      const isEarned = earnedUsers.split(/[、,]/).map(s => s.trim()).includes(userId);
       if (isEarned) answeredState[name] = 'earned';
 
       const currentState = answeredState[name];
@@ -342,7 +273,7 @@
       else if (currentState === 'pending') totalPending += point;
 
       if (type === '本') {
-        const isTarget = targetUsers.split(/[,、]/).map(s => s.trim()).includes(userId);
+        const isTarget = targetUsers.split(/[、,]/).map(s => s.trim()).includes(userId);
         if (!isTarget) return;
       }
 
@@ -375,9 +306,10 @@
       }
     });
 
-    if (preCount === 0) preContainer.innerHTML = '<div style="text-align:center; padding:12px; color:var(--text-sub);">現在対象の事前アンケートはありません</div>';
-    if (mainCount === 0) mainContainer.innerHTML = '<div style="text-align:center; padding:12px; color:var(--text-sub);">現在対象の本アンケートはありません</div>';
+    if (preCount === 0) preContainer.innerHTML = '<div style="text-align:center; padding:12px; color:var(--text-sub);">対象の事前アンケートはありません</div>';
+    if (mainCount === 0) mainContainer.innerHTML = '<div style="text-align:center; padding:12px; color:var(--text-sub);">対象の本アンケートはありません</div>';
 
+    currentEarnedPoints = totalEarned;
     document.getElementById('earnedPoint').textContent = `${totalEarned} pt`;
     document.getElementById('pendingPoint').textContent = `${totalPending} pt`;
   }
@@ -395,9 +327,16 @@
       <div class="survey-iframe-container">
         <iframe src="${link}"></iframe>
       </div>
-      <button class="survey-finish-btn" onclick="finishSurvey('${encodeURIComponent(name)}')">送信完了（フォーム送信後に押す）</button>
+      <div class="modal-btn-group">
+        <button class="btn-cancel" onclick="closeModal()">回答をやめる</button>
+        <button class="btn-submit-done" onclick="finishSurvey('${encodeURIComponent(name)}')">回答完了（Submit後に押す）</button>
+      </div>
     `;
     document.getElementById('confirmModal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('confirmModal').style.display = 'none';
   }
 
   function finishSurvey(encName) {
@@ -414,21 +353,57 @@
     document.getElementById('modalTitle').textContent = "判定処理中";
     document.getElementById('modalBody').innerHTML = `
       <div class="spinner"></div>
-      <p style="color: var(--primary); font-weight: bold;">ステータスを更新しています...</p>
+      <p style="color: var(--primary); font-weight: bold;">自動判定を行なっています...</p>
     `;
 
     setTimeout(() => {
-      document.getElementById('modalTitle').textContent = "完了";
-      document.getElementById('modalBody').innerHTML = `
-        <p style="color: var(--accent); font-weight: bold; margin: 16px 0;">
-          判定中ポイントに反映されました！
-        </p>
-      `;
+      closeModal();
       fetchSurveys();
-      setTimeout(() => {
-        document.getElementById('confirmModal').style.display = 'none';
-      }, 1200);
     }, 1500);
+  }
+
+  function openExchangeModal() {
+    if (!userData) {
+      alert('先に初回登録を完了してください。');
+      return;
+    }
+
+    document.getElementById('modalTitle').textContent = "ポイント交換申請";
+    document.getElementById('modalBody').innerHTML = `
+      <div style="padding: 10px 0;">
+        <p style="font-size: 0.9rem; color: var(--text-sub); margin-bottom: 12px;">現在の獲得ポイント: <strong>${currentEarnedPoints} pt</strong></p>
+        <div class="form-group" style="text-align: left;">
+          <label>交換したいポイント数</label>
+          <input type="number" id="exchangeAmount" min="100" placeholder="例: 500">
+        </div>
+      </div>
+      <div class="modal-btn-group">
+        <button class="btn-cancel" onclick="closeModal()">キャンセル</button>
+        <button class="btn-submit-done" onclick="submitExchange()">交換を申請する</button>
+      </div>
+    `;
+    document.getElementById('confirmModal').style.display = 'flex';
+  }
+
+  function submitExchange() {
+    const amount = Number(document.getElementById('exchangeAmount').value);
+    if (!amount || amount <= 0) {
+      alert('正しいポイント数を入力してください。');
+      return;
+    }
+    if (amount > currentEarnedPoints) {
+      alert('保有ポイント以上の金額は指定できません。');
+      return;
+    }
+
+    fetch(GAS_WEB_APP_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ action: 'exchange', userId: userId, points: amount })
+    });
+
+    alert('交換申請を受け付けました！確認後、反映処理が行われます。');
+    closeModal();
   }
 </script>
 </body>
