@@ -2,574 +2,262 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>CrawlMonita</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クロワルモニター</title>
   <style>
     :root {
-      --bg: #f8fafc;
+      --primary-color: #007bff;
+      --bg-color: #f4f6f9;
       --card-bg: #ffffff;
-      --card-border: #e2e8f0;
-      --accent: #2563eb;
-      --accent-glow: rgba(37, 99, 235, 0.08);
-      --text-main: #0f172a;
-      --text-sub: #64748b;
-      --point-color: #d97706;
-      --danger: #dc2626;
-      --radius: 16px;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
+      --text-color: #333333;
+      --sub-text: #666666;
+      --instant-color: #ff4757;
+      --hon-color: #2ed573;
+      --jizen-color: #70a1ff;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
-    body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 16px;
+    }
 
-    /* ヘッダー */
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
     header {
-      background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--card-border); padding: 18px 24px;
-      display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
+      text-align: center;
+      margin-bottom: 20px;
     }
-    .logo-title { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-main); }
-    
-    /* 三本線アイコン（ハンバーガーメニュー） */
-    .menu-btn {
-      background: none; border: none; cursor: pointer; padding: 6px; display: flex; flex-direction: column; gap: 5px;
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 0 0 10px 0;
+      color: #1e272e;
     }
-    .menu-btn span { display: block; width: 22px; height: 2px; background-color: var(--text-main); border-radius: 2px; transition: 0.2s; }
 
-    main { flex: 1; padding: 28px 20px; max-width: 520px; margin: 0 auto; width: 100%; }
-
-    /* ポイント表示 */
-    .point-board {
-      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 20px; margin-bottom: 32px;
-      box-shadow: var(--shadow-sm);
+    .loading {
+      text-align: center;
+      padding: 40px 0;
+      color: var(--sub-text);
+      font-weight: bold;
     }
-    .point-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .point-card { text-align: left; }
-    .point-card .label { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; margin-bottom: 4px; letter-spacing: 0.02em; }
-    .point-card .value { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; color: var(--text-main); }
-    .point-card .value.pending { color: var(--point-color); }
-    .point-card .yen-sub { font-size: 0.72rem; color: var(--text-sub); margin-top: 2px; }
 
-    /* セクションタイトル */
-    .section-title { font-size: 0.8rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.08em; margin: 28px 0 14px; }
-
-    .survey-list { display: flex; flex-direction: column; gap: 12px; }
     .survey-card {
-      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 18px 20px;
-      display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-sm); transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .survey-card:active { transform: scale(0.99); }
-    .survey-info { flex: 1; padding-right: 16px; }
-    .survey-num { font-size: 0.7rem; font-weight: 700; color: var(--accent); margin-bottom: 4px; letter-spacing: 0.05em; }
-    .survey-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main); line-height: 1.4; }
-    .survey-meta { font-size: 0.75rem; color: var(--text-sub); }
-    .survey-point { font-size: 0.85rem; color: var(--accent); font-weight: 700; margin-top: 4px; }
-    
-    .survey-action .btn {
-      background: var(--accent); color: #fff; border: none; padding: 10px 18px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
-    }
-    .survey-action .btn.done { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
-    .survey-action .btn.pending-btn { background: #fef3c7; color: var(--point-color); cursor: not-allowed; }
-
-    /* 全画面モーダル */
-    .full-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 500; display: none; flex-direction: column; }
-    .modal-header { border-bottom: 1px solid var(--card-border); padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
-    .btn-cancel-survey { background: #e2e8f0; border: none; color: var(--text-main); font-weight: 600; padding: 8px 14px; border-radius: 12px; cursor: pointer; font-size: 0.8rem; }
-    .modal-survey-info .title { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
-    .survey-banner { background: #eff6ff; border-bottom: 1px solid #bfdbfe; padding: 10px 16px; text-align: center; font-size: 0.8rem; font-weight: 600; color: var(--accent); }
-    .iframe-wrapper { flex: 1; width: 100%; height: 100%; position: relative; }
-    .iframe-wrapper iframe { width: 100%; height: 100%; border: none; }
-
-    /* ドロワー（右メニュー） */
-    .drawer-overlay, .dialog-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); display: none; z-index: 600; }
-    .drawer {
-      position: fixed; top:0; right:-360px; width:340px; height:100vh; background: #ffffff; border-left: 1px solid var(--card-border); z-index: 601; transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1); padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; box-shadow: -4px 0 24px rgba(0,0,0,0.08);
-    }
-    .drawer.open { right: 0; }
-    .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 16px; }
-    .close-btn { background: none; border: none; font-size: 1.2rem; color: var(--text-sub); cursor: pointer; }
-
-    .drawer-section-title { font-size: 0.75rem; font-weight: 700; color: var(--text-sub); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 10px; }
-
-    /* メニュー内メインアクション：交換ボタン */
-    .menu-exchange-btn {
-      width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 0.9rem; letter-spacing: 0.02em; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    .user-info-card { background: #f8fafc; border: 1px solid var(--card-border); padding: 16px; border-radius: 12px; font-size: 0.85rem; line-height: 1.8; color: var(--text-sub); }
-    .user-info-card strong { color: var(--text-main); }
-    .about-card { background: #f8fafc; border: 1px solid var(--card-border); padding: 16px; border-radius: 12px; font-size: 0.78rem; line-height: 1.6; color: var(--text-sub); }
-    .about-card h4 { font-size: 0.82rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; border-bottom: 1px solid var(--card-border); padding-bottom: 4px; }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
 
-    /* ダイアログ popup */
-    .dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #ffffff; border-radius: var(--radius); padding: 24px; max-width: 380px; width: 88%; z-index: 601; text-align: center; border: 1px solid var(--card-border); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
-    .dialog h3 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; color: var(--text-main); }
-    .dialog p { font-size: 0.82rem; color: var(--text-sub); line-height: 1.6; margin-bottom: 20px; }
-    .dialog-btns { display: flex; gap: 10px; }
-    .dialog-btns button { flex: 1; padding: 12px; border-radius: 10px; font-weight: 600; border: none; cursor: pointer; font-size: 0.85rem; }
-    .btn-dialog-yes { background: var(--accent); color: #fff; }
-    .btn-dialog-no { background: #f1f5f9; color: var(--text-sub); }
+    .badge {
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: #fff;
+    }
 
-    .exchange-option-btn { width: 100%; text-align: left; padding: 12px 14px; margin-bottom: 8px; background: #f8fafc; border: 1px solid var(--card-border); color: var(--text-main); border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
-    .exchange-option-btn.disabled { opacity: 0.4; cursor: not-allowed; background: #f1f5f9; }
+    .badge-hon {
+      background-color: var(--hon-color);
+    }
 
-    .spinner { width: 20px; height: 20px; border: 2px solid #e2e8f0; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .badge-jizen {
+      background-color: var(--jizen-color);
+    }
 
-    .init-survey-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
-    .init-survey-card h2 { font-size: 1rem; color: var(--text-main); margin-bottom: 16px; text-align: center; font-weight: 700; }
-    .form-group { margin-bottom: 14px; text-align: left; }
-    .form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; }
-    .form-group input { width: 100%; padding: 12px; background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; color: var(--text-main); outline: none; }
-    .submit-btn { width: 100%; background: var(--accent); color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+    .badge-instant {
+      background-color: var(--instant-color);
+    }
+
+    .badge-deadline {
+      background-color: #ffa502;
+      margin-left: auto;
+    }
+
+    .survey-title {
+      font-size: 1.05rem;
+      font-weight: bold;
+      margin: 4px 0;
+      line-height: 1.4;
+    }
+
+    .survey-meta {
+      font-size: 0.85rem;
+      color: var(--sub-text);
+      background-color: #f8f9fa;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .meta-label {
+      font-weight: bold;
+    }
+
+    .survey-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .points-info {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .points-val {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--instant-color);
+    }
+
+    .yen-val {
+      font-size: 0.85rem;
+      color: var(--sub-text);
+    }
+
+    .btn-answer {
+      display: inline-block;
+      background-color: var(--primary-color);
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      transition: background-color 0.2s;
+    }
+
+    .btn-answer:hover {
+      background-color: #0056b3;
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <span class="logo-title">CrawlMonita</span>
-    <button class="menu-btn" onclick="toggleDrawer(true)" aria-label="Menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-  </header>
+  <div class="container">
+    <header>
+      <h1>クロワルモニター</h1>
+    </header>
 
-  <main>
-    <div class="point-board">
-      <div class="point-grid">
-        <div class="point-card">
-          <div class="label">保有ポイント</div>
-          <div class="value" id="earnedPoint">0 pt</div>
-          <div class="yen-sub" id="earnedYen">（0 円相当）</div>
-        </div>
-        <div class="point-card">
-          <div class="label">判定中</div>
-          <div class="value pending" id="pendingPoint">0 pt</div>
-          <div class="yen-sub" id="pendingYen">（0 円相当）</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="init-survey-card" id="initSurveyCard" style="display: none;">
-      <h2>初回モニター登録</h2>
-      <div class="form-group">
-        <label>モニター番号（ID）</label>
-        <input type="text" id="regId" readonly style="opacity:0.7; background:#e2e8f0;">
-      </div>
-      <div class="form-group">
-        <label>お名前</label>
-        <input type="text" id="regName" placeholder="山田 太郎">
-      </div>
-      <div class="form-group">
-        <label>年齢</label>
-        <input type="number" id="regAge" placeholder="25">
-      </div>
-      <div class="form-group">
-        <label>都道府県</label>
-        <input type="text" id="regPref" placeholder="東京都">
-      </div>
-      <button class="submit-btn" onclick="submitInitSurvey()">登録を完了する</button>
-    </div>
-
-    <div class="section-title">事前アンケート</div>
-    <div class="survey-list" id="preliminaryList">
-      <div style="text-align:center; padding:16px; color:var(--text-sub); font-size:0.85rem;">読み込み中...</div>
-    </div>
-
-    <div class="section-title">本アンケート</div>
-    <div class="survey-list" id="mainList">
-      <div style="text-align:center; padding:16px; color:var(--text-sub); font-size:0.85rem;">読み込み中...</div>
-    </div>
-  </main>
-
-  <div class="full-modal" id="answerModal">
-    <div class="modal-header">
-      <button class="btn-cancel-survey" onclick="closeAnswerModal()">回答をやめる</button>
-      <div class="modal-survey-info">
-        <div class="title" id="modalSurveyTitle">アンケート回答</div>
-      </div>
-      <div style="width: 80px;"></div>
-    </div>
-    <div class="survey-banner" id="modalSurveyBanner">
-      送信完了で <span id="modalSurveyPoint">0</span> pt 入ります
-    </div>
-    <div class="iframe-wrapper">
-      <iframe id="surveyIframe" src="about:blank"></iframe>
+    <div id="survey-list">
+      <div class="loading">アンケート一覧を読み込み中...</div>
     </div>
   </div>
 
-  <div class="dialog-overlay" id="alertDialogOverlay">
-    <div class="dialog">
-      <h3>回答前のご注意</h3>
-      <p>アンケート回答画面にて<b>モニター番号</b>の入力画面があります。<br><br>あなたのモニター番号：<b id="dialogUserId" style="color:var(--accent); font-size:1.1rem;">---</b><br><br>間違えると報酬が入りませんのでご注意ください。</p>
-      <div class="dialog-btns">
-        <button class="btn-dialog-no" onclick="closeAlertDialog()">キャンセル</button>
-        <button class="btn-dialog-yes" onclick="startSurvey()">回答する</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="dialog-overlay" id="statusModalOverlay">
-    <div class="dialog" id="statusModalContent"></div>
-  </div>
-
-  <!-- ドロワー（メニュー） -->
-  <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
-  <div class="drawer" id="drawer">
-    <div class="drawer-header">
-      <strong style="font-size: 1rem;">メニュー</strong>
-      <button class="close-btn" onclick="toggleDrawer(false)">✕</button>
-    </div>
-
-    <!-- ポイント交換ボタン -->
-    <button class="menu-exchange-btn" onclick="openExchangeModal()">ポイント交換申請</button>
-
-    <div class="drawer-section-title">アカウント情報</div>
-    <div class="user-info-card" id="userInfoDisplay">未登録です</div>
-
-    <div class="drawer-section-title">クロワルモニターについて</div>
-    <div class="about-card">
-      <p>アンケート内容は当社のみで使用し、他の企業には送受いたしませんのでご安心ください。</p>
-      <h4 style="margin-top: 10px;">判定中ポイントに関しまして</h4>
-      <p><b>【事前アンケート】</b><br>即反映表記がある場合は即時、その他は最短1時間〜7日程かかる場合がございます。</p>
-      <p style="margin-top: 6px;"><b>【本アンケート】</b><br>最短1日〜最大10日かかる場合がございます。</p>
-    </div>
-
-    <button class="submit-btn" style="background: #fee2e2; color: var(--danger); margin-top: auto;" onclick="clearUserData()">登録情報の初期化</button>
-  </div>
-
-<script>
-  const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxsS-LIgVAaxfu3dCEYeEaX2QX7vBMNORlNLNl_N17qVbc_Us50BcQ2KhohFBVzeDVC/exec?sheet=sheetMonitor';
-
-  let userData = JSON.parse(localStorage.getItem('crawl_user_data')) || null;
-  let answeredState = JSON.parse(localStorage.getItem('crawl_answered_state')) || {}; 
-  
-  let currentEarnedPoints = 0;
-
-  let targetSurveyNum = '';
-  let targetSurveyName = '';
-  let targetSurveyLink = '';
-  let targetSurveyPointStr = '';
-  let targetSurveyPointVal = 0;
-  let targetSurveyType = '';
-  
-  let isFrameLoaded = false;
-
-  function getOrGenerateID() {
-    let savedId = localStorage.getItem('crawl_user_id');
-    if (!savedId) {
-      if (userData && userData.id) {
-        savedId = String(userData.id).padStart(3, '0');
-      } else {
-        savedId = String(Math.floor(100 + Math.random() * 900));
-      }
-      localStorage.setItem('crawl_user_id', savedId);
-    }
-    return savedId;
-  }
-
-  const userId = getOrGenerateID();
-
-  window.addEventListener('DOMContentLoaded', () => {
-    checkRegistration();
-    fetchSurveys();
-    setInterval(fetchSurveys, 10000);
-
-    const iframe = document.getElementById('surveyIframe');
-    iframe.addEventListener('load', () => {
-      if (isFrameLoaded) {
-        onSurveyFormSubmitted();
-      } else if (iframe.src !== 'about:blank') {
-        isFrameLoaded = true;
-      }
-    });
-  });
-
-  function checkRegistration() {
-    if (!userData) {
-      document.getElementById('initSurveyCard').style.display = 'block';
-      document.getElementById('regId').value = userId;
-    } else {
-      document.getElementById('initSurveyCard').style.display = 'none';
-    }
-    updateDrawerInfo();
-  }
-
-  function submitInitSurvey() {
-    const name = document.getElementById('regName').value.trim();
-    const age = document.getElementById('regAge').value.trim();
-    const pref = document.getElementById('regPref').value.trim();
-
-    if (!name || !age || !pref) {
-      alert('すべての項目を入力してください。');
-      return;
-    }
-
-    userData = { id: userId, name, age, pref };
-    localStorage.setItem('crawl_user_data', JSON.stringify(userData));
-    checkRegistration();
-  }
-
-  function updateDrawerInfo() {
-    const display = document.getElementById('userInfoDisplay');
-    if (userData) {
-      display.innerHTML = `
-        <div><strong>モニター番号:</strong> ${userData.id}</div>
-        <div><strong>お名前:</strong> ${userData.name} 様</div>
-        <div><strong>年齢:</strong> ${userData.age} 歳</div>
-        <div><strong>居住地:</strong> ${userData.pref}</div>
-      `;
-    }
-  }
-
-  function clearUserData() {
-    if (confirm('登録情報を初期化しますか？（※モニター番号は保持されます）')) {
-      const currentId = localStorage.getItem('crawl_user_id');
-      localStorage.clear();
-      if (currentId) localStorage.setItem('crawl_user_id', currentId);
-      location.reload();
-    }
-  }
-
-  function toggleDrawer(open) {
-    document.getElementById('drawer').classList.toggle('open', open);
-    document.getElementById('drawerOverlay').style.display = open ? 'block' : 'none';
-  }
-
-  async function fetchSurveys() {
-    try {
-      const res = await fetch(GAS_WEB_APP_URL);
-      const rows = await res.json();
-
-      if (Array.isArray(rows)) {
-        renderSurveys(rows);
-      }
-    } catch (e) {
-      console.error("GAS取得エラー:", e);
-    }
-  }
-
-  function renderSurveys(rows) {
-    const preContainer = document.getElementById('preliminaryList');
-    const mainContainer = document.getElementById('mainList');
-
-    preContainer.innerHTML = '';
-    mainContainer.innerHTML = '';
-
-    let totalEarned = 0;
-    let totalPending = 0;
-    let preCount = 0;
-    let mainCount = 0;
-
-    rows.forEach((row, index) => {
-      if (!row.name) return;
-
-      const surveyNum = String(index + 1).padStart(2, '0');
-      const name = String(row.name);
-      const pointRaw = String(row.point || '0'); 
-      const pointVal = parseInt(pointRaw.replace(/[^0-9]/g, '')) || 0;
-      const type = String(row.type);
-      const link = String(row.link);
-      const earnedUsers = String(row.earnedUsers || '');
-      const targetUsers = String(row.targetUsers || '');
-      const limitInfo = String(row.limit || '');
-
-      const isEarnedInSheet = earnedUsers.split(/[、,]/).map(s => s.trim()).includes(userId);
-      if (isEarnedInSheet) {
-        answeredState[name] = 'earned';
-      }
-
-      const currentState = answeredState[name];
-
-      if (currentState === 'earned') {
-        totalEarned += pointVal;
-      } else if (currentState === 'pending') {
-        totalPending += pointVal;
-      }
-
-      if (type === '本') {
-        const isTarget = targetUsers.split(/[、,]/).map(s => s.trim()).includes(userId);
-        if (!isTarget) return;
-      }
-
-      const card = document.createElement('div');
-      card.className = 'survey-card';
-
-      let btnHTML = '';
-      if (currentState === 'earned') {
-        btnHTML = `<button class="btn done" disabled>獲得済み</button>`;
-      } else if (currentState === 'pending') {
-        btnHTML = `<button class="btn pending-btn" disabled>判定中</button>`;
-      } else {
-        btnHTML = `<button class="btn" onclick="confirmStartSurvey('${surveyNum}', '${encodeURIComponent(name)}', '${encodeURIComponent(link)}', '${pointRaw}', ${pointVal}, '${type}')">回答する</button>`;
-      }
-
-      const limitDisplay = limitInfo ? `<span>期限/条件: ${limitInfo}</span>` : '';
-
-      card.innerHTML = `
-        <div class="survey-info">
-          <div class="survey-num">No.${surveyNum}</div>
-          <div class="survey-name">${name}</div>
-          <div class="survey-meta">${limitDisplay}</div>
-          <div class="survey-point">+${pointRaw} pt</div>
-        </div>
-        <div class="survey-action">${btnHTML}</div>
-      `;
-
-      if (type === '事前') {
-        preContainer.appendChild(card);
-        preCount++;
-      } else if (type === '本') {
-        mainContainer.appendChild(card);
-        mainCount++;
-      }
+  <script>
+    // ページ読み込み時にGASからアンケート一覧を取得
+    document.addEventListener('DOMContentLoaded', () => {
+      google.script.run
+        .withSuccessHandler(renderSurveys)
+        .withFailureHandler(handleError)
+        .getSurveys();
     });
 
-    if (preCount === 0) preContainer.innerHTML = '<div style="text-align:center; padding:16px; color:var(--text-sub); font-size:0.85rem;">現在回答可能なアンケートはありません</div>';
-    if (mainCount === 0) mainContainer.innerHTML = '<div style="text-align:center; padding:16px; color:var(--text-sub); font-size:0.85rem;">現在対象のアンケートはありません</div>';
+    function renderSurveys(surveys) {
+      const container = document.getElementById('survey-list');
+      container.innerHTML = '';
 
-    currentEarnedPoints = totalEarned;
-    document.getElementById('earnedPoint').textContent = `${totalEarned} pt`;
-    document.getElementById('earnedYen').textContent = `（${(totalEarned / 10).toLocaleString()} 円相当）`;
-    document.getElementById('pendingPoint').textContent = `${totalPending} pt`;
-    document.getElementById('pendingYen').textContent = `（${(totalPending / 10).toLocaleString()} 円相当）`;
-  }
+      if (!surveys || surveys.length === 0) {
+        container.innerHTML = '<div class="loading">現在回答できるアンケートはありません。</div>';
+        return;
+      }
 
-  function confirmStartSurvey(num, encName, encLink, pointStr, pointVal, type) {
-    if (!userData) {
-      alert('先に初回登録を完了してください。');
-      return;
-    }
-    targetSurveyNum = num;
-    targetSurveyName = decodeURIComponent(encName);
-    targetSurveyLink = decodeURIComponent(encLink);
-    targetSurveyPointStr = pointStr;
-    targetSurveyPointVal = pointVal;
-    targetSurveyType = type;
+      surveys.forEach(survey => {
+        const card = document.createElement('div');
+        card.className = 'survey-card';
 
-    document.getElementById('dialogUserId').textContent = userId;
-    document.getElementById('alertDialogOverlay').style.display = 'block';
-  }
+        // 種別バッジ（「本」または「事前」）
+        const typeBadgeClass = survey.type === '本' ? 'badge-hon' : 'badge-jizen';
+        let badgesHtml = `<span class="badge ${typeBadgeClass}">${survey.type}</span>`;
 
-  function closeAlertDialog() {
-    document.getElementById('alertDialogOverlay').style.display = 'none';
-  }
+        // 即Pバッジ
+        if (survey.isInstant) {
+          badgesHtml += `<span class="badge badge-instant">即P</span>`;
+        }
 
-  function startSurvey() {
-    closeAlertDialog();
+        // 期限バッジ
+        if (survey.deadline) {
+          badgesHtml += `<span class="badge badge-deadline">期限: ${escapeHtml(survey.deadline)}</span>`;
+        }
 
-    document.getElementById('modalSurveyTitle').textContent = `No.${targetSurveyNum} ${targetSurveyName}`;
-    document.getElementById('modalSurveyPoint').textContent = targetSurveyPointStr;
+        // メタ情報（獲得者 / 対象者）
+        let metaHtml = '';
+        if (survey.pointEarners || survey.targetUsers) {
+          metaHtml = `<div class="survey-meta">`;
+          if (survey.pointEarners) {
+            metaHtml += `<div class="meta-row"><span class="meta-label">ポイント獲得者:</span> <span>${escapeHtml(survey.pointEarners)}</span></div>`;
+          }
+          if (survey.targetUsers) {
+            metaHtml += `<div class="meta-row"><span class="meta-label">本アンケート対象者:</span> <span>${escapeHtml(survey.targetUsers)}</span></div>`;
+          }
+          metaHtml += `</div>`;
+        }
 
-    isFrameLoaded = false;
-    const iframe = document.getElementById('surveyIframe');
-    iframe.src = targetSurveyLink;
+        // リンクボタンの有無
+        const linkBtnHtml = survey.link
+          ? `<a href="${escapeHtml(survey.link)}" target="_blank" class="btn-answer">回答する</a>`
+          : `<span style="color:#aaa; font-size:0.85rem;">準備中</span>`;
 
-    document.getElementById('answerModal').style.display = 'flex';
-  }
+        card.innerHTML = `
+          <div class="card-header">
+            ${badgesHtml}
+          </div>
+          <div class="survey-title">${escapeHtml(survey.title)}</div>
+          ${metaHtml}
+          <div class="survey-footer">
+            <div class="points-info">
+              <span class="points-val">${escapeHtml(survey.points)}</span>
+              <span class="yen-val">(${escapeHtml(survey.yenValue)})</span>
+            </div>
+            ${linkBtnHtml}
+          </div>
+        `;
 
-  function closeAnswerModal() {
-    document.getElementById('answerModal').style.display = 'none';
-    document.getElementById('surveyIframe').src = 'about:blank';
-    isFrameLoaded = false;
-  }
-
-  function onSurveyFormSubmitted() {
-    closeAnswerModal();
-
-    const isInstant = targetSurveyType === '事前' && targetSurveyPointStr.startsWith('即');
-
-    if (isInstant) {
-      showStatusModal(`
-        <h3>自動判定中 <span class="spinner"></span></h3>
-        <p>回答の送信を確認しました。<br>照合を行なっています...</p>
-      `);
-
-      setTimeout(() => {
-        answeredState[targetSurveyName] = 'earned';
-        localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
-        
-        showStatusModal(`
-          <h3 style="color:var(--accent);">反映完了！</h3>
-          <p>保有ポイントに <b>+${targetSurveyPointVal} pt</b> が自動反映されました！</p>
-          <button class="btn-dialog-yes" style="width:100%; margin-top:12px;" onclick="closeStatusModal()">閉じる</button>
-        `);
-        fetchSurveys();
-      }, 2500);
-
-    } else {
-      answeredState[targetSurveyName] = 'pending';
-      localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
-
-      showStatusModal(`
-        <h3>回答送信完了</h3>
-        <p>回答を確認しました。<br>ステータスを「<b>判定中</b>」へ更新しました。</p>
-        <button class="btn-dialog-yes" style="width:100%; margin-top:12px;" onclick="closeStatusModal()">OK</button>
-      `);
-      fetchSurveys();
-    }
-  }
-
-  function showStatusModal(htmlContent) {
-    document.getElementById('statusModalContent').innerHTML = htmlContent;
-    document.getElementById('statusModalOverlay').style.display = 'block';
-  }
-
-  function closeStatusModal() {
-    document.getElementById('statusModalOverlay').style.display = 'none';
-  }
-
-  function openExchangeModal() {
-    toggleDrawer(false);
-    showStatusModal(`
-      <h3>ポイント交換申請</h3>
-      <p style="text-align:center; font-size:0.8rem; margin-bottom:12px;">ご希望の交換方法を選択してください。<br>（交換可能: <b>${currentEarnedPoints} pt</b>）</p>
-      
-      <button class="exchange-option-btn" onclick="promptExchangeAmount('AmazonGift')">・AmazonGift（受付中）</button>
-      <button class="exchange-option-btn" onclick="promptExchangeAmount('PayPal')">・PayPal（受付中）</button>
-      <button class="exchange-option-btn" onclick="promptExchangeAmount('PayPay')">・PayPay（受付中）</button>
-      <button class="exchange-option-btn disabled" disabled>・自動販売機券（10月解禁）</button>
-      <button class="exchange-option-btn disabled" disabled>・ローソン買い物券（対象外）</button>
-      <button class="exchange-option-btn disabled" disabled>・ファミリーマート買い物券（対象外）</button>
-
-      <button class="btn-dialog-no" style="width:100%; margin-top:12px;" onclick="closeStatusModal()">キャンセル</button>
-    `);
-  }
-
-  function promptExchangeAmount(method) {
-    if (currentEarnedPoints <= 0) {
-      alert("交換可能な獲得ポイントがありません。");
-      return;
+        container.appendChild(card);
+      });
     }
 
-    const input = prompt(`【${method}へ交換】\n交換希望ポイント数を入力してください。\n（上限: ${currentEarnedPoints} pt）`, currentEarnedPoints);
-    if (input === null) return;
-
-    const exchangePt = parseInt(input, 10);
-
-    if (isNaN(exchangePt) || exchangePt <= 0) {
-      alert("正しいポイント数を数字で入力してください。");
-      return;
+    function handleError(error) {
+      const container = document.getElementById('survey-list');
+      container.innerHTML = `<div class="loading" style="color:red;">データの取得に失敗しました。<br>${escapeHtml(error.message)}</div>`;
     }
 
-    if (exchangePt > currentEarnedPoints) {
-      alert(`交換申請できるポイントは保有ポイント(${currentEarnedPoints} pt)以下です。`);
-      return;
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     }
+  </script>
 
-    sendExchangeEmail(method, exchangePt);
-  }
-
-  function sendExchangeEmail(method, exchangePt) {
-    const yenAmount = (exchangePt / 10).toLocaleString();
-    const subject = encodeURIComponent(`【クロワルモニター】ポイント交換申請 (${method})`);
-    const body = encodeURIComponent(`クロワルモニター運営御中\n\nポイント交換を申請します。\n\n・モニター番号：${userId}\n・希望交換先：${method}\n・申請ポイント：${exchangePt} pt（${yenAmount} 円相当）\n・現在の保有獲得ポイント：${currentEarnedPoints} pt\n\nご確認のほどよろしくお願いいたします。`);
-    
-    window.location.href = `mailto:sixyami67@gmail.com?subject=${subject}&body=${body}`;
-    closeStatusModal();
-  }
-</script>
 </body>
 </html>
