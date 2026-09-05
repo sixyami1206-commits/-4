@@ -3,261 +3,766 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base target="_top">
   <title>クロワルモニター</title>
+  
+  <!-- フォント・アイコン読み込み -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
+    /* ==========================================================================
+       1. 基本スタイル & CSS変数
+       ========================================================================== */
     :root {
-      --primary-color: #007bff;
-      --bg-color: #f4f6f9;
+      --primary-color: #1b4332;       /* 深みのある高級感あるグリーン */
+      --primary-hover: #2d6a4f;
+      --accent-color: #d97706;        /* ポイント強調用アンバー */
+      --instant-color: #dc2626;       /* 即P強調用レッド */
+      --bg-color: #f1f5f9;
       --card-bg: #ffffff;
-      --text-color: #333333;
-      --sub-text: #666666;
-      --instant-color: #ff4757;
-      --hon-color: #2ed573;
-      --jizen-color: #70a1ff;
+      --text-main: #0f172a;
+      --text-sub: #64748b;
+      --border-color: #e2e8f0;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 16px;
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 20px 12px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    .container {
-      max-width: 600px;
+    /* ==========================================================================
+       2. レイアウト & コンテナ
+       ========================================================================== */
+    .app-container {
+      width: 100%;
+      max-width: 520px;
       margin: 0 auto;
     }
 
-    header {
+    .header-logo {
       text-align: center;
+      margin-bottom: 24px;
+    }
+    .header-logo h1 {
+      font-size: 1.6em;
+      font-weight: 900;
+      color: var(--primary-color);
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      padding: 24px 20px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
       margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
     }
 
-    h1 {
-      font-size: 1.5rem;
-      margin: 0 0 10px 0;
-      color: #1e272e;
+    /* アニメーション */
+    .fade-in {
+      animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .loading {
+    /* ==========================================================================
+       3. フォームUI
+       ========================================================================== */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85em;
+      font-weight: 700;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+    }
+    .input-wrapper {
+      position: relative;
+    }
+    .input-wrapper i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 0.9em;
+    }
+    input[type="text"], select {
+      width: 100%;
+      padding: 12px 14px 12px 40px;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      color: var(--text-main);
+      background-color: #f8fafc;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    input[type="text"]:focus, select:focus {
+      border-color: var(--primary-color);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(27, 67, 50, 0.1);
+    }
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%3a94a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--primary-color);
+      color: #ffffff;
+      border: none;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #475569;
+      border: none;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+
+    /* ==========================================================================
+       4. マイページ / ダッシュボード
+       ========================================================================== */
+    .user-profile-card {
+      background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
+      color: #ffffff;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+    .user-profile-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 200px;
+      height: 200px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .profile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .profile-header .user-name {
+      font-size: 1.1em;
+      font-weight: 700;
+    }
+    .profile-header .user-id {
+      font-size: 0.8em;
+      opacity: 0.8;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .stat-box {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      padding: 12px;
+      border-radius: var(--radius-md);
       text-align: center;
-      padding: 40px 0;
-      color: var(--sub-text);
-      font-weight: bold;
+    }
+    .stat-label {
+      font-size: 0.75em;
+      opacity: 0.85;
+      margin-bottom: 2px;
+    }
+    .stat-value {
+      font-size: 1.4em;
+      font-weight: 900;
+      color: #fef08a;
+    }
+    .stat-sub {
+      font-size: 0.7em;
+      opacity: 0.9;
+      color: #e2e8f0;
+    }
+
+    /* ==========================================================================
+       5. アンケートカード一覧
+       ========================================================================== */
+    .section-title {
+      font-size: 1.1em;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     .survey-card {
-      background: var(--card-bg);
-      border-radius: 12px;
+      background: #ffffff;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
       padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      margin-bottom: 14px;
+      transition: all 0.25 ease;
+      position: relative;
+    }
+    .survey-card:hover {
+      border-color: #94a3b8;
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
     }
 
-    .card-header {
+    /* 「本アンケート」強調表現 */
+    .survey-card.main-survey {
+      border-color: var(--accent-color);
+      background: #fffdfa;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.1);
+    }
+    .survey-card.main-survey::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 6px;
+      height: 100%;
+      background: var(--accent-color);
+      border-top-left-radius: var(--radius-md);
+      border-bottom-left-radius: var(--radius-md);
+    }
+
+    .survey-header {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      align-items: flex-start;
+      gap: 6px;
       flex-wrap: wrap;
+      margin-bottom: 8px;
     }
 
+    /* バッジ */
     .badge {
-      font-size: 0.75rem;
-      font-weight: bold;
-      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 7px;
       border-radius: 4px;
-      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
-
-    .badge-hon {
-      background-color: var(--hon-color);
+    .badge-type {
+      background: #64748b;
+      color: #ffffff;
     }
-
-    .badge-jizen {
-      background-color: var(--jizen-color);
+    .badge-type.main {
+      background: var(--accent-color);
+      color: #ffffff;
     }
-
     .badge-instant {
-      background-color: var(--instant-color);
+      background: var(--instant-color);
+      color: #ffffff;
+      animation: pulse 2s infinite;
     }
-
-    .badge-deadline {
-      background-color: #ffa502;
-      margin-left: auto;
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.8; }
+      100% { opacity: 1; }
     }
 
     .survey-title {
-      font-size: 1.05rem;
-      font-weight: bold;
-      margin: 4px 0;
+      font-size: 0.95em;
+      font-weight: 700;
+      color: var(--text-main);
       line-height: 1.4;
+      margin-bottom: 10px;
+      word-break: break-all;
     }
 
-    .survey-meta {
-      font-size: 0.85rem;
-      color: var(--sub-text);
-      background-color: #f8f9fa;
+    .survey-rewards {
+      background: #f8fafc;
+      border-radius: var(--radius-sm);
       padding: 8px 12px;
-      border-radius: 6px;
       display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .meta-row {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .meta-label {
-      font-weight: bold;
-    }
-
-    .survey-footer {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-top: 8px;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .reward-pts {
+      font-size: 1.1em;
+      font-weight: 900;
+      color: var(--accent-color);
+    }
+    .reward-yen {
+      font-size: 0.85em;
+      font-weight: 700;
+      color: #059669;
     }
 
-    .points-info {
+    .survey-meta-list {
+      font-size: 0.75em;
+      color: var(--text-sub);
+      margin-bottom: 12px;
+      border-top: 1px dashed var(--border-color);
+      padding-top: 8px;
+    }
+    .survey-meta-item {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: 6px;
+      margin-bottom: 3px;
     }
 
-    .points-val {
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: var(--instant-color);
-    }
-
-    .yen-val {
-      font-size: 0.85rem;
-      color: var(--sub-text);
-    }
-
-    .btn-answer {
-      display: inline-block;
-      background-color: var(--primary-color);
-      color: #fff;
+    .btn-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      background: #2563eb;
+      color: #ffffff;
       text-decoration: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 0.9rem;
-      transition: background-color 0.2s;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+    .btn-action:hover {
+      background: #1d4ed8;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
     }
 
-    .btn-answer:hover {
-      background-color: #0056b3;
+    /* 読み込み中・エラー・空表示 */
+    .status-box {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-sub);
+    }
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid var(--primary-color);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .hidden { display: none !important; }
+    .text-center { text-align: center; }
+    .link-footer {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-size: 0.85em;
+      font-weight: 700;
+      display: inline-block;
+      margin-top: 12px;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <header>
-      <h1>クロワルモニター</h1>
-    </header>
-
-    <div id="survey-list">
-      <div class="loading">アンケート一覧を読み込み中...</div>
+  <div class="app-container">
+    <!-- ロゴヘッダー -->
+    <div class="header-logo">
+      <h1><i class="fa-solid fa-clipboard-check"></i> クロワルモニター</h1>
     </div>
+
+    <!-- 1. ログインカード -->
+    <div id="login-section" class="card fade-in">
+      <h2 style="font-size: 1.1em; font-weight:700; margin-bottom: 6px;">ログイン</h2>
+      <p style="font-size: 0.75em; color: #ef4444; margin-bottom: 16px;">
+        <i class="fa-solid fa-triangle-exclamation"></i> リニューアルに伴い再認証が必要です
+      </p>
+
+      <div class="form-group">
+        <label>モニター番号</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-id-card"></i>
+          <input type="text" id="login-id" placeholder="例: M-1002">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>登録名</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-user"></i>
+          <input type="text" id="login-name" placeholder="例: 山田太郎">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>都道府県</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-location-dot"></i>
+          <input type="text" id="login-pref" placeholder="例: 東京都">
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="handleLogin()">
+        <span>認証してログイン</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+
+      <div class="text-center">
+        <a href="#" class="link-footer" onclick="toggleView('register')">新規モニター登録はこちら</a>
+      </div>
+    </div>
+
+    <!-- 2. 新規登録カード -->
+    <div id="register-section" class="card fade-in hidden">
+      <h2 style="font-size: 1.1em; font-weight:700; margin-bottom: 16px;">新規モニター登録</h2>
+
+      <div class="form-group">
+        <label>希望のモニター番号</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-id-card"></i>
+          <input type="text" id="reg-id" placeholder="任意の番号・文字列">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>お名前</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-user"></i>
+          <input type="text" id="reg-name" placeholder="例: 山田太郎">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>都道府県</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-location-dot"></i>
+          <input type="text" id="reg-pref" placeholder="例: 大阪府">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>年齢層</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-users"></i>
+          <select id="reg-age">
+            <option value="">選択してください</option>
+            <option value="10-20">10〜20代</option>
+            <option value="30-50">30〜50代</option>
+            <option value="50-55">50〜55歳</option>
+            <option value="60-70">60〜70代</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="handleRegister()">
+        <span>会員登録を実行</span>
+        <i class="fa-solid fa-check"></i>
+      </button>
+
+      <div class="text-center">
+        <a href="#" class="link-footer" onclick="toggleView('login')">ログイン画面に戻る</a>
+      </div>
+    </div>
+
+    <!-- 3. メインアプリ（マイページ & アンケート） -->
+    <div id="app-section" class="hidden fade-in">
+      
+      <!-- ユーザープロファイルダッシュボード -->
+      <div class="user-profile-card">
+        <div class="profile-header">
+          <div>
+            <span class="user-name" id="user-name">読み込み中...</span> 様
+          </div>
+          <span class="user-id" id="user-id">ID: ---</span>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">現在の保有ポイント</div>
+            <div class="stat-value"><span id="user-points">0</span> <span style="font-size:0.5em;">pt</span></div>
+            <div class="stat-sub" id="user-yen">（0円相当）</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">累計アンケート回答数</div>
+            <div class="stat-value" id="user-count">0</div>
+            <div class="stat-sub">回完了</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px; text-align: right;">
+          <button class="btn-secondary" onclick="handleLogout()">
+            <i class="fa-solid fa-right-from-bracket"></i> ログアウト
+          </button>
+        </div>
+      </div>
+
+      <!-- アンケート一覧セクション -->
+      <div class="section-title">
+        <span><i class="fa-solid fa-list-check" style="color:var(--primary-color);"></i> 受信したアンケート</span>
+        <button class="btn-secondary" onclick="loadSurveys()" style="padding: 4px 8px; font-size:11px;">
+          <i class="fa-solid fa-rotate"></i> 更新
+        </button>
+      </div>
+
+      <div id="survey-list">
+        <!-- JS動的挿入箇所 -->
+      </div>
+    </div>
+
   </div>
 
+  <!-- JavaScript ロジック -->
   <script>
-    // ページ読み込み時にGASからアンケート一覧を取得
-    document.addEventListener('DOMContentLoaded', () => {
-      google.script.run
-        .withSuccessHandler(renderSurveys)
-        .withFailureHandler(handleError)
-        .getSurveys();
-    });
+    // サイトリニューアル管理バージョン（ローカルキャッシュクリア用）
+    const SITE_VERSION = 'v4.0_final';
 
-    function renderSurveys(surveys) {
-      const container = document.getElementById('survey-list');
-      container.innerHTML = '';
+    window.onload = function() {
+      // 過去バージョンのキャッシュ破棄処理
+      if (localStorage.getItem('kurowaru_ver') !== SITE_VERSION) {
+        localStorage.removeItem('kurowaru_user');
+        localStorage.setItem('kurowaru_ver', SITE_VERSION);
+      }
 
-      if (!surveys || surveys.length === 0) {
-        container.innerHTML = '<div class="loading">現在回答できるアンケートはありません。</div>';
+      // 自動ログイン判定
+      const savedUser = JSON.parse(localStorage.getItem('kurowaru_user'));
+      if (savedUser) {
+        autoLogin(savedUser);
+      }
+    };
+
+    // 画面切り替え
+    function toggleView(viewName) {
+      document.getElementById('login-section').classList.add('hidden');
+      document.getElementById('register-section').classList.add('hidden');
+      document.getElementById('app-section').classList.add('hidden');
+
+      if (viewName === 'login') {
+        document.getElementById('login-section').classList.remove('hidden');
+      } else if (viewName === 'register') {
+        document.getElementById('register-section').classList.remove('hidden');
+      } else if (viewName === 'app') {
+        document.getElementById('app-section').classList.remove('hidden');
+      }
+    }
+
+    // 会員登録
+    function handleRegister() {
+      const data = {
+        monitorId: document.getElementById('reg-id').value.trim(),
+        name: document.getElementById('reg-name').value.trim(),
+        prefecture: document.getElementById('reg-pref').value.trim(),
+        ageGroup: document.getElementById('reg-age').value
+      };
+
+      if (!data.monitorId || !data.name || !data.prefecture || !data.ageGroup) {
+        alert('すべての項目を入力してください。');
         return;
       }
 
-      surveys.forEach(survey => {
-        const card = document.createElement('div');
-        card.className = 'survey-card';
-
-        // 種別バッジ（「本」または「事前」）
-        const typeBadgeClass = survey.type === '本' ? 'badge-hon' : 'badge-jizen';
-        let badgesHtml = `<span class="badge ${typeBadgeClass}">${survey.type}</span>`;
-
-        // 即Pバッジ
-        if (survey.isInstant) {
-          badgesHtml += `<span class="badge badge-instant">即P</span>`;
-        }
-
-        // 期限バッジ
-        if (survey.deadline) {
-          badgesHtml += `<span class="badge badge-deadline">期限: ${escapeHtml(survey.deadline)}</span>`;
-        }
-
-        // メタ情報（獲得者 / 対象者）
-        let metaHtml = '';
-        if (survey.pointEarners || survey.targetUsers) {
-          metaHtml = `<div class="survey-meta">`;
-          if (survey.pointEarners) {
-            metaHtml += `<div class="meta-row"><span class="meta-label">ポイント獲得者:</span> <span>${escapeHtml(survey.pointEarners)}</span></div>`;
-          }
-          if (survey.targetUsers) {
-            metaHtml += `<div class="meta-row"><span class="meta-label">本アンケート対象者:</span> <span>${escapeHtml(survey.targetUsers)}</span></div>`;
-          }
-          metaHtml += `</div>`;
-        }
-
-        // リンクボタンの有無
-        const linkBtnHtml = survey.link
-          ? `<a href="${escapeHtml(survey.link)}" target="_blank" class="btn-answer">回答する</a>`
-          : `<span style="color:#aaa; font-size:0.85rem;">準備中</span>`;
-
-        card.innerHTML = `
-          <div class="card-header">
-            ${badgesHtml}
-          </div>
-          <div class="survey-title">${escapeHtml(survey.title)}</div>
-          ${metaHtml}
-          <div class="survey-footer">
-            <div class="points-info">
-              <span class="points-val">${escapeHtml(survey.points)}</span>
-              <span class="yen-val">(${escapeHtml(survey.yenValue)})</span>
-            </div>
-            ${linkBtnHtml}
-          </div>
-        `;
-
-        container.appendChild(card);
-      });
+      google.script.run.withSuccessHandler(res => {
+        alert(res.message);
+        if (res.success) toggleView('login');
+      }).registerUser(data);
     }
 
-    function handleError(error) {
+    // ログイン処理
+    function handleLogin() {
+      const id = document.getElementById('login-id').value.trim();
+      const name = document.getElementById('login-name').value.trim();
+      const pref = document.getElementById('login-pref').value.trim();
+
+      if (!id || !name || !pref) {
+        alert('すべての項目を入力してください。');
+        return;
+      }
+
+      google.script.run.withSuccessHandler(res => {
+        if (res.success) {
+          localStorage.setItem('kurowaru_user', JSON.stringify(res.user));
+          renderDashboard(res.user);
+          toggleView('app');
+        } else {
+          alert(res.message);
+        }
+      }).loginUser(id, name, pref);
+    }
+
+    // 自動ログイン
+    function autoLogin(user) {
+      google.script.run.withSuccessHandler(res => {
+        if (res.success) {
+          localStorage.setItem('kurowaru_user', JSON.stringify(res.user));
+          renderDashboard(res.user);
+          toggleView('app');
+        } else {
+          localStorage.removeItem('kurowaru_user');
+          toggleView('login');
+        }
+      }).loginUser(user.monitorId, user.name, user.prefecture);
+    }
+
+    // ログアウト
+    function handleLogout() {
+      localStorage.removeItem('kurowaru_user');
+      location.reload();
+    }
+
+    // ダッシュボード更新
+    function renderDashboard(user) {
+      document.getElementById('user-id').innerText = `ID: ${user.monitorId}`;
+      document.getElementById('user-name').innerText = user.name;
+      document.getElementById('user-points').innerText = Number(user.points).toLocaleString();
+      
+      // 10pt = 1円換算
+      const yen = Math.floor(Number(user.points) / 10).toLocaleString();
+      document.getElementById('user-yen').innerText = `（${yen}円相当）`;
+      document.getElementById('user-count').innerText = user.responseCount;
+
+      loadSurveys();
+    }
+
+    // アンケート一覧取得・描画
+    function loadSurveys() {
       const container = document.getElementById('survey-list');
-      container.innerHTML = `<div class="loading" style="color:red;">データの取得に失敗しました。<br>${escapeHtml(error.message)}</div>`;
-    }
+      container.innerHTML = `
+        <div class="status-box">
+          <div class="spinner"></div>
+          <p style="font-size:0.85em;">アンケートを取得中...</p>
+        </div>
+      `;
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+      google.script.run.withSuccessHandler(surveys => {
+        container.innerHTML = '';
+
+        if (!surveys || surveys.length === 0) {
+          container.innerHTML = `
+            <div class="status-box">
+              <i class="fa-regular fa-folder-open" style="font-size: 2em; margin-bottom: 8px;"></i>
+              <p style="font-size:0.85em;">現在回答可能なアンケートはありません。</p>
+            </div>
+          `;
+          return;
+        }
+
+        surveys.forEach(s => {
+          const isMain = s.type === '本';
+          const card = document.createElement('div');
+          card.className = `survey-card ${isMain ? 'main-survey' : ''}`;
+
+          // 【即P】除去タイトルとバッジ定義
+          const cleanTitle = s.title.replace('【即P】', '').trim();
+          const instantBadge = s.isInstant ? `<span class="badge badge-instant"><i class="fa-solid fa-bolt"></i> 即時付与</span>` : '';
+          const typeBadge = `<span class="badge badge-type ${isMain ? 'main' : ''}">${s.type || '事前'}</span>`;
+
+          // メタデータ設定
+          let metaHtml = '';
+          if (s.deadline || s.targetUsers || s.pointEarners) {
+            metaHtml = '<div class="survey-meta-list">';
+            if (s.deadline) metaHtml += `<div class="survey-meta-item"><i class="fa-regular fa-clock"></i> 期限: ${s.deadline}</div>`;
+            if (s.targetUsers) metaHtml += `<div class="survey-meta-item"><i class="fa-solid fa-bullseye"></i> 対象: ${s.targetUsers}</div>`;
+            if (s.pointEarners) metaHtml += `<div class="survey-meta-item"><i class="fa-solid fa-trophy"></i> 獲得者: ${s.pointEarners}</div>`;
+            metaHtml += '</div>';
+          }
+
+          // リンクボタン
+          const actionBtn = s.link ? `
+            <a href="${s.link}" target="_blank" rel="noopener noreferrer" class="btn-action">
+              <span>アンケートに回答する</span>
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+          ` : '';
+
+          card.innerHTML = `
+            <div class="survey-header">
+              ${instantBadge}
+              ${typeBadge}
+            </div>
+            <div class="survey-title">${cleanTitle}</div>
+            <div class="survey-rewards">
+              <div class="reward-pts"><i class="fa-solid fa-coins"></i> ${s.points}</div>
+              <div class="reward-yen">${s.yenValue}</div>
+            </div>
+            ${metaHtml}
+            ${actionBtn}
+          `;
+
+          container.appendChild(card);
+        });
+      }).getSurveys();
     }
   </script>
-
 </body>
 </html>
