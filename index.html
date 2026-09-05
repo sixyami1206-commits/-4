@@ -72,12 +72,20 @@
 
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; justify-content: center; align-items: center; z-index: 300; padding: 16px; }
     .modal { background: #ffffff; border-radius: 16px; padding: 20px; max-width: 500px; width: 100%; text-align: center; box-shadow: var(--shadow-lg); border: 1px solid var(--card-border); }
-    .survey-iframe-container { width: 100%; height: 55vh; border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+    .survey-iframe-container { width: 100%; height: 50vh; border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden; margin-bottom: 12px; }
     .survey-iframe-container iframe { width: 100%; height: 100%; border: none; }
+
+    /* チェックボックスとボタンの制御エリア */
+    .submit-check-area {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-bottom: 12px; font-size: 0.85rem; font-weight: 700; color: var(--text);
+    }
+    .submit-check-area input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 
     .modal-btn-group { display: flex; gap: 10px; }
     .modal-btn-group button { flex: 1; padding: 12px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer; }
-    .btn-submit-done { background: var(--primary); color: #fff; }
+    .btn-submit-done { background: var(--primary); color: #fff; transition: all 0.2s; }
+    .btn-submit-done:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
     .btn-cancel { background: #e2e8f0; color: var(--text-sub); }
 
     .spinner { width: 40px; height: 40px; border: 4px solid #e0f2fe; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto; }
@@ -157,7 +165,6 @@
   </div>
 
 <script>
-  // 最新のGAS Web App URLを組み込み済み
   const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyTAYsfiGOhOmz1S_9QZVFldbL0DghQ4CTsl0Gygv_E27PALgdioVXU0QbR1GbmH3QG/exec';
 
   let userData = JSON.parse(localStorage.getItem('crawl_user_data')) || null;
@@ -179,7 +186,7 @@
   window.addEventListener('DOMContentLoaded', () => {
     checkRegistration();
     fetchSurveys();
-    setInterval(fetchSurveys, 8000);
+    setInterval(fetchSurveys, 5000); // 5秒ごとにスプレッドシートの反映状況を確認
   });
 
   function checkRegistration() {
@@ -264,14 +271,18 @@
       const earnedUsers = row.earnedUsers || '';
       const targetUsers = row.targetUsers || '';
 
+      // スプレッドシートのE欄にユーザーIDがあれば確実に「獲得済み」
       const isEarned = earnedUsers.split(/[、,]/).map(s => s.trim()).includes(userId);
-      if (isEarned) answeredState[name] = 'earned';
+      if (isEarned) {
+        answeredState[name] = 'earned';
+      }
 
       const currentState = answeredState[name];
 
       if (currentState === 'earned') totalEarned += point;
       else if (currentState === 'pending') totalPending += point;
 
+      // 本アンケートの判定：F欄に含まれていない場合は非表示
       if (type === '本') {
         const isTarget = targetUsers.split(/[、,]/).map(s => s.trim()).includes(userId);
         if (!isTarget) return;
@@ -314,6 +325,7 @@
     document.getElementById('pendingPoint').textContent = `${totalPending} pt`;
   }
 
+  // モーダルオープン（Submitチェックボックス制御機能付き）
   function openSurveyModal(encName, encLink) {
     if (!userData) {
       alert('先に初回登録を完了してください。');
@@ -327,39 +339,45 @@
       <div class="survey-iframe-container">
         <iframe src="${link}"></iframe>
       </div>
+      <div class="submit-check-area">
+        <input type="checkbox" id="submitCheck" onchange="toggleDoneButton()">
+        <label for="submitCheck">フォームで送信（Submit）を完了しました</label>
+      </div>
       <div class="modal-btn-group">
         <button class="btn-cancel" onclick="closeModal()">回答をやめる</button>
-        <button class="btn-submit-done" onclick="finishSurvey('${encodeURIComponent(name)}')">回答完了（Submit後に押す）</button>
+        <button class="btn-submit-done" id="btnDone" disabled onclick="finishSurvey('${encodeURIComponent(name)}')">回答完了</button>
       </div>
     `;
     document.getElementById('confirmModal').style.display = 'flex';
+  }
+
+  // チェックボックスで回答完了ボタンを有効化/グレーアウト切替
+  function toggleDoneButton() {
+    const isChecked = document.getElementById('submitCheck').checked;
+    document.getElementById('btnDone').disabled = !isChecked;
   }
 
   function closeModal() {
     document.getElementById('confirmModal').style.display = 'none';
   }
 
+  // 回答完了の実行（ローカル状態を即座に「判定中」にして画面反映）
   function finishSurvey(encName) {
     const name = decodeURIComponent(encName);
+    
+    // ステータスを「判定中」として保存
     answeredState[name] = 'pending';
     localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
 
+    // GASへPOST送信
     fetch(GAS_WEB_APP_URL, {
       method: 'POST',
       mode: 'no-cors',
       body: JSON.stringify({ userId: userId, surveyName: name })
     });
 
-    document.getElementById('modalTitle').textContent = "判定処理中";
-    document.getElementById('modalBody').innerHTML = `
-      <div class="spinner"></div>
-      <p style="color: var(--primary); font-weight: bold;">自動判定を行なっています...</p>
-    `;
-
-    setTimeout(() => {
-      closeModal();
-      fetchSurveys();
-    }, 1500);
+    closeModal();
+    fetchSurveys(); // 即時UI再描写
   }
 
   function openExchangeModal() {
@@ -402,7 +420,7 @@
       body: JSON.stringify({ action: 'exchange', userId: userId, points: amount })
     });
 
-    alert('交換申請を受け付けました！確認後、反映処理が行われます。');
+    alert('交換申請を受け付けました！');
     closeModal();
   }
 </script>
