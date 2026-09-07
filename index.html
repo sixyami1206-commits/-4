@@ -3,573 +3,520 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>CrawlMonita</title>
+  <title>ネットスーパーセンター</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
     :root {
-      --bg: #f8fafc;
+      --primary: #059669;
+      --primary-hover: #047857;
+      --bg-color: #f0fdf4;
       --card-bg: #ffffff;
-      --card-border: #e2e8f0;
-      --accent: #2563eb;
-      --accent-glow: rgba(37, 99, 235, 0.08);
-      --text-main: #0f172a;
-      --text-sub: #64748b;
-      --point-color: #d97706;
-      --danger: #dc2626;
-      --radius: 16px;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
+      --text-main: #1f2937;
+      --text-sub: #6b7280;
+      --accent-red: #ef4444;
+      --border-color: #e5e7eb;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
-    body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding-bottom: 40px;
+      -webkit-text-size-adjust: 100%;
+    }
 
-    /* ヘッダー */
+    /* ヘッダー（スマホ対応） */
     header {
-      background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--card-border); padding: 18px 24px;
-      display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
+      background: var(--card-bg);
+      border-bottom: 2px solid #d1fae5;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
-    .logo-title { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-main); }
+    .logo { font-size: 0.95rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 4px; }
+    .nav-btn {
+      background: #ecfdf5; color: var(--primary);
+      border: 1px solid #a7f3d0; padding: 6px 10px;
+      border-radius: 16px; font-weight: 600; cursor: pointer;
+      font-size: 0.75rem; white-space: nowrap;
+    }
+
+    .container { max-width: 800px; margin: 10px auto; padding: 0 8px; }
+
+    /* コンパクトカード */
+    .card {
+      background: var(--card-bg); border-radius: 12px;
+      padding: 12px; margin-bottom: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+      border: 1px solid #e5e7eb;
+    }
+    .card-title {
+      font-size: 0.95rem; font-weight: 700; color: var(--primary);
+      margin-top: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+      border-bottom: 2px solid #ecfdf5; padding-bottom: 6px;
+    }
+
+    /* 商品リスト（超小型・極小画面対応） */
+    .product-grid { display: flex; flex-direction: column; gap: 8px; }
+    .product-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #f9fafb;
+      border: 1px solid var(--border-color);
+      gap: 6px;
+    }
+    .product-info { flex: 1; min-width: 0; }
     
-    /* 三本線アイコン（ハンバーガーメニュー） */
-    .menu-btn {
-      background: none; border: none; cursor: pointer; padding: 6px; display: flex; flex-direction: column; gap: 5px;
+    /* 文字数自動調整（長すぎる場合は省略記号...にする） */
+    .product-name {
+      font-weight: 700;
+      font-size: 0.85rem;
+      line-height: 1.2;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: break-all;
     }
-    .menu-btn span { display: block; width: 22px; height: 2px; background-color: var(--text-main); border-radius: 2px; transition: 0.2s; }
-
-    main { flex: 1; padding: 28px 20px; max-width: 520px; margin: 0 auto; width: 100%; }
-
-    /* ポイント表示 */
-    .point-board {
-      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 20px; margin-bottom: 32px;
-      box-shadow: var(--shadow-sm);
-    }
-    .point-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .point-card { text-align: left; }
-    .point-card .label { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; margin-bottom: 4px; letter-spacing: 0.02em; }
-    .point-card .value { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; color: var(--text-main); }
-    .point-card .value.pending { color: var(--point-color); }
-    .point-card .yen-sub { font-size: 0.72rem; color: var(--text-sub); margin-top: 2px; }
-
-    /* セクションタイトル */
-    .section-title { font-size: 0.8rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.08em; margin: 28px 0 14px; }
-
-    .survey-list { display: flex; flex-direction: column; gap: 12px; }
-    .survey-card {
-      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 18px 20px;
-      display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-sm); transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .survey-card:active { transform: scale(0.99); }
-    .survey-info { flex: 1; padding-right: 16px; }
-    .survey-num { font-size: 0.7rem; font-weight: 700; color: var(--accent); margin-bottom: 4px; letter-spacing: 0.05em; }
-    .survey-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main); line-height: 1.4; }
-    .survey-meta { font-size: 0.75rem; color: var(--text-sub); }
-    .survey-point { font-size: 0.85rem; color: var(--accent); font-weight: 700; margin-top: 4px; }
-    
-    .survey-action .btn {
-      background: var(--accent); color: #fff; border: none; padding: 10px 18px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
-    }
-    .survey-action .btn.done { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
-    .survey-action .btn.pending-btn { background: #fef3c7; color: var(--point-color); cursor: not-allowed; }
-
-    /* 全画面モーダル */
-    .full-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 500; display: none; flex-direction: column; }
-    .modal-header { border-bottom: 1px solid var(--card-border); padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
-    .btn-cancel-survey { background: #e2e8f0; border: none; color: var(--text-main); font-weight: 600; padding: 8px 14px; border-radius: 12px; cursor: pointer; font-size: 0.8rem; }
-    .modal-survey-info .title { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
-    .survey-banner { background: #eff6ff; border-bottom: 1px solid #bfdbfe; padding: 10px 16px; text-align: center; font-size: 0.8rem; font-weight: 600; color: var(--accent); }
-    .iframe-wrapper { flex: 1; width: 100%; height: 100%; position: relative; }
-    .iframe-wrapper iframe { width: 100%; height: 100%; border: none; }
-
-    /* ドロワー（右メニュー） */
-    .drawer-overlay, .dialog-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); display: none; z-index: 600; }
-    .drawer {
-      position: fixed; top:0; right:-360px; width:340px; height:100vh; background: #ffffff; border-left: 1px solid var(--card-border); z-index: 601; transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1); padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; box-shadow: -4px 0 24px rgba(0,0,0,0.08);
-    }
-    .drawer.open { right: 0; }
-    .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 16px; }
-    .close-btn { background: none; border: none; font-size: 1.2rem; color: var(--text-sub); cursor: pointer; }
-
-    .drawer-section-title { font-size: 0.75rem; font-weight: 700; color: var(--text-sub); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 10px; }
-
-    /* メニュー内メインアクション：交換ボタン */
-    .menu-exchange-btn {
-      width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 0.9rem; letter-spacing: 0.02em; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    .price-tag { color: var(--primary); font-weight: 800; font-size: 0.95rem; margin-top: 2px; }
+    .coupon-badge {
+      background: var(--accent-red); color: white;
+      font-size: 0.65rem; padding: 1px 4px;
+      border-radius: 4px; font-weight: bold; margin-left: 4px;
     }
 
-    .user-info-card { background: #f8fafc; border: 1px solid var(--card-border); padding: 16px; border-radius: 12px; font-size: 0.85rem; line-height: 1.8; color: var(--text-sub); }
-    .user-info-card strong { color: var(--text-main); }
-    .about-card { background: #f8fafc; border: 1px solid var(--card-border); padding: 16px; border-radius: 12px; font-size: 0.78rem; line-height: 1.6; color: var(--text-sub); }
-    .about-card h4 { font-size: 0.82rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; border-bottom: 1px solid var(--card-border); padding-bottom: 4px; }
+    /* 数量操作・ボタン周り（スマホ用に極小化） */
+    .qty-control { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+    .btn-qty {
+      background: #e5e7eb; border: none;
+      width: 26px; height: 26px; border-radius: 50%;
+      font-weight: bold; font-size: 0.9rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .qty-val { font-weight: bold; width: 18px; text-align: center; font-size: 0.85rem; }
 
-    /* ダイアログ popup */
-    .dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #ffffff; border-radius: var(--radius); padding: 24px; max-width: 380px; width: 88%; z-index: 601; text-align: center; border: 1px solid var(--card-border); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
-    .dialog h3 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; color: var(--text-main); }
-    .dialog p { font-size: 0.82rem; color: var(--text-sub); line-height: 1.6; margin-bottom: 20px; }
-    .dialog-btns { display: flex; gap: 10px; }
-    .dialog-btns button { flex: 1; padding: 12px; border-radius: 10px; font-weight: 600; border: none; cursor: pointer; font-size: 0.85rem; }
-    .btn-dialog-yes { background: var(--accent); color: #fff; }
-    .btn-dialog-no { background: #f1f5f9; color: var(--text-sub); }
+    .btn-add-cart {
+      background: var(--primary); color: white; border: none;
+      padding: 6px 8px; border-radius: 6px; font-size: 0.75rem;
+      font-weight: bold; cursor: pointer; margin-left: 4px; white-space: nowrap;
+    }
 
-    .exchange-option-btn { width: 100%; text-align: left; padding: 12px 14px; margin-bottom: 8px; background: #f8fafc; border: 1px solid var(--card-border); color: var(--text-main); border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
-    .exchange-option-btn.disabled { opacity: 0.4; cursor: not-allowed; background: #f1f5f9; }
+    /* カート表示 */
+    .cart-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px dashed var(--border-color); font-size: 0.85rem;
+    }
+    .btn-remove { color: var(--accent-red); background: none; border: none; cursor: pointer; padding: 4px; }
 
-    .spinner { width: 20px; height: 20px; border: 2px solid #e2e8f0; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    /* 配送オプション */
+    .shipping-options { display: flex; flex-direction: column; gap: 6px; }
+    .shipping-card {
+      border: 1px solid var(--border-color); border-radius: 8px;
+      padding: 8px 10px; cursor: pointer; display: flex; align-items: center;
+      justify-content: space-between; font-size: 0.8rem;
+    }
+    .shipping-card.selected { border-color: var(--primary); background-color: #ecfdf5; }
 
-    .init-survey-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
-    .init-survey-card h2 { font-size: 1rem; color: var(--text-main); margin-bottom: 16px; text-align: center; font-weight: 700; }
-    .form-group { margin-bottom: 14px; text-align: left; }
-    .form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; }
-    .form-group input { width: 100%; padding: 12px; background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; color: var(--text-main); outline: none; }
-    .submit-btn { width: 100%; background: var(--accent); color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+    /* フォーム要素 */
+    label { display: block; font-weight: 600; margin-top: 8px; font-size: 0.8rem; }
+    input[type="text"] {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--border-color);
+      border-radius: 6px; margin-top: 4px; font-size: 0.85rem;
+    }
+
+    /* 合計カウンター */
+    .total-box { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 10px; margin-top: 12px; font-size: 0.85rem; }
+
+    .btn-submit {
+      width: 100%; background: var(--primary); color: white;
+      border: none; padding: 12px; border-radius: 8px;
+      font-size: 0.95rem; font-weight: bold; cursor: pointer; margin-top: 12px;
+    }
+
+    /* モーダル */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); display: none;
+      justify-content: center; align-items: center; z-index: 200;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: white; border-radius: 12px; width: 92%; max-width: 400px;
+      max-height: 80vh; overflow-y: auto; padding: 16px;
+    }
+    .history-card { border-left: 3px solid var(--primary); background: #f9fafb; padding: 8px; border-radius: 4px; margin-bottom: 8px; font-size: 0.8rem; }
   </style>
 </head>
 <body>
 
   <header>
-    <span class="logo-title">CrawlMonita</span>
-    <button class="menu-btn" onclick="toggleDrawer(true)" aria-label="Menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
+    <div class="logo"><i class="fa-solid fa-cart-shopping"></i> ネットスーパー</div>
+    <button class="nav-btn" onclick="openHistoryModal()"><i class="fa-solid fa-clock-rotate-left"></i> 注文履歴</button>
   </header>
 
-  <main>
-    <div class="point-board">
-      <div class="point-grid">
-        <div class="point-card">
-          <div class="label">保有ポイント</div>
-          <div class="value" id="earnedPoint">0 pt</div>
-          <div class="yen-sub" id="earnedYen">（0 円相当）</div>
+  <div class="container">
+
+    <!-- 追跡案内カード -->
+    <div class="card" style="background: #eff6ff; border-color: #bfdbfe;">
+      <div class="card-title" style="color: #1d4ed8; border-color: #dbeafe;">
+        <i class="fa-solid fa-truck-fast"></i> 追跡番号のご確認
+      </div>
+      <p style="font-size: 0.75rem; margin: 0; line-height: 1.4;">
+        注文完了後、画面に追跡番号が即時表示されます。<br>
+        👉 <a href="https://sixyami1206-commits.github.io/rabbitwj/" target="_blank" style="color: #b45309; font-weight: bold;">荷急運輸 追跡確認はこちら</a>
+      </p>
+    </div>
+
+    <!-- 1. 商品一覧 -->
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-store"></i> 商品一覧</div>
+      <div id="product-list" class="product-grid">読み込み中...</div>
+    </div>
+
+    <!-- 2. カートの中身 -->
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-cart-flatbed"></i> カートの中身</div>
+      <div id="cart-list" style="font-size: 0.8rem; color: #888;">カートは空です</div>
+    </div>
+
+    <!-- 3. お届け先・お支払い情報 -->
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-file-pen"></i> ご注文手続き</div>
+
+      <label>お名前</label>
+      <input type="text" id="cust-name" placeholder="例: 山田 太郎">
+
+      <label>お届け先住所</label>
+      <input type="text" id="cust-address" placeholder="例: 東京都渋谷区...">
+
+      <label>配送プラン</label>
+      <div id="shipping-options" class="shipping-options"></div>
+
+      <label>プリペイドカードコード</label>
+      <input type="text" id="prepaid-code" placeholder="例: 1234-5678-XXXX">
+
+      <!-- 会計計算 -->
+      <div class="total-box">
+        <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
+          <span>商品小計:</span><span id="subtotal-val">0円</span>
         </div>
-        <div class="point-card">
-          <div class="label">判定中</div>
-          <div class="value pending" id="pendingPoint">0 pt</div>
-          <div class="yen-sub" id="pendingYen">（0 円相当）</div>
+        <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
+          <span>配送料金:</span><span id="shipping-val">0円</span>
+        </div>
+        <hr style="border:none; border-top: 1px dashed #a7f3d0; margin: 6px 0;">
+        <div style="display:flex; justify-content:space-between; font-size: 1rem; font-weight: bold;">
+          <span>合計:</span><span id="total-val" style="color:var(--primary);">0円</span>
         </div>
       </div>
+
+      <button class="btn-submit" id="order-btn" onclick="submitOrder()">注文を確定する</button>
     </div>
 
-    <div class="init-survey-card" id="initSurveyCard" style="display: none;">
-      <h2>初回モニター登録</h2>
-      <div class="form-group">
-        <label>モニター番号（ID）</label>
-        <input type="text" id="regId" readonly style="opacity:0.7; background:#e2e8f0;">
-      </div>
-      <div class="form-group">
-        <label>お名前</label>
-        <input type="text" id="regName" placeholder="山田 太郎">
-      </div>
-      <div class="form-group">
-        <label>年齢</label>
-        <input type="number" id="regAge" placeholder="25">
-      </div>
-      <div class="form-group">
-        <label>都道府県</label>
-        <input type="text" id="regPref" placeholder="東京都">
-      </div>
-      <button class="submit-btn" onclick="submitInitSurvey()">登録を完了する</button>
-    </div>
+  </div>
 
-    <div class="section-title">事前アンケート</div>
-    <div class="survey-list" id="preliminaryList">
-      <div style="text-align:center; padding:16px; color:var(--text-sub); font-size:0.85rem;">読み込み中...</div>
-    </div>
-
-    <div class="section-title">本アンケート</div>
-    <div class="survey-list" id="mainList">
-      <div style="text-align:center; padding:16px; color:var(--text-sub); font-size:0.85rem;">読み込み中...</div>
-    </div>
-  </main>
-
-  <div class="full-modal" id="answerModal">
-    <div class="modal-header">
-      <button class="btn-cancel-survey" onclick="closeAnswerModal()">回答をやめる</button>
-      <div class="modal-survey-info">
-        <div class="title" id="modalSurveyTitle">アンケート回答</div>
+  <!-- 履歴確認モーダル -->
+  <div class="modal-overlay" id="history-modal">
+    <div class="modal-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+        <h4 style="margin:0; color:var(--primary);"><i class="fa-solid fa-receipt"></i> 注文履歴</h4>
+        <button onclick="closeHistoryModal()" style="border:none; background:none; font-size:1.1rem; cursor:pointer;">×</button>
       </div>
-      <div style="width: 80px;"></div>
-    </div>
-    <div class="survey-banner" id="modalSurveyBanner">
-      送信完了で <span id="modalSurveyPoint">0</span> pt 入ります
-    </div>
-    <div class="iframe-wrapper">
-      <iframe id="surveyIframe" src="about:blank"></iframe>
+      <div id="modal-history-list">履歴はありません</div>
     </div>
   </div>
 
-  <div class="dialog-overlay" id="alertDialogOverlay">
-    <div class="dialog">
-      <h3>回答前のご注意</h3>
-      <p>アンケート回答画面にて<b>モニター番号</b>の入力画面があります。<br><br>あなたのモニター番号：<b id="dialogUserId" style="color:var(--accent); font-size:1.1rem;">---</b><br><br>間違えると報酬が入りませんのでご注意ください。</p>
-      <div class="dialog-btns">
-        <button class="btn-dialog-no" onclick="closeAlertDialog()">キャンセル</button>
-        <button class="btn-dialog-yes" onclick="startSurvey()">回答する</button>
-      </div>
-    </div>
-  </div>
+  <script>
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw6GG7PF9retm2u3J3OaD3k7pX11oUmzToONbFeOUrrRqcCbgrmHysc8O_L93GUVqdM/exec";
 
-  <div class="dialog-overlay" id="statusModalOverlay">
-    <div class="dialog" id="statusModalContent"></div>
-  </div>
+    let itemsData = [];
+    let cart = {};
+    let tempQuantities = {};
+    let selectedShippingFee = 0;
+    let selectedShippingName = "";
 
-  <!-- ドロワー（メニュー） -->
-  <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
-  <div class="drawer" id="drawer">
-    <div class="drawer-header">
-      <strong style="font-size: 1rem;">メニュー</strong>
-      <button class="close-btn" onclick="toggleDrawer(false)">✕</button>
-    </div>
+    window.onload = () => {
+      setupShippingOptions();
+      fetchItems();
+    };
 
-    <!-- ポイント交換ボタン -->
-    <button class="menu-exchange-btn" onclick="openExchangeModal()">ポイント交換申請</button>
+    function setupShippingOptions() {
+      const container = document.getElementById('shipping-options');
+      container.innerHTML = '';
 
-    <div class="drawer-section-title">アカウント情報</div>
-    <div class="user-info-card" id="userInfoDisplay">未登録です</div>
+      const now = new Date();
+      const isWeekend = (now.getDay() === 0 || now.getDay() === 6);
+      const hour = now.getHours();
 
-    <div class="drawer-section-title">クロワルモニターについて</div>
-    <div class="about-card">
-      <p>アンケート内容は当社のみで使用し、他の企業には送受いたしませんのでご安心ください、現在サイトリニューアル中です。</p>
-      <h4 style="margin-top: 10px;">判定中ポイントに関しまして</h4>
-      <p><b>【事前アンケート】</b><br>即反映表記がある場合は即時、その他は最短1時間〜7日程かかる場合がございます。</p>
-      <p style="margin-top: 6px;"><b>【本アンケート】</b><br>最短1日〜最大10日かかる場合がございます。</p>
-    </div>
-
-    <button class="submit-btn" style="background: #fee2e2; color: var(--danger); margin-top: auto;" onclick="clearUserData()">登録情報の初期化</button>
-  </div>
-
-<script>
-  const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxsS-LIgVAaxfu3dCEYeEaX2QX7vBMNORlNLNl_N17qVbc_Us50BcQ2KhohFBVzeDVC/exec?sheet=sheetMonitor';
-
-  let userData = JSON.parse(localStorage.getItem('crawl_user_data')) || null;
-  let answeredState = JSON.parse(localStorage.getItem('crawl_answered_state')) || {}; 
-  
-  let currentEarnedPoints = 0;
-
-  let targetSurveyNum = '';
-  let targetSurveyName = '';
-  let targetSurveyLink = '';
-  let targetSurveyPointStr = '';
-  let targetSurveyPointVal = 0;
-  let targetSurveyType = '';
-  
-  let isFrameLoaded = false;
-
-  function getOrGenerateID() {
-    let savedId = localStorage.getItem('crawl_user_id');
-    if (!savedId) {
-      if (userData && userData.id) {
-        savedId = String(userData.id).padStart(3, '0');
+      let options = [];
+      if (isWeekend) {
+        options.push({ name: "通常便", fee: 40, desc: hour < 15 ? "15時迄で当日配送" : "翌日配送" });
+        options.push({ name: "特別延長便", fee: 60, desc: hour < 16 ? "16時迄で当日配送" : "翌日配送" });
       } else {
-        savedId = String(Math.floor(100 + Math.random() * 900));
-      }
-      localStorage.setItem('crawl_user_id', savedId);
-    }
-    return savedId;
-  }
-
-  const userId = getOrGenerateID();
-
-  window.addEventListener('DOMContentLoaded', () => {
-    checkRegistration();
-    fetchSurveys();
-    setInterval(fetchSurveys, 10000);
-
-    const iframe = document.getElementById('surveyIframe');
-    iframe.addEventListener('load', () => {
-      if (isFrameLoaded) {
-        onSurveyFormSubmitted();
-      } else if (iframe.src !== 'about:blank') {
-        isFrameLoaded = true;
-      }
-    });
-  });
-
-  function checkRegistration() {
-    if (!userData) {
-      document.getElementById('initSurveyCard').style.display = 'block';
-      document.getElementById('regId').value = userId;
-    } else {
-      document.getElementById('initSurveyCard').style.display = 'none';
-    }
-    updateDrawerInfo();
-  }
-
-  function submitInitSurvey() {
-    const name = document.getElementById('regName').value.trim();
-    const age = document.getElementById('regAge').value.trim();
-    const pref = document.getElementById('regPref').value.trim();
-
-    if (!name || !age || !pref) {
-      alert('すべての項目を入力してください。');
-      return;
-    }
-
-    userData = { id: userId, name, age, pref };
-    localStorage.setItem('crawl_user_data', JSON.stringify(userData));
-    checkRegistration();
-  }
-
-  function updateDrawerInfo() {
-    const display = document.getElementById('userInfoDisplay');
-    if (userData) {
-      display.innerHTML = `
-        <div><strong>モニター番号:</strong> ${userData.id}</div>
-        <div><strong>お名前:</strong> ${userData.name} 様</div>
-        <div><strong>年齢:</strong> ${userData.age} 歳</div>
-        <div><strong>居住地:</strong> ${userData.pref}</div>
-      `;
-    }
-  }
-
-  function clearUserData() {
-    if (confirm('登録情報を初期化しますか？（※モニター番号は保持されます）')) {
-      const currentId = localStorage.getItem('crawl_user_id');
-      localStorage.clear();
-      if (currentId) localStorage.setItem('crawl_user_id', currentId);
-      location.reload();
-    }
-  }
-
-  function toggleDrawer(open) {
-    document.getElementById('drawer').classList.toggle('open', open);
-    document.getElementById('drawerOverlay').style.display = open ? 'block' : 'none';
-  }
-
-  async function fetchSurveys() {
-    try {
-      const res = await fetch(GAS_WEB_APP_URL);
-      const rows = await res.json();
-
-      if (Array.isArray(rows)) {
-        renderSurveys(rows);
-      }
-    } catch (e) {
-      console.error("GAS取得エラー:", e);
-    }
-  }
-
-  function renderSurveys(rows) {
-    const preContainer = document.getElementById('preliminaryList');
-    const mainContainer = document.getElementById('mainList');
-
-    preContainer.innerHTML = '';
-    mainContainer.innerHTML = '';
-
-    let totalEarned = 0;
-    let totalPending = 0;
-    let preCount = 0;
-    let mainCount = 0;
-
-    rows.forEach((row, index) => {
-      if (!row.name) return;
-
-      const surveyNum = String(index + 1).padStart(2, '0');
-      const name = String(row.name);
-      const pointRaw = String(row.point || '0'); 
-      const pointVal = parseInt(pointRaw.replace(/[^0-9]/g, '')) || 0;
-      const type = String(row.type);
-      const link = String(row.link);
-      const earnedUsers = String(row.earnedUsers || '');
-      const targetUsers = String(row.targetUsers || '');
-      const limitInfo = String(row.limit || '');
-
-      const isEarnedInSheet = earnedUsers.split(/[、,]/).map(s => s.trim()).includes(userId);
-      if (isEarnedInSheet) {
-        answeredState[name] = 'earned';
+        options.push({ name: "標準配送", fee: 40, desc: "翌日配送" });
+        options.push({ name: "特急配送便", fee: 80, desc: hour < 15 ? "15時迄で当日配送" : "翌日配送" });
       }
 
-      const currentState = answeredState[name];
+      options.forEach((opt, idx) => {
+        const isDefault = idx === 0;
+        if (isDefault) {
+          selectedShippingFee = opt.fee;
+          selectedShippingName = opt.name;
+        }
 
-      if (currentState === 'earned') {
-        totalEarned += pointVal;
-      } else if (currentState === 'pending') {
-        totalPending += pointVal;
+        container.innerHTML += `
+          <div class="shipping-card ${isDefault ? 'selected' : ''}" onclick="selectShipping(this, ${opt.fee}, '${opt.name}')">
+            <div>
+              <strong>${opt.name}</strong> (${opt.desc})
+            </div>
+            <div style="font-weight:bold; color:var(--primary);">${opt.fee}円</div>
+          </div>
+        `;
+      });
+
+      calculateTotal();
+    }
+
+    function selectShipping(element, fee, name) {
+      document.querySelectorAll('.shipping-card').forEach(c => c.classList.remove('selected'));
+      element.classList.add('selected');
+      selectedShippingFee = fee;
+      selectedShippingName = name;
+      calculateTotal();
+    }
+
+    function fetchItems() {
+      fetch(`${GAS_API_URL}?action=getItems`)
+        .then(res => res.json())
+        .then(data => {
+          itemsData = data;
+          const listDiv = document.getElementById('product-list');
+          listDiv.innerHTML = '';
+
+          if (!data || data.length === 0) {
+            listDiv.innerHTML = '<div style="text-align:center; padding:10px;">商品がありません</div>';
+            return;
+          }
+
+          itemsData.forEach((item, index) => {
+            tempQuantities[index] = 1;
+
+            let discountRate = 0;
+            if (item.coupon) {
+              discountRate = parseFloat(String(item.coupon).replace('%', '')) || 0;
+            }
+            const finalPrice = Math.floor(item.price * (1 - discountRate / 100));
+            item.finalPrice = finalPrice;
+
+            listDiv.innerHTML += `
+              <div class="product-item">
+                <div class="product-info">
+                  <div class="product-name">
+                    ${item.name}
+                    ${discountRate > 0 ? `<span class="coupon-badge">${discountRate}%</span>` : ''}
+                  </div>
+                  <div class="price-tag">${finalPrice}円</div>
+                </div>
+                <div class="qty-control">
+                  <button class="btn-qty" onclick="changeTempQty(${index}, -1, ${item.stock})">-</button>
+                  <span class="qty-val" id="temp-qty-${index}">1</span>
+                  <button class="btn-qty" onclick="changeTempQty(${index}, 1, ${item.stock})">+</button>
+                  <button class="btn-add-cart" onclick="addToCart(${index})">追加</button>
+                </div>
+              </div>
+            `;
+          });
+        })
+        .catch(() => {
+          document.getElementById('product-list').innerHTML = '<div style="color:red; text-align:center;">取得失敗</div>';
+        });
+    }
+
+    function changeTempQty(index, delta, maxStock) {
+      let current = tempQuantities[index] || 1;
+      let next = current + delta;
+      if (next < 1) next = 1;
+      if (next > maxStock) next = maxStock;
+      tempQuantities[index] = next;
+      document.getElementById(`temp-qty-${index}`).textContent = next;
+    }
+
+    function addToCart(index) {
+      const item = itemsData[index];
+      const qtyToAdd = tempQuantities[index] || 1;
+
+      if (!cart[index]) {
+        cart[index] = { item: item, qty: 0, price: item.finalPrice };
       }
 
-      if (type === '本') {
-        const isTarget = targetUsers.split(/[、,]/).map(s => s.trim()).includes(userId);
-        if (!isTarget) return;
-      }
-
-      const card = document.createElement('div');
-      card.className = 'survey-card';
-
-      let btnHTML = '';
-      if (currentState === 'earned') {
-        btnHTML = `<button class="btn done" disabled>獲得済み</button>`;
-      } else if (currentState === 'pending') {
-        btnHTML = `<button class="btn pending-btn" disabled>判定中</button>`;
+      if (cart[index].qty + qtyToAdd > item.stock) {
+        alert(`在庫数（${item.stock}個）を超えています`);
+        cart[index].qty = item.stock;
       } else {
-        btnHTML = `<button class="btn" onclick="confirmStartSurvey('${surveyNum}', '${encodeURIComponent(name)}', '${encodeURIComponent(link)}', '${pointRaw}', ${pointVal}, '${type}')">回答する</button>`;
+        cart[index].qty += qtyToAdd;
       }
 
-      const limitDisplay = limitInfo ? `<span>期限/条件: ${limitInfo}</span>` : '';
+      renderCart();
+      calculateTotal();
+    }
 
-      card.innerHTML = `
-        <div class="survey-info">
-          <div class="survey-num">No.${surveyNum}</div>
-          <div class="survey-name">${name}</div>
-          <div class="survey-meta">${limitDisplay}</div>
-          <div class="survey-point">+${pointRaw} pt</div>
-        </div>
-        <div class="survey-action">${btnHTML}</div>
-      `;
+    function renderCart() {
+      const container = document.getElementById('cart-list');
+      const cartKeys = Object.keys(cart).filter(k => cart[k].qty > 0);
 
-      if (type === '事前') {
-        preContainer.appendChild(card);
-        preCount++;
-      } else if (type === '本') {
-        mainContainer.appendChild(card);
-        mainCount++;
+      if (cartKeys.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color:#888;">カートは空です</div>';
+        return;
       }
-    });
 
-    if (preCount === 0) preContainer.innerHTML = '<div style="text-align:center; padding:16px; color:var(--text-sub); font-size:0.85rem;">現在回答可能なアンケートはありません</div>';
-    if (mainCount === 0) mainContainer.innerHTML = '<div style="text-align:center; padding:16px; color:var(--text-sub); font-size:0.85rem;">現在対象のアンケートはありません</div>';
-
-    currentEarnedPoints = totalEarned;
-    document.getElementById('earnedPoint').textContent = `${totalEarned} pt`;
-    document.getElementById('earnedYen').textContent = `（${(totalEarned / 10).toLocaleString()} 円相当）`;
-    document.getElementById('pendingPoint').textContent = `${totalPending} pt`;
-    document.getElementById('pendingYen').textContent = `（${(totalPending / 10).toLocaleString()} 円相当）`;
-  }
-
-  function confirmStartSurvey(num, encName, encLink, pointStr, pointVal, type) {
-    if (!userData) {
-      alert('先に初回登録を完了してください。');
-      return;
+      container.innerHTML = '';
+      cartKeys.forEach(index => {
+        const c = cart[index];
+        container.innerHTML += `
+          <div class="cart-item">
+            <div style="flex:1; min-width:0; padding-right:6px;">
+              <div style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.item.name}</div>
+              <div style="color:var(--text-sub);">${c.price}円×${c.qty}</div>
+            </div>
+            <div class="qty-control">
+              <button class="btn-qty" onclick="updateCartQty(${index}, -1)">-</button>
+              <span class="qty-val">${c.qty}</span>
+              <button class="btn-qty" onclick="updateCartQty(${index}, 1)">+</button>
+              <button class="btn-remove" onclick="removeCartItem(${index})"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+          </div>
+        `;
+      });
     }
-    targetSurveyNum = num;
-    targetSurveyName = decodeURIComponent(encName);
-    targetSurveyLink = decodeURIComponent(encLink);
-    targetSurveyPointStr = pointStr;
-    targetSurveyPointVal = pointVal;
-    targetSurveyType = type;
 
-    document.getElementById('dialogUserId').textContent = userId;
-    document.getElementById('alertDialogOverlay').style.display = 'block';
-  }
+    function updateCartQty(index, delta) {
+      if (!cart[index]) return;
+      const maxStock = cart[index].item.stock;
+      cart[index].qty += delta;
 
-  function closeAlertDialog() {
-    document.getElementById('alertDialogOverlay').style.display = 'none';
-  }
+      if (cart[index].qty > maxStock) cart[index].qty = maxStock;
+      if (cart[index].qty <= 0) delete cart[index];
 
-  function startSurvey() {
-    closeAlertDialog();
-
-    document.getElementById('modalSurveyTitle').textContent = `No.${targetSurveyNum} ${targetSurveyName}`;
-    document.getElementById('modalSurveyPoint').textContent = targetSurveyPointStr;
-
-    isFrameLoaded = false;
-    const iframe = document.getElementById('surveyIframe');
-    iframe.src = targetSurveyLink;
-
-    document.getElementById('answerModal').style.display = 'flex';
-  }
-
-  function closeAnswerModal() {
-    document.getElementById('answerModal').style.display = 'none';
-    document.getElementById('surveyIframe').src = 'about:blank';
-    isFrameLoaded = false;
-  }
-
-  function onSurveyFormSubmitted() {
-    closeAnswerModal();
-
-    const isInstant = targetSurveyType === '事前' && targetSurveyPointStr.startsWith('即');
-
-    if (isInstant) {
-      showStatusModal(`
-        <h3>自動判定中 <span class="spinner"></span></h3>
-        <p>回答の送信を確認しました。<br>照合を行なっています...</p>
-      `);
-
-      setTimeout(() => {
-        answeredState[targetSurveyName] = 'earned';
-        localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
-        
-        showStatusModal(`
-          <h3 style="color:var(--accent);">反映完了！</h3>
-          <p>保有ポイントに <b>+${targetSurveyPointVal} pt</b> が自動反映されました！</p>
-          <button class="btn-dialog-yes" style="width:100%; margin-top:12px;" onclick="closeStatusModal()">閉じる</button>
-        `);
-        fetchSurveys();
-      }, 2500);
-
-    } else {
-      answeredState[targetSurveyName] = 'pending';
-      localStorage.setItem('crawl_answered_state', JSON.stringify(answeredState));
-
-      showStatusModal(`
-        <h3>回答送信完了</h3>
-        <p>回答を確認しました。<br>ステータスを「<b>判定中</b>」へ更新しました。</p>
-        <button class="btn-dialog-yes" style="width:100%; margin-top:12px;" onclick="closeStatusModal()">OK</button>
-      `);
-      fetchSurveys();
+      renderCart();
+      calculateTotal();
     }
-  }
 
-  function showStatusModal(htmlContent) {
-    document.getElementById('statusModalContent').innerHTML = htmlContent;
-    document.getElementById('statusModalOverlay').style.display = 'block';
-  }
+    function removeCartItem(index) {
+      delete cart[index];
+      renderCart();
+      calculateTotal();
+    }
 
-  function closeStatusModal() {
-    document.getElementById('statusModalOverlay').style.display = 'none';
-  }
+    function calculateTotal() {
+      let subtotal = 0;
+      Object.values(cart).forEach(c => { subtotal += c.qty * c.price; });
 
-  function openExchangeModal() {
-    toggleDrawer(false);
-    showStatusModal(`
-      <h3>ポイント交換申請</h3>
-      <p style="text-align:center; font-size:0.8rem; margin-bottom:12px;">ご希望の交換方法を選択してください。<br>（交換可能: <b>${currentEarnedPoints} pt</b>）</p>
+      document.getElementById('subtotal-val').textContent = `${subtotal}円`;
+      document.getElementById('shipping-val').textContent = `${selectedShippingFee}円`;
+      document.getElementById('total-val').textContent = `${subtotal + selectedShippingFee}円`;
+    }
+
+    function submitOrder() {
+      const name = document.getElementById('cust-name').value.trim();
+      const address = document.getElementById('cust-address').value.trim();
+      const prepaidCode = document.getElementById('prepaid-code').value.trim();
+      const totalAmount = parseInt(document.getElementById('total-val').textContent);
+
+      if (!name || !address || !prepaidCode) return alert('全ての項目を入力してください。');
       
-      <button class="exchange-option-btn" onclick="promptExchangeAmount('AmazonGift')">・AmazonGift（受付中）</button>
-      <button class="exchange-option-btn" onclick="promptExchangeAmount('PayPal')">・PayPal（受付中）</button>
-      <button class="exchange-option-btn" onclick="promptExchangeAmount('PayPay')">・PayPay（受付中）</button>
-      <button class="exchange-option-btn disabled" disabled>・自動販売機券（10月解禁）</button>
-      <button class="exchange-option-btn disabled" disabled>・ローソン買い物券（対象外）</button>
-      <button class="exchange-option-btn disabled" disabled>・ファミリーマート買い物券（対象外）</button>
+      const selectedItems = [];
+      Object.values(cart).forEach(c => {
+        if (c.qty > 0) selectedItems.push(`${c.item.name} (${c.qty})`);
+      });
 
-      <button class="btn-dialog-no" style="width:100%; margin-top:12px;" onclick="closeStatusModal()">キャンセル</button>
-    `);
-  }
+      if (selectedItems.length === 0) return alert('商品を追加してください。');
 
-  function promptExchangeAmount(method) {
-    if (currentEarnedPoints <= 0) {
-      alert("交換可能な獲得ポイントがありません。");
-      return;
+      const btn = document.getElementById('order-btn');
+      btn.disabled = true;
+      btn.textContent = "送信中...";
+
+      fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          action: "createOrder",
+          name: name,
+          address: address,
+          shippingMethod: selectedShippingName,
+          prepaidCode: prepaidCode,
+          totalAmount: totalAmount,
+          itemsSummary: selectedItems.join(', ')
+        })
+      })
+      .then(res => res.json())
+      .then(res => {
+        btn.disabled = false;
+        btn.textContent = "注文を確定する";
+
+        if (res.success) {
+          alert(`注文完了！\n【追跡番号】: ${res.trackingCode}`);
+          saveHistory({
+            date: new Date().toLocaleString(),
+            trackingCode: res.trackingCode,
+            total: totalAmount,
+            items: selectedItems.join(', ')
+          });
+          cart = {};
+          renderCart();
+          calculateTotal();
+          openHistoryModal();
+        } else {
+          alert("エラー: " + res.message);
+        }
+      })
+      .catch(() => {
+        btn.disabled = false;
+        btn.textContent = "注文を確定する";
+        alert("通信エラーが発生しました。");
+      });
     }
 
-    const input = prompt(`【${method}へ交換】\n交換希望ポイント数を入力してください。\n（上限: ${currentEarnedPoints} pt）`, currentEarnedPoints);
-    if (input === null) return;
-
-    const exchangePt = parseInt(input, 10);
-
-    if (isNaN(exchangePt) || exchangePt <= 0) {
-      alert("正しいポイント数を数字で入力してください。");
-      return;
+    function openHistoryModal() {
+      renderHistory();
+      document.getElementById('history-modal').classList.add('active');
+    }
+    function closeHistoryModal() {
+      document.getElementById('history-modal').classList.remove('active');
     }
 
-    if (exchangePt > currentEarnedPoints) {
-      alert(`交換申請できるポイントは保有ポイント(${currentEarnedPoints} pt)以下です。`);
-      return;
+    function saveHistory(order) {
+      const history = JSON.parse(localStorage.getItem('net_super_history') || '[]');
+      history.unshift(order);
+      localStorage.setItem('net_super_history', JSON.stringify(history));
     }
 
-    sendExchangeEmail(method, exchangePt);
-  }
+    function renderHistory() {
+      const history = JSON.parse(localStorage.getItem('net_super_history') || '[]');
+      const container = document.getElementById('modal-history-list');
+      if (!history.length) {
+        container.innerHTML = '<div style="text-align:center; color:#888;">履歴はありません</div>';
+        return;
+      }
 
-  function sendExchangeEmail(method, exchangePt) {
-    const yenAmount = (exchangePt / 10).toLocaleString();
-    const subject = encodeURIComponent(`【クロワルモニター】ポイント交換申請 (${method})`);
-    const body = encodeURIComponent(`クロワルモニター運営御中\n\nポイント交換を申請します。\n\n・モニター番号：${userId}\n・希望交換先：${method}\n・申請ポイント：${exchangePt} pt（${yenAmount} 円相当）\n・現在の保有獲得ポイント：${currentEarnedPoints} pt\n\nご確認のほどよろしくお願いいたします。`);
-    
-    window.location.href = `mailto:sixyami67@gmail.com?subject=${subject}&body=${body}`;
-    closeStatusModal();
-  }
-</script>
+      container.innerHTML = '';
+      history.forEach(h => {
+        container.innerHTML += `
+          <div class="history-card">
+            <div style="font-weight:bold; color:var(--primary);">追跡番号: ${h.trackingCode}</div>
+            <div style="font-size:0.75rem; color:#666;">${h.date}</div>
+            <div>${h.items}</div>
+            <div style="font-weight:bold;">合計: ${h.total}円</div>
+          </div>
+        `;
+      });
+    }
+  </script>
 </body>
 </html>
